@@ -14,7 +14,7 @@ from case_image.models import CaseImage
 from datetime import datetime
 import os
 from django.http import HttpResponse
-from django.db.models import Count, Q
+from django.db.models import Count, Q, Max
 from datetime import datetime
 from django.utils import timezone
 from django.urls import reverse
@@ -374,6 +374,22 @@ def insertData(request):
                 fs = FileSystemStorage()
                 fs.save(img_url, dataFile)
 
+            # สร้าง Ticket Number
+            today_str = datetime.now().strftime("%Y%m%d")
+            prefix = f"{branch}-{today_str}"
+
+            # ดึง Ticket ล่าสุดของวันนั้นจากสาขานั้น
+            latest_ticket = Case.objects.filter(ticket_number__startswith=prefix).aggregate(Max("ticket_number"))["ticket_number__max"]
+
+            if latest_ticket:
+                last_number = int(latest_ticket.split("-")[-1])  # ดึงเลขท้าย
+                new_number = last_number + 1
+            else:
+                new_number = 1
+
+            ticket_number = f"{prefix}-{str(new_number).zfill(3)}"
+
+
             # บันทึกข้อมูล Case โดยไม่บังคับให้ต้องมีไฟล์
             status_id = 1
             case = Case(
@@ -381,7 +397,7 @@ def insertData(request):
                 priority_id=priority, branch_id=branch, category_id=category, name=name,
                 mobile=mobile, ip_address=ip_address, computer_name=computer_name,
                 case_detail=case_detail, create_username=create_username,
-                status_id=status_id, image=img_url if img_url else None  # ถ้าไม่มีไฟล์ให้เป็น None
+                status_id=status_id, image=img_url if img_url else None, ticket_number=ticket_number  # ถ้าไม่มีไฟล์ให้เป็น None
             )
             case.save()
             if source == "blogFormIT":

@@ -6,6 +6,7 @@
     <!-- Basic Form Elements Title -->
     <div class="block-title">
         <h2><strong>Manage service request</strong></h2>
+        <span style="margin-left: 1220px;">Ticket Number : {{ caseEdit.ticket_number|default_if_none:"" }}</span>
     </div>
 {% for message in messages %}
     <p style="color: red;">{{message}}</p>
@@ -315,7 +316,7 @@
                     <input type="hidden" name="update_note" value="{{caseEdit.update_note}}">
                 {% endif %}
                 {% if not user.is_staff %}
-                <input type="hidden" name="update_note" value="{{caseEdit.update_note}}">
+                    <input type="hidden" name="update_note" value="{{caseEdit.update_note}}">
                 {% endif %} <h1></h1>
                 
                 {% if caseEdit.status_id == 3 or caseEdit.status_id == 4 or caseEdit.status_id == 5 %}

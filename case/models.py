@@ -12,6 +12,7 @@ from django.utils import timezone
 class Case(models.Model):
     
     id = models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')
+    ticket_number = models.CharField(max_length=50, unique=True, null=True, blank=True)
     name = models.CharField(max_length=255)
     mobile = models.CharField(max_length=255)
     case_detail = models.TextField(blank=True)
