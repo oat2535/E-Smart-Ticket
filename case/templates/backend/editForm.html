@@ -4,10 +4,23 @@
 {% load static %}
 <div class="block">
     <!-- Basic Form Elements Title -->
-    <div class="block-title">
-        <h2><strong>Manage service request</strong></h2>
-        <span style="margin-left: 1220px;">Ticket Number : {{ caseEdit.ticket_number|default_if_none:"" }}</span>
-    </div>
+    <div class="block-title d-flex justify-content-between align-items-center">
+    <h2><strong>Manage service request</strong></h2>
+    <span style="font-size: 12px;">Ticket Number : {{ caseEdit.ticket_number|default_if_none:"" }}</span>
+</div>
+<style>
+    .block-title {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap; /* ป้องกันล้นหน้าจอในจอเล็ก */
+        }
+        .block-title h2,
+        .block-title span {
+            margin: 0;
+            padding: 0.5rem;
+        }
+        </style>
 {% for message in messages %}
     <p style="color: red;">{{message}}</p>
 {% endfor %}
