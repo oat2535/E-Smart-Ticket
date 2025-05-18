@@ -311,55 +311,57 @@ def insertData(request):
             #         "create_username": create_username
             #     })  
               
-            # elif not (str(dataFile.content_type).startswith("image") or str(dataFile.content_type) == "application/pdf"):
-            #     messages.error(request, "ไฟล์ที่อัปโหลดไม่รองรับ กรุณาอัปโหลดไฟล์รูปภาพหรือ PDF เท่านั้น!")
-            #     if source == "blogFormPUR":
-            #         return render(request, "backend/blogFormPUR.html", {
-            #             "name": name,
-            #             "mobile": mobile,
-            #             "ip_address": ip_address,
-            #             "computer_name": computer_name,
-            #             "case_detail": case_detail,
-            #             "subject_detail": subject_detail,
-            #             "categories_pur": categories_pur,
-            #             "selected_category": category,
-            #             "selected_priority": priority,
-            #             "priorities": priorities,
-            #             "department": department,
-            #             "email": email,
-            #             "create_username": create_username
-            #         }) 
-            #     elif source == "blogFormFIN":
-            #         return render(request, "backend/blogFormFIN.html", {
-            #             "name": name,
-            #             "mobile": mobile,
-            #             "ip_address": ip_address,
-            #             "computer_name": computer_name,
-            #             "case_detail": case_detail,
-            #             "subject_detail": subject_detail,
-            #             "categories_fin": categories_fin,
-            #             "selected_category": category,
-            #             "selected_priority": priority,
-            #             "priorities": priorities,
-            #             "department": department,
-            #             "email": email,
-            #             "create_username": create_username
-            #         }) 
-            #     return render(request, "backend/blogFormIT.html", {
-            #         "name": name,
-            #         "mobile": mobile,
-            #         "ip_address": ip_address,
-            #         "computer_name": computer_name,
-            #         "case_detail": case_detail,
-            #         "subject_detail": subject_detail,
-            #         "categories_it": categories_it,
-            #         "selected_category": category,
-            #         "selected_priority": priority,
-            #         "priorities": priorities,
-            #         "department": department,
-            #         "email": email,
-            #         "create_username": create_username
-            #     })  
+            if dataFile:  # ตรวจสอบว่าอัปโหลดไฟล์มาหรือไม่
+                if not (str(dataFile.content_type).startswith("image") or str(dataFile.content_type) == "application/pdf"):
+                    messages.error(request, "ไฟล์ที่อัปโหลดไม่รองรับ กรุณาอัปโหลดไฟล์รูปภาพหรือ PDF เท่านั้น!")
+                    if source == "blogFormPUR":
+                        return render(request, "backend/blogFormPUR.html", {
+                            "name": name,
+                            "mobile": mobile,
+                            "ip_address": ip_address,
+                            "computer_name": computer_name,
+                            "case_detail": case_detail,
+                            "subject_detail": subject_detail,
+                            "categories_pur": categories_pur,
+                            "selected_category": category,
+                            "selected_priority": priority,
+                            "priorities": priorities,
+                            "department": department,
+                            "email": email,
+                            "create_username": create_username
+                        }) 
+                    elif source == "blogFormFIN":
+                        return render(request, "backend/blogFormFIN.html", {
+                            "name": name,
+                            "mobile": mobile,
+                            "ip_address": ip_address,
+                            "computer_name": computer_name,
+                            "case_detail": case_detail,
+                            "subject_detail": subject_detail,
+                            "categories_fin": categories_fin,
+                            "selected_category": category,
+                            "selected_priority": priority,
+                            "priorities": priorities,
+                            "department": department,
+                            "email": email,
+                            "create_username": create_username
+                        }) 
+                    return render(request, "backend/blogFormIT.html", {
+                        "name": name,
+                        "mobile": mobile,
+                        "ip_address": ip_address,
+                        "computer_name": computer_name,
+                        "case_detail": case_detail,
+                        "subject_detail": subject_detail,
+                        "categories_it": categories_it,
+                        "selected_category": category,
+                        "selected_priority": priority,
+                        "priorities": priorities,
+                        "department": department,
+                        "email": email,
+                        "create_username": create_username
+                    })
+
 
             # ถ้ามีการอัปโหลดไฟล์ ให้ทำการบันทึก
             img_url = None
@@ -485,6 +487,7 @@ def updateData(request,id):
             modify_username = auth.get_user(request).username
             score = request.POST.get("score")
             feedback = request.POST.get("feedback")
+            print(status)
 
             #กรองไฟล์ที่เป็นรูปภาพ
             # if not assign_name:

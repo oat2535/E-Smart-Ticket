@@ -104,10 +104,10 @@
                     Name 
                 </label>
                 {% if caseEdit.status_id != 1 or request.user.is_staff %}
-                <input type="text" id="name" name="name" class="form-control" placeholder="Please enter your name" value="{{caseEdit.name}}" disabled>
+                <input type="text" id="name" name="name" class="form-control" maxlength="30" placeholder="Please enter your name" value="{{caseEdit.name}}" disabled>
                 <input type="hidden" name="name" value="{{ caseEdit.name }}">
                 {%else%}
-                <input type="text" id="name" name="name" class="form-control" placeholder="Please enter your name" value="{{caseEdit.name}}">
+                <input type="text" id="name" name="name" class="form-control" maxlength="30" placeholder="Please enter your name" value="{{caseEdit.name}}">
                 {%endif%}
             </div>
             <div class="col-md-4">
@@ -115,10 +115,10 @@
                     Tele number 
                 </label>
                 {% if caseEdit.status_id != 1 or request.user.is_staff %}
-                <input type="text" id="name" name="mobile" class="form-control" placeholder="Please enter your Telephone number" value="{{caseEdit.mobile}}" disabled>
+                <input type="text" id="name" name="mobile" class="form-control" maxlength="50" oninput="this.value = this.value.replace(/[^0-9,]/g, '')" placeholder="Please enter your telephone number, Ex. 085222xxxx,082666xxxx" value="{{caseEdit.mobile}}" disabled>
                 <input type="hidden" name="mobile" value="{{ caseEdit.mobile }}">
                 {%else%}
-                <input type="text" id="name" name="mobile" class="form-control" placeholder="Please enter your Telephone number" value="{{caseEdit.mobile}}">
+                <input type="text" id="name" name="mobile" class="form-control" maxlength="50" oninput="this.value = this.value.replace(/[^0-9,]/g, '')"  placeholder="Please enter your telephone number, Ex. 085222xxxx,082666xxxx" value="{{caseEdit.mobile}}">
                 {%endif%}
             </div> 
             <div class="col-md-4">
@@ -126,10 +126,10 @@
                     E-mail 
                 </label>
                 {% if caseEdit.status_id != 1 or request.user.is_staff %}
-                <input type="text" id="name" name="email" class="form-control" placeholder="E-mail" value="{{caseEdit.email}}" disabled>
+                <input type="email" id="name" name="email" class="form-control" maxlength="100" placeholder="Please enter your E-mail, Ex. thonglor@hospital.com" value="{{caseEdit.email}}" disabled>
                 <input type="hidden" name="email" value="{{ caseEdit.email }}">
                 {%else%}
-                <input type="text" id="name" name="email" class="form-control" placeholder="E-mail" value="{{caseEdit.email}}">
+                <input type="email" id="name" name="email" class="form-control" maxlength="100" placeholder="Please enter your E-mail, Ex. thonglor@hospital.com"  placeholder="E-mail" value="{{caseEdit.email}}">
                 {%endif%}
             </div>   
         </div>
@@ -158,30 +158,30 @@
                     IP Address 
                 </label>
                 {% if caseEdit.status_id != 1 or request.user.is_staff %}
-                <input type="text" id="name" name="ip_address" class="form-control" placeholder="IP Address" value="{{caseEdit.ip_address}}" disabled>
+                <input type="text" id="name" name="ip_address" class="form-control" maxlength="50" oninput="this.value = this.value.replace(/[^0-9.]/g, '')" placeholder="Please enter your IP address, Ex. 192.168.25.xx" value="{{caseEdit.ip_address}}" disabled>
                 <input type="hidden" name="ip_address" value="{{ caseEdit.ip_address }}">
                 {%else%}
-                <input type="text" id="name" name="ip_address" class="form-control" placeholder="IP Address" value="{{caseEdit.ip_address}}">
+                <input type="text" id="name" name="ip_address" class="form-control" maxlength="50" oninput="this.value = this.value.replace(/[^0-9.]/g, '')" placeholder="Please enter your IP address, Ex. 192.168.25.xx" value="{{caseEdit.ip_address}}">
                 {%endif%}
             </div>
             <div class="col-md-4">
                 <label for="content" style="display: block; margin-bottom: 5px; font-weight: bold;">
                     Create datetimes
                 </label>
-                <input type="text" id="name" name="date_created" class="form-control" placeholder="IP Address" value="{{caseEdit.date_created|date:'d M Y, h:i a'}}" disabled>
+                <input type="text" id="name" name="date_created" class="form-control" maxlength="50" oninput="this.value = this.value.replace(/[^0-9.]/g, '')" placeholder="Please enter your IP address, Ex. 192.168.25.xx" value="{{caseEdit.date_created|date:'d M Y, h:i a'}}" disabled>
             </div>
         </div>
         
         <div class="form-group">
             <div class="col-md-12">
                 <label for="case_detail" style="display: block; margin-bottom: 5px; font-weight: bold;">
-                    Subject 
+                    Symptom 
                 </label>
                 {% if caseEdit.status_id != 1 or request.user.is_staff %}
-                <input type="text" name="subject_detail" class="form-control" value="{{caseEdit.subject_detail}}" disabled>
+                <input type="text" name="subject_detail" class="form-control" maxlength="240" value="{{caseEdit.subject_detail}}" disabled>
                 <input type="hidden" name="subject_detail" value="{{ caseEdit.subject_detail }}">
                 {%else%}
-                <input type="text" name="subject_detail" class="form-control" value="{{caseEdit.subject_detail}}">
+                <input type="text" name="subject_detail" class="form-control" maxlength="240" value="{{caseEdit.subject_detail}}">
                 {%endif%}
             </div>
         </div>
@@ -212,11 +212,11 @@
                     </label>
                     {% if caseEdit.image %}
                         {% if is_case_edit_pdf %}
-                            <a href="{{ caseEdit.image.url }}" target="_blank">
+                            <a href="{{ caseEdit.image.url }}" target="_blank" title="{{ caseEdit.image|cut:'blogImages/' }}">
                                 <img src="{% static 'backend/pdf.png' %}" alt="PDF Placeholder" style="width: 100px; height: 100px; ">
                             </a>
                         {% else %}
-                            <a href="{{ caseEdit.image.url }}" data-fancybox="gallery">
+                            <a href="{{ caseEdit.image.url }}" data-fancybox="gallery" title="{{ caseEdit.image|cut:'blogImages/' }}">
                                 <img src="{{ caseEdit.image.url }}" alt="Case Edit Image" style="width: 100px; height: 100px;">
                             </a>
                         {% endif %}
@@ -224,11 +224,11 @@
                     {% for img in caseImg %}
                         {% if img.case_image %}
                             {% if img.is_pdf %}
-                                <a href="{{ img.case_image.url }}" target="_blank">
+                                <a href="{{ img.case_image.url }}" target="_blank" title="{{ caseEdit.image|cut:'blogImages/' }}">
                                     <img src="{% static 'backend/pdf.png' %}" alt="PDF Placeholder" style="width: 100px; height: 100px;">
                                 </a>
                             {% else %} 
-                                <a href="{{ img.case_image.url }}" data-fancybox="gallery">
+                                <a href="{{ img.case_image.url }}" data-fancybox="gallery" title="{{ caseEdit.image|cut:'blogImages/' }}">
                                     <img src="{{ img.case_image.url }}" alt="Case Image" style="width: 100px; height: 100px;">
                                 </a>
                             {% endif %}
@@ -254,7 +254,9 @@
                             <option value="{{status.id}}">{{status.name}}</option>
                         {% endfor %}
                     {% endif %}
-                    <!-- <input type="hidden" name="status_id" value="{{ caseEdit.status_id }}"> -->
+                    {% if user.is_staff == 0 and caseEdit.status_id == 4  %}
+                        <input type="hidden" name="status_id" value="{{ caseEdit.status_id }}">
+                    {% endif %}
                 </select> <h1></h1>
 
                 <label for="content" style="display: block; margin-bottom: 5px; font-weight: bold;">
@@ -292,9 +294,7 @@
                 </label>           
                 <!-- <select name="assign_name" class="select-chosen" style="width: 250px;" {% if not user.is_staff %}disabled{% endif %}> -->
                 <select name="assign_name" class="select-chosen" style="width: 250px;" {% if user.is_staff == 0 or caseEdit.status_id == 5 or caseEdit.status_id == 4 or caseEdit.status_id == 2 %}disabled{% endif %}>
-                    {% if caseEdit.assign_name != ""%}
-                        <option value="{{caseEdit.assign_name}}" selected>--- {{ assigned_user.first_name }} {{ assigned_user.last_name }} ---</option>
-                    {% endif %}
+                        <option value="{{caseEdit.assign_name}}" selected>--- {{ assigned_user.first_name }} {{ assigned_user.last_name }} ---</option>                 
                         <option value="">--- Please select assign name ---</option>
                     {% for assign_name in assign_name %}
                         <option value="{{assign_name.username}}" {% if assign_name.username == request.POST.assign_name %}selected{% endif %}>{{assign_name.first_name}}  {{assign_name.last_name}}</option>
@@ -418,11 +418,11 @@
         </div>
         {%endif%} 
         
-        {% if request.user.is_staff%}
+        {% if user.is_staff == 0 %}
         <div class="form-group">
             <div class="col-md-12">
-                {% if caseEdit.status_id != 5 %}
-                <button type="submit" class="btn btn-sm btn-primary">Save</button>
+                {% if caseEdit.status_id == 1 or caseEdit.status_id == 4 %}
+                    <button type="submit" class="btn btn-sm btn-primary">Save</button>
                 {%endif%}
                 <a href="{% url 'case' %}">
                     <button type="button" class="btn btn-sm btn-danger" style="margin-left: 1px;">
@@ -431,12 +431,12 @@
                 </a>
             </div>
         </div>
-        {%else%}
+        {% endif %}
+
+        {%if user.is_staff == 1 %}
         <div class="form-group">
             <div class="col-md-12">
-                {% if caseEdit.status_id == 1 %}
-                    <button type="submit" class="btn btn-sm btn-primary">Save</button>
-                {% elif caseEdit.status_id == 3 and caseEdit.score == "" or caseEdit.feedback == "" %}
+                {% if caseEdit.status_id != 4 and caseEdit.status_id != 5 and caseEdit.status_id != 6 %}
                     <button type="submit" class="btn btn-sm btn-primary">Save</button>
                 {%endif%}
                 <a href="{% url 'case' %}">
