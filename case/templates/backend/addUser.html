@@ -1,0 +1,116 @@
+{% extends "backend/layout.html" %}
+
+{% block header %}
+        <!-- CKEditor -->
+        <script src="//cdn.ckeditor.com/4.16.1/standard/ckeditor.js"></script>
+{% endblock %}
+
+{% block content %}
+<div class="block">
+    <!-- Basic Form Elements Title -->
+    <div class="block-title">
+        <h2><strong>Register member form</strong></h2>
+    </div>
+    <!-- END Form Elements Title -->
+    <!-- Basic Form Elements Content -->
+     {% for message in messages %}
+        <p style="color: red;">{{message}}</p>
+     {% endfor %}
+    <form action="{% url 'register' %}" method="POST" id="form-register" class="form-horizontal form-bordered" >
+        {% csrf_token %}
+        <div class="form-group">
+            <div class="col-md-4">     
+                <label for="content" style="display: block; margin-bottom: 5px; font-weight: bold;">
+                    Branch <label for="" style="color: red;">*</label>
+                </label>        
+                <select name="branch" class="select-chosen" style="width: 250px;">
+                    <option value="" {% if selected_branch == "" %}selected{% endif %}>-- Please select branch --</option>
+                    {% for branch in branches %}
+                        <option value="{{ branch.branch_id }}" {% if branch.branch_id == selected_branch %}selected{% endif %}>{{ branch.branch_name }}</option>
+                    {% endfor %}
+                </select>                
+            </div>
+
+            <div class="col-md-4">     
+                <label for="content" style="display: block; margin-bottom: 5px; font-weight: bold;">
+                    Department
+                </label>        
+                <select name="department" class="select-chosen" style="width: 250px;">
+                    <option value="" {% if selected_department == "" %}selected{% endif %}>-- Please select department --</option>
+                    {% for department in departments %}
+                        <option value="{{ department.department_id }}" {% if department.department_id|stringformat:"s" == selected_department %}selected{% endif %}>{{ department.department_name }}</option>
+                    {% endfor %}
+                </select>                
+            </div>
+            
+            <div class="col-md-4">
+                <label for="content" style="display: block; margin-bottom: 30px; font-weight: bold;"></label>
+                <!-- checkbox ที่ส่งค่า 1 เมื่อถูกติ๊ก -->
+                <d
+                iv class="form-check">
+                    <label for="id_is_staff" class="form-check-label">
+                        {{ form.is_staff }} Staff Status
+                    </label>
+                </d>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <div class="col-md-6">
+                <label for="content" style="display: block; margin-bottom: 5px; font-weight: bold;">
+                    Username <label for="" style="color: red;">*</label>
+                </label>
+                <input type="text" id="first_name" name="username" class="form-control" value="{{username}}" placeholder="Username" required>
+            </div>
+            <div class="col-md-6">
+                <label for="content" style="display: block; margin-bottom: 5px; font-weight: bold;">
+                    Tele number <label for="" style="color: red;">*</label>
+                </label>
+                <input type="text" id="phone_number" name="phone_number" class="form-control" value="{{phone_number}}" placeholder="Tele number" required>
+            </div>   
+        </div>
+
+        <div class="form-group">
+            <div class="col-md-6">
+                <label for="content" style="display: block; margin-bottom: 5px; font-weight: bold;">
+                    First name <label for="" style="color: red;">*</label>
+                </label>
+                <input type="text" id="first_name" name="first_name" class="form-control" value="{{first_name}}" placeholder="First name" required>
+            </div>
+            <div class="col-md-6">
+                <label for="content" style="display: block; margin-bottom: 5px; font-weight: bold;">
+                    Last name <label for="" style="color: red;">*</label>
+                </label>
+                <input type="text" id="last_name" name="last_name" class="form-control" value="{{last_name}}" placeholder="Last name" required>
+            </div>   
+        </div>
+
+        <div class="form-group">
+            <div class="col-md-6">
+                <label for="content" style="display: block; margin-bottom: 5px; font-weight: bold;">
+                    Password <label for="" style="color: red;">*</label>
+                </label>
+                <input type="password" id="login-password" name="password" class="form-control" value="{{password}}" placeholder="Password"  required>
+            </div>
+            <div class="col-md-6">
+                <label for="content" style="display: block; margin-bottom: 5px; font-weight: bold;">
+                    Confirm Password <label for="" style="color: red;">*</label>
+                </label>
+                <input type="password" id="repassword" name="repassword" class="form-control" value="{{repassword}}" placeholder="Confirm Password"required>
+            </div>   
+        </div>
+
+        <div class="form-group">
+            <div class="col-md-12">
+                <button type="submit" class="btn btn-sm btn-primary">Save</button>
+                <a href="{% url 'displayUser' %}">
+                    <button type="button" class="btn btn-sm btn-danger" style="margin-left: 1px;">
+                        Back
+                    </button>
+                </a>
+            </div>
+        </div>
+    </form>
+    <!-- END Basic Form Elements Content -->
+</div>
+{% endblock%}

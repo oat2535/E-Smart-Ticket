@@ -1,0 +1,146 @@
+{% extends "backend/layout.html" %}
+
+{% block content %}
+{% load static %}
+
+<!-- ตารางบทความ -->
+<div class="block full">
+    <!-- All Title -->
+    <div class="block-title">
+        <!-- <div class="block-options pull-right">
+            <a href="javascript:void(0)" class="btn btn-alt btn-sm btn-default"
+                data-toggle="tooltip" title="Settings"><i
+                    class="fa fa-cog"></i></a>
+        </div> -->
+        <h2><strong>Total service request</strong></h2>
+        {% if request.GET.department_id == 'IT'%}
+            <a href="{% url 'displayForm' %}?department_id=IT" class="btn btn-primary btn-sm btn-default" 
+            data-toggle="tooltip" title="Service request IT" style="margin-left: 1px;" >
+                <i class="fa fa-plus" aria-hidden="true" style="display: flex; align-items: center;"></i>
+            </a>
+        {%endif%}
+        {% if request.GET.department_id == 'PUR' %}
+            <a href="{% url 'displayForm' %}?department_id=PUR" class="btn btn-primary btn-sm btn-default" 
+            data-toggle="tooltip" title="Service request PUR" style="margin-left: 1px;" >
+                <i class="fa fa-plus" aria-hidden="true" style="display: flex; align-items: center;"></i>
+            </a>
+        {%endif%}
+        {% if request.GET.department_id == 'FIN' %}
+            <a href="{% url 'displayForm' %}?department_id=FIN" class="btn btn-primary btn-sm btn-default" 
+            data-toggle="tooltip" title="Service request FIN" style="margin-left: 1px;" >
+                <i class="fa fa-plus" aria-hidden="true" style="display: flex; align-items: center;"></i>
+            </a>
+        {%endif%}
+    </div>
+    <!-- Title -->
+
+    <!--Content -->
+    <div class="table-responsive">
+    <table id="ecom-products"
+        class="table table-bordered table-striped table-vcenter table-hover">
+        <thead>
+            <tr>
+                <th class="text-center">No.</th>
+                <!-- <th class="hidden-xs text-center">ภาพปัญหา</th> --> 
+                <th class="text-center">Department</th>            
+                <th class="text-center">Type</th>
+                <th class="text-center">Subject</th>
+                <th class="text-center">Description</th>
+                <th class="text-center">Request name</th>
+                <th class="text-center">Request date</th>
+                {% if request.user.is_staff%}
+                <th class="text-center">Company</th> 
+                {%endif%}               
+                <th class="text-center">Status</th>
+                <th class="text-center">Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for case in case %}
+            <tr>
+                <td class="text-center">{{forloop.counter }}</td>
+                <!-- <td class="text-center">
+                    {% for case_item in case_with_pdf_flag %}
+                        {% if case_item.is_pdf %}
+                            
+                            <a href="{{ case_item.case.image.url }}" target="_blank">
+                                <img src="{% static 'backend/pdf.png' %}" alt="PDF Placeholder" style="width: 100px; height: 100px;">
+                            </a>
+                        {% else %}
+                            
+                            <a href="{{ case_item.case.image.url }}">
+                                <img src="{{ case_item.case.image.url }}" alt="Case Image" style="width: 100px; height: 100px;">
+                            </a>
+                        {% endif %}
+                    {% endfor %}
+                    
+                </td> -->
+                <td class="text-center">{{case.department.department_name}}</td>
+                <td class="text-center">{{case.category.name}}</td>              
+                <td class="text-left">
+                    <!-- {{ case.subject_detail}} -->
+                    {{ case.subject_detail|slice:":100" }}
+                    <!-- {% if case.subject_detail|length > 100 %}<br>{{ case.subject_detail|slice:"100:" }}{% endif %} -->
+                </td>
+                <td class="text-left">{{case.case_detail|slice:":100"}}
+                    {% if case.case_detail|length > 50 %}<br>{{ case.case_detail|slice:"100:" }}{% endif %}
+                </td>
+                <td class="text-center">{{case.name}}</td>
+                <td class="text-center">{{case.date_created|date:"d-m-Y, h:i a"}}</td>
+                {% if request.user.is_staff%}
+                <td class="text-center">{{case.branch.branch_name}}</td>
+                {%endif%}
+                <td class="text-center">
+                    {% if case.status_id == 1 %}
+                        <button class="btn btn-primary btn-fixed-width">{{ case.status.name }}</button> 
+                    {% elif case.status_id == 2 %}
+                        <button class="btn btn-warning btn-fixed-width">{{ case.status.name }}</button> 
+                    {% elif case.status_id == 5 %}
+                        <button class="btn btn-success btn-fixed-width">{{ case.status.name }}</button> 
+                    {% elif case.status_id == 4 %}
+                        <button class="btn btn-info btn-fixed-width">{{ case.status.name }}</button> 
+                    {% elif case.status_id == 6 %}
+                        <button class="btn btn-danger btn-fixed-width">{{ case.status.name }}</button> 
+                    {% else %}
+                        <button class="btn btn-secondary btn-fixed-width">{{ case.status.name }}</button> 
+                    {% endif %}
+                    <style>
+                        .btn-fixed-width {
+                        min-width: 120px;
+                        text-align: center;
+                    }
+                    </style>
+                </td>
+                          
+                <td class="text-center">                 
+                    <div class="btn-group btn-group-xs">
+                        {% if request.user.is_staff == 1 %}
+                        <a href="{% url 'editData' case.id %}" data-toggle="tooltip" title="Manage job"
+                            class="btn btn-default"><i class="fa fa-pencil"></i>
+                        </a>
+                        {% if request.user.username == "admin" %}
+                        <a href="{% url 'deleteData' case.id%}" data-toggle="tooltip" onclick="return confirm('Do you want delete data ?')" title="Delete" class="btn btn-xs btn-danger">
+                            <i class="fa fa-times"></i>
+                        </a>
+                        {%endif%}
+                        <a href="{% url 'addImages' case.id %}" data-toggle="tooltip" title="Attach additional images or files"
+                            class="btn btn-default"><i class="fa fa-picture-o"></i>
+                        </a>
+                        {%else%}
+                        <a href="{% url 'editData' case.id %}" data-toggle="tooltip" title="View repair details"
+                            class="btn btn-default"><i class="fa fa-pencil"></i>
+                        </a>
+                        <a href="{% url 'addImages' case.id %}" data-toggle="tooltip" title="Attach additional images or files"class="btn btn-default">
+                            <i class="fa fa-picture-o" aria-hidden="true"></i>
+                        </a>
+                        {% endif %}       
+                    </div>                   
+                </td>               
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+    <!-- END All Products Content -->
+</div>
+{% endblock %}

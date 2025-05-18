@@ -1,0 +1,181 @@
+{% extends "backend/layout.html" %}
+{% load static %}
+
+{% block header %}
+{% endblock %}
+
+{% block content %}
+<div class="block">
+    <!-- Basic Form Elements Title -->
+    <div class="block-title">
+        <h2><strong>IT request detail</strong></h2>
+    </div>
+
+    <!-- END Form Elements Title -->
+    <!-- Basic Form Elements Content -->
+    {% for message in messages %}
+        <p style="color: red;">{{message}}</p>
+    {% endfor %}
+    <form action="{% url 'insertData' %}" method="post"
+        enctype="multipart/form-data" class="form-horizontal form-bordered">
+        {% csrf_token %}
+        <div class="form-group">
+            <input type="hidden" name="department" value="IT">
+            <input type="hidden" name="source" value="blogFormIT">
+            
+            <div class="col-md-4">
+                <label for="category" style="display: block; margin-bottom: 5px; font-weight: bold;">
+                    Type <label style="color: red;">*</label>
+                </label>
+                <select name="category" class="select-chosen" style="width: 250px;">
+                    <option value="">-- Please select type --</option>
+                    {% for category in categories_it %}
+                    <option value="{{ category.id }}" {% if category.id|stringformat:"s" == selected_category %}selected{% endif %}>
+                        {{ category.name }}
+                    </option>                    
+                    {% endfor %}
+                </select>
+            </div>
+            
+            <div class="col-md-4">
+                <label for="content" style="display: block; margin-bottom: 5px; font-weight: bold;">
+                    Priority <label style="color: red;">*</label>
+                </label>
+                <select name="priority" class="select-chosen" style="width: 250px;">
+                    <option value="">-- Please select priority --</option>
+                    {% for priorities in priorities %}
+                        <option value="{{ priorities.id }}" {% if priorities.id|stringformat:"s" == selected_priority %}selected{% endif %}>
+                            {{ priorities.priority_name }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+
+            <div class="form-group">
+                <div class="col-md-4">
+                    <label for="content"
+                        style="display: block; margin-bottom: 5px; font-weight: bold;">
+                        Name <label for="content"
+                            style="color: red;">*</label>
+                    </label>
+                    <input type="text" id="name" name="name"
+                        class="form-control" value="{{name}}" maxlength="30"
+                        placeholder="Please enter your name" required>
+                </div>
+                <div class="col-md-4">
+                    <label for="content"
+                        style="display: block; margin-bottom: 5px; font-weight: bold;">
+                        Tel number <label for="content"
+                            style="color: red;">*</label>
+                    </label>
+                    <input type="text" id="name" name="mobile"
+                        class="form-control" value="{{mobile}}" maxlength="50" oninput="this.value = this.value.replace(/[^0-9,]/g, '')"
+                        placeholder="Please enter your telephone number, Ex. 085222xxxx,082666xxxx" required>
+                </div>
+                <div class="col-md-4">
+                    <label for="content"
+                        style="display: block; margin-bottom: 10px; font-weight: bold;">
+                        E-mail
+                    </label>
+                    <input type="email" id="name" name="email"
+                        class="form-control" value="{{email}}" maxlength="100"
+                        placeholder="Please enter your E-mail, Ex. thonglor@hospital.com">
+                </div>             
+            </div>
+
+        <div class="form-group">
+            <!-- <div class="col-md-4">
+                <label for="content"
+                    style="display: block; margin-bottom: 5px; font-weight: bold;">
+                    ชื่อเล่น
+                </label>
+                <input type="text" id="name" name="nickname"
+                    class="form-control" value="{{nickname}}"
+                    placeholder="กรุณากรอก ชื่อเล่น">
+            </div> -->
+            <div class="col-md-4">
+                <label for="content"
+                    style="display: block; margin-bottom: 5px; font-weight: bold;">
+                    Computer Name 
+                    <!-- ปุ่มช่วยเหลือ -->
+                    <i class="bi bi-book fa fa-align-center" data-toggle="modal" data-target="#helpModal" style="margin-left: 5px;" title="How to find your computer name"></i>
+                </label>
+                <input type="text" id="name" name="computer_name" class="form-control" value="{{computer_name}}" placeholder="Please enter your computer name" maxlength="50">
+        
+            </div>
+            <div class="col-md-4">
+                <label for="content"
+                    style="display: block; margin-bottom: 5px; font-weight: bold;">
+                    IP address
+                </label>
+                <input type="text" id="name" name="ip_address"
+                    class="form-control" value="{{ip_address}}" maxlength="50" oninput="this.value = this.value.replace(/[^0-9.]/g, '')"
+                    placeholder="Please enter your IP address, Ex. 192.168.25.xx">
+            </div>
+        </div>
+              
+                <!-- Modal -->
+                <div class="modal fade" id="helpModal" tabindex="-1" aria-labelledby="helpModalLabel" aria-hidden="true">
+                    <div class="modal-dialog modal-lg">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                        <h5 class="modal-title" id="helpModalLabel">How to Find Computer Name</h5>
+                        </div>
+                        <div class="modal-body">
+                        <!-- แสดง PDF -->
+                        <iframe src="{% static 'backend/findcomputername.pdf' %}" width="100%" height="500px" style="border: none;"></iframe>
+                        </div>
+                    </div>
+                    </div>
+                </div>
+
+        <div class="form-group">
+            <div class="col-md-12">
+                <label for="case_detail"
+                    style="display: block; margin-bottom: 5px; font-weight: bold;">
+                    Symptom <label for="content"
+                        style="color: red;">*</label>
+                </label>
+                <input type="text" name="subject_detail" class="form-control" value="{{subject_detail}}" maxlength="240"  required> 
+            </div>
+            <div class="col-md-12">
+                <label for="case_detail"
+                    style="display: block; margin-bottom: 5px; font-weight: bold; margin-top: 10px;">
+                    Description <label for="content"
+                        style="color: red;">*</label>
+                </label>               
+                <textarea type="text" name="case_detail" rows="5"
+                    class="form-control" required>{{case_detail}}</textarea>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <div class="col-md-12">
+                <label for="content"
+                    style="display: block; margin-bottom: 5px; font-weight: bold;">
+                    Attach File 
+                    <!-- <label for="content" style="color: red;">*</label> -->
+                </label>
+                <input type="file" name="image" class="form-control" accept="image/*,.pdf"
+                    placeholder="แนบภาพปัญหาที่พบ"><br>
+                    <label style="color: red; display: block; font-weight: normal;" >** You can only attach files with the extension .jpg, .jpeg, .png, .pdf, Limit file size 10MB only !</label>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <div class="col-md-12">
+                <button type="submit" class="btn btn-sm btn-primary">Save</button>                            
+                <a href="{% url 'case' %}?department_id=IT" {% if "displayForm?department_id=IT" in request.path%}{%endif%}>                    
+                    <button type="button" class="btn btn-sm btn-danger" style="margin-left: 1px;">
+                        Back
+                    </button>
+                </a>
+            </div>
+        </div>
+        
+    </form>
+
+    <!-- END Basic Form Elements Content -->
+</div>
+{% endblock%}

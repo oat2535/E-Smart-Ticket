@@ -1,0 +1,135 @@
+{% extends "backend/layout.html" %}
+
+{% block content %}
+<!-- ตารางบทความ -->
+<div class="block full">
+    <!-- All Title -->
+    <div class="block-title">
+        <!-- <div class="block-options pull-right">
+            <a href="javascript:void(0)" class="btn btn-alt btn-sm btn-default"
+                data-toggle="tooltip" title="Settings"><i
+                    class="fa fa-cog"></i></a>
+        </div> -->
+        <h2><strong>Report services request</strong></h2>
+    </div>
+
+<!-- Filter Form -->
+<div class="block full">
+    <form method="POST" action="{% url 'reportCase' %}" class="form-inline">
+        {% csrf_token %}
+        <div class="form-group">
+            <label for="start_date">Report date from:</label>
+            <input style="margin-left: 10px;" type="date" id="start_date" name="start_date" class="form-control" value="{{ start_date }}">        
+        </div>
+        <div class="form-group">
+            <label for="end_date" style="margin-left: 10px;">to:</label>
+            <input style="margin-left: 10px;" type="date" id="end_date" name="end_date" class="form-control" value="{{ end_date }}">
+        </div>
+            <!-- Add Assign Name Dropdown -->
+        <div class="form-group">
+            <label for="assign_name" style="margin-left: 10px;">Assign Name:</label>
+            <select style="margin-left: 10px;" id="assign_name" name="assign_name" class="form-control">
+                <option value="">-- Select Assign Name --</option>
+                {% for member in members %}
+                    <option value="{{ member.username }}">
+                        {{ member.first_name }} {{ member.last_name }}
+                    </option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="form-group">
+            <label for="status" style="margin-left: 10px;">Status:</label>
+            <select style="margin-left: 10px;" id="status" name="status" class="form-control">
+                <option value="">-- Select Status --</option>
+                {% for status in status %}
+                    <option value="{{ status.id }}">
+                        {{ status.name }}
+                    </option>
+                {% endfor %}
+            </select>
+        </div>
+        <button style="margin-left: 10px;" type="submit" class="btn btn-primary">Search</button>
+        <a href="{% url 'reportCase' %}" class="btn btn-warning">Clear</a>
+    </form>
+</div>
+
+    <!-- Data Table -->
+<div class="table-responsive">
+    <table id="ecom-products" class="table table-bordered table-striped table-vcenter table-hover">
+    <h2 class="text-center"><strong>Report services request </strong></h2>
+        <h3 class="text-center"><strong>Form</strong> {{ start_date|date:"d-m-Y" }} <strong>To</strong> {{ end_date|date:"d-m-Y" }}</h3><br>
+        <a href="{% url 'export_csv' %}" class="btn btn-success">
+            <i class="fa fa-download"></i> CSV
+        </a>
+        <!-- <button id="print-button" style="margin-left: 5px;" class="btn btn-success" onclick="printPage()">
+            <i class="fa fa-print"></i> Print
+        </button>      -->
+    <thead>
+        <tr>
+            <th class="text-center" style="width: 70px;">No.</th>
+            <th class="hidden-xs text-center">Type</th>
+            <th class="hidden-xs text-center">Description</th>
+            <th class="hidden-xs text-center">Name</th>
+            <th class="hidden-xs text-center">Create Date</th>
+            <th class="hidden-xs text-center">Receive Date</th>
+            <th class="hidden-xs text-center">Complete Date</th>
+            <th class="hidden-xs text-center">Company</th>
+            <th class="hidden-xs text-center">Assign name</th>
+            <th class="hidden-xs text-center">Status</th>
+            <th class="hidden-xs text-center">Score</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for case in cases %}
+        <tr>
+            <td class="text-center">{{ forloop.counter }}</td>
+            <td class="text-center hidden-xs">{{ case.category.name }}</td>
+            <td class="text-left hidden-xs">{{ case.case_detail | striptags | safe }}</td>
+            <td class="text-center hidden-xs">{{ case.name }}</td>
+            <td class="text-center hidden-xs">{{ case.date_created|date:"d-m-Y" }}, {{ case.date_created|date:"H:i" }}</td>
+            <td class="text-center hidden-xs">
+                {%if not case.receive_date == None %}
+                    {{ case.receive_date|date:"d-m-Y" }}, {{ case.receive_date|date:"H:i" }}
+                {%else%}
+                {%endif%}         
+            </td>
+            <td class="text-center hidden-xs">
+                {%if not case.complete_date == None %}
+                    {{ case.complete_date|date:"d-m-Y" }}, {{ case.complete_date|date:"H:i" }}
+                {%else%}
+                {%endif%}    
+            </td>
+            <td class="text-center hidden-xs">{{ case.branch.branch_name }}</td>
+            <td class="text-center hidden-xs">{{ case.assign_name_full   }}</td>
+            <td class="text-center hidden-xs">{{ case.status.name }}
+            <td class="text-center hidden-xs">{{ case.score|default_if_none:""  }}
+                <!-- {% if case.status_id == 1 %}
+                    <button class="btn btn-primary">{{ case.status.name }}</button> 
+                {% elif case.status_id == 2 %}
+                    <button class="btn btn-warning">{{ case.status.name }}</button> 
+                {% elif case.status_id == 3 %}
+                    <button class="btn btn-success">{{ case.status.name }}</button> 
+                {% elif case.status_id == 4 %}
+                    <button class="btn btn-danger">{{ case.status.name }}</button> 
+                {% else %}
+                    <button class="btn btn-secondary">{{ case.status.name }}</button>
+                {% endif %} -->
+            </td>
+        </tr>
+        {% empty %}
+        <tr>
+            <td colspan="10" class="text-center">No data found</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+<script>
+    function printPage() {
+        window.print();
+    }
+</script>
+
+    <!-- END All Products Content -->
+</div>
+</div>
+{% endblock %}

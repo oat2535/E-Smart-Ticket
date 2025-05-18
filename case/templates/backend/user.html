@@ -1,0 +1,70 @@
+{% extends "backend/layout.html" %}
+
+{% block content %}
+
+<!-- ตารางบทความ -->
+<div class="block full">
+    <!-- All Title -->
+    <div class="block-title">
+        <h2>
+            <strong>Members</strong>
+            <a href="{% url 'addUser' %}" class="btn btn-primary btn-sm btn-default" 
+               data-toggle="tooltip" title="Add members" style="margin-left: 10px;">
+                <i class="fa fa-user-plus"></i>
+            </a>
+        </h2>
+    </div>
+    
+    <!-- Title -->
+
+    <!--Content -->
+    <table id="ecom-products"
+        class="table table-bordered table-striped table-vcenter table-hover">
+        <thead>
+            <tr>
+                <th class="text-center" style="width: 70px;">No.</th>
+                <th class="hidden-xs text-center">Username</th>
+                <th class="hidden-xs text-center">First Name</th>
+                <th class="hidden-xs text-center">Last Name</th>
+                <th class="hidden-xs text-center">Company</th>
+                <th class="hidden-xs text-center">Admin</th>
+                <th class="text-center">Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for user in user %}
+            <tr>
+                <td class="text-center">{{forloop.counter}}</td>
+                <td class="text-center hidden-xs">{{user.username}}</td>
+                <td class="text-center hidden-xs">{{user.first_name}}</td>
+                <td class="text-center hidden-xs">{{user.last_name}}</td>
+                <td class="text-center hidden-xs">
+                {% if user.branch %}
+                    {{ user.branch }}
+                {% else %}
+                    &nbsp;  <!-- or just leave it empty to show blank -->
+                {% endif %}</td>
+                <td class="text-center hidden-xs">
+                    {% if user.is_staff %}
+                        <i class="fa fa-check text-success"></i> <!-- ไอคอนติ๊กถูก สีเขียว -->
+                    {% else %}
+                        <i class="fa fa-times text-danger"></i> <!-- ไอคอนกากบาท สีแดง -->
+                    {% endif %}
+                </td>              
+                <td class="text-center">                 
+                    <div class="btn-group btn-group-xs">
+                        <a href="{% url 'editUser' user.id %}" data-toggle="tooltip" title="Edit member"
+                            class="btn btn-default"><i class="fa fa-pencil"></i>
+                        </a>
+                        <a href="{% url 'deleteUser' user.id%}" data-toggle="tooltip" onclick="return confirm('Do you want delete member ?')" title="Delete" class="btn btn-xs btn-danger">
+                            <i class="fa fa-times"></i>
+                        </a>    
+                    </div>                   
+                </td>               
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    <!-- END All Products Content -->
+</div>
+{% endblock %}

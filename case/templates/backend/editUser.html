@@ -1,0 +1,124 @@
+{% extends "backend/layout.html" %}
+
+{% block header %}
+        <!-- CKEditor -->
+        <script src="//cdn.ckeditor.com/4.16.1/standard/ckeditor.js"></script>
+{% endblock %}
+
+{% block content %}
+<div class="block">
+    <!-- Basic Form Elements Title -->
+    <div class="block-title">
+        <h2>
+            <strong>Edit member</strong>
+            <a href="{% url 'editPassword' userEdit.id %}" class="btn btn-primary btn-sm btn-default" 
+                data-toggle="tooltip" title="Change password" style="margin-left: 10px;">
+             <i class="fa fa-key" aria-hidden="true"></i>
+            </a>
+        </h2>
+    </div>
+    <!-- END Form Elements Title -->
+    <!-- Basic Form Elements Content -->
+
+    <!-- {% if messages %}
+    {% for message in messages %}
+        <div class="alert alert-success">{{ message }}</div>
+    {% endfor %}
+{% endif %} -->
+     {% for message in messages %}
+        <p style="color: red;">{{message}}</p>
+     {% endfor %}
+    <form action="{% url 'updateUser' userEdit.id%}" method="POST" id="form-register" class="form-horizontal form-bordered" >
+        {% csrf_token %}
+        <div class="form-group">
+            <div class="col-md-6">    
+                <label for="content" style="display: block; margin-bottom: 5px; font-weight: bold;">
+                    Username
+                </label>         
+                <input type="text" id="name" name="username" class="form-control" placeholder="" value="{{userEdit.username}}" disabled>
+                <input type="hidden" name="username" value="{{ userEdit.username }}">
+            </div>
+            
+            <div class="col-md-6">
+                <label for="content" style="display: block; margin-bottom: 30px; font-weight: bold;">
+                     
+                </label>
+                <!-- checkbox ที่ส่งค่า 1 เมื่อถูกติ๊ก -->
+                <label for="id_is_staff" class="form-check-label">
+                    {{ form.is_staff }}
+                    Staff Status  
+                      <!-- ใช้ {{ form.is_staff }} เพื่อแสดง checkbox -->
+                </label>
+                <!-- hidden input ที่ส่งค่า 0 เมื่อ checkbox ไม่ถูกติ๊ก
+                <input type="hidden" name="permission" value="0"> -->
+            </div>
+        </div>
+
+        <div class="form-group">
+            <div class="col-md-6">  
+                <label for="content" style="display: block; margin-bottom: 5px; font-weight: bold;">
+                    Branch
+                </label>           
+                <select name="branch" class="select-chosen" style="width: 250px;">
+                    <option value="{{userEdit.branch_id}}">{{userEdit.branch}}</option>
+                    {% for branch in branches %}
+                        <option value="{{branch.branch_id}}">{{branch.branch_name}}</option>
+                    {% endfor %}
+                </select>
+                <!-- Input ที่ซ่อนอยู่เพื่อส่งค่ากลับ -->
+                <!-- <input type="hidden" name="branch" value="{{caseEdit.branch_id}}"> -->
+            </div>
+
+           <div class="col-md-6">
+                <label for="content" style="display: block; margin-bottom: 5px; font-weight: bold;">
+                    Tele number
+                </label>
+                <input type="text" id="name" name="phone_number" class="form-control" placeholder="Tele number" value="{{userEdit.phone_number}}">
+                <!-- <input type="hidden" name="mobile" value="{{ userEdit.phone_number }}"> -->
+            </div>  
+        </div>
+
+        <div class="form-group">
+            <div class="col-md-6">
+                <label for="content" style="display: block; margin-bottom: 5px; font-weight: bold;">
+                    First name
+                </label>
+                <input type="text" id="first_name" name="first_name" class="form-control" placeholder="First name" value="{{ userEdit.first_name }}">
+            </div>
+            <div class="col-md-6">
+                <label for="content" style="display: block; margin-bottom: 5px; font-weight: bold;">
+                    Last name
+                </label>
+                <input type="text" id="last_name" name="last_name" class="form-control" placeholder="Last name" value="{{ userEdit.last_name }}">
+            </div>   
+        </div>
+
+        <!-- <div class="form-group">
+            <div class="col-md-6">
+                <label for="password" style="display: block; margin-bottom: 5px; font-weight: bold;">
+                    Password
+                </label>
+                <input type="password" id="login-password" name="password" class="form-control" placeholder="Password">
+            </div>
+            <div class="col-md-6">
+                <label for="repassword" style="display: block; margin-bottom: 5px; font-weight: bold;">
+                    Confirm Password
+                </label>
+                <input type="password" id="repassword" name="repassword" class="form-control" placeholder="Confirm Password">
+            </div>   
+        </div> -->
+
+        <div class="form-group">
+            <div class="col-md-12">
+                <button type="submit" class="btn btn-sm btn-primary">Save</button>
+                <a href="{% url 'displayUser' %}">
+                    <button type="button" class="btn btn-sm btn-danger" style="margin-left: 1px;">
+                        Back
+                    </button>
+                </a>
+            </div>
+        </div>
+    </form>
+    <!-- END Basic Form Elements Content -->
+</div>
+{% endblock%}

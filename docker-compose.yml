@@ -1,0 +1,33 @@
+version: '3'
+
+services:
+  esmartofficejv:
+    container_name: esmartofficejv-python
+    build: .
+    restart: unless-stopped
+    # volumes:
+    #   - ./:/var/www/html:rw
+    # environment:
+    #   - TZ=Asia/Bangkok
+    expose:
+      - "8000"
+    # networks:
+    #   - app_network
+
+  esmartofficejv_nginx:
+    container_name: esmartofficejv-nginx
+    image: nginx:stable-alpine
+    restart: unless-stopped
+    volumes:
+      # - ./:/var/www/html:rw
+      - ./nginx/conf/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/conf.d:/etc/nginx/conf.d:ro
+    environment:
+      - TZ=Asia/Bangkok
+    ports:
+      - "82:82"  # เปิดพอร์ต 80 ให้สามารถเข้าถึงได้จากภายนอก
+    # networks:
+    #   - app_network
+
+# networks:
+#   app_network:

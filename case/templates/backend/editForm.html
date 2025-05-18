@@ -1,0 +1,453 @@
+{% extends "backend/layout.html" %}
+
+{% block content %}
+{% load static %}
+<div class="block">
+    <!-- Basic Form Elements Title -->
+    <div class="block-title">
+        <h2><strong>Manage service request</strong></h2>
+    </div>
+{% for message in messages %}
+    <p style="color: red;">{{message}}</p>
+{% endfor %}
+    <!-- {% if messages %}
+    {% for message in messages %}
+        <div class="alert alert-success">{{ message }}</div>
+    {% endfor %}
+{% endif %} -->
+    <!-- END Form Elements Title -->
+    <!-- Basic Form Elements Content -->
+    <form action="{% url 'updateData' caseEdit.id %}" method="post" enctype="multipart/form-data" class="form-horizontal form-bordered" >
+        {% csrf_token %}
+        <div class="form-group">
+            <div class="col-md-3">  
+                <label for="content" style="display: block; margin-bottom: 5px; font-weight: bold;">
+                    Company 
+                </label>           
+                <select name="branch" class="select-chosen" style="width: 250px;" disabled>
+                    <option value="{{caseEdit.branch_id}}">{{caseEdit.branch}}</option>
+                    {% for branch in branches %}
+                        <option value="{{branch.branch_id}}">{{branch.branch_name}}</option>
+                    {% endfor %}
+                </select>
+                <input type="hidden" name="branch" value="{{caseEdit.branch_id}}">
+            </div>
+
+            <div class="col-md-3">  
+                <label for="content" style="display: block; margin-bottom: 5px; font-weight: bold;">
+                    Department 
+                </label>           
+                <select name="department" class="select-chosen" style="width: 250px;" disabled>
+                    <option value="{{caseEdit.department_id}}">{{caseEdit.department.department_name}}</option>
+                    {% for department in departments %}
+                        <option value="{{department.department_id}}">{{department.department_name}}</option>
+                    {% endfor %}
+                </select>
+                <input type="hidden" name="department" value="{{caseEdit.departmentid}}">
+            </div>
+
+            <div class="col-md-3">  
+                <label for="content" style="display: block; margin-bottom: 5px; font-weight: bold;">
+                    Type 
+                </label> 
+                {% if caseEdit.status_id != 1 or request.user.is_staff %}
+                <select name="category" class="select-chosen" style="width: 250px;" disabled>
+                    <option value="{{caseEdit.category_id}}">{{caseEdit.category}}</option>
+                    {% for category in categories %}
+                        <option value="{{category.id}}">{{category.name}}</option>
+                    {% endfor %}
+                </select>
+                <input type="hidden" name="category" value="{{caseEdit.category_id}}">
+                {%else%}
+                <select name="category" class="select-chosen" style="width: 250px;">
+                    <option value="{{caseEdit.category_id}}">{{caseEdit.category}}</option>
+                    <option value="">--- Please select type ---</option>
+                    {% if caseEdit.department_id == "PUR" %}
+                    {% for categories_pur in categories_pur %}
+                        <option value="{{categories_pur.id}}">{{categories_pur.name}}</option>
+                    {% endfor %}
+                {% else %}
+                    {% for categories_it in categories_it %}
+                        <option value="{{categories_it.id}}">{{categories_it.name}}</option>
+                    {% endfor %}
+                {% endif %}
+                </select>
+                {%endif%}
+            </div>   
+            <div class="col-md-3">  
+                <label for="content" style="display: block; margin-bottom: 5px; font-weight: bold;">
+                    Priority 
+                </label> 
+                {% if caseEdit.status_id != 1 or request.user.is_staff %}          
+                <select name="priority" class="select-chosen" style="width: 250px;" disabled>
+                    <option value="{{caseEdit.priority_id}}">{{caseEdit.priority.priority_name}}</option>
+                    {% for priority in priorities %}
+                        <option value="{{priority.id}}">{{priority.priority_name}}</option>
+                    {% endfor %}
+                </select>
+                <input type="hidden" name="priority" value="{{caseEdit.priority_id}}">
+                {%else%}
+                <select name="priority" class="select-chosen" style="width: 250px;" >
+                    <option value="{{caseEdit.priority_id}}">{{caseEdit.priority.priority_name}}</option>
+                    <option value="">--- Please select priority ---</option>
+                    {% for priority in priorities %}
+                        <option value="{{priority.id}}">{{priority.priority_name}}</option>
+                    {% endfor %}
+                </select>
+                {%endif%}            
+            </div>   
+        </div>
+
+        <div class="form-group">
+            <div class="col-md-4">
+                <label for="content" style="display: block; margin-bottom: 5px; font-weight: bold;">
+                    Name 
+                </label>
+                {% if caseEdit.status_id != 1 or request.user.is_staff %}
+                <input type="text" id="name" name="name" class="form-control" placeholder="Please enter your name" value="{{caseEdit.name}}" disabled>
+                <input type="hidden" name="name" value="{{ caseEdit.name }}">
+                {%else%}
+                <input type="text" id="name" name="name" class="form-control" placeholder="Please enter your name" value="{{caseEdit.name}}">
+                {%endif%}
+            </div>
+            <div class="col-md-4">
+                <label for="content" style="display: block; margin-bottom: 5px; font-weight: bold;">
+                    Tele number 
+                </label>
+                {% if caseEdit.status_id != 1 or request.user.is_staff %}
+                <input type="text" id="name" name="mobile" class="form-control" placeholder="Please enter your Telephone number" value="{{caseEdit.mobile}}" disabled>
+                <input type="hidden" name="mobile" value="{{ caseEdit.mobile }}">
+                {%else%}
+                <input type="text" id="name" name="mobile" class="form-control" placeholder="Please enter your Telephone number" value="{{caseEdit.mobile}}">
+                {%endif%}
+            </div> 
+            <div class="col-md-4">
+                <label for="content" style="display: block; margin-bottom: 5px; font-weight: bold;">
+                    E-mail 
+                </label>
+                {% if caseEdit.status_id != 1 or request.user.is_staff %}
+                <input type="text" id="name" name="email" class="form-control" placeholder="E-mail" value="{{caseEdit.email}}" disabled>
+                <input type="hidden" name="email" value="{{ caseEdit.email }}">
+                {%else%}
+                <input type="text" id="name" name="email" class="form-control" placeholder="E-mail" value="{{caseEdit.email}}">
+                {%endif%}
+            </div>   
+        </div>
+
+        <div class="form-group">
+            <!-- <div class="col-md-4">
+                <label for="content" style="display: block; margin-bottom: 5px; font-weight: bold;">
+                    ชื่อเล่น 
+                </label>
+                <input type="text" id="name" name="nickname" class="form-control" placeholder="ชื่อเครื่องที่แจ้งซ่อม" value="{{caseEdit.nickname}}" disabled>
+                <input type="hidden" name="nickname" value="{{ caseEdit.nickname }}">
+            </div>  -->
+            <div class="col-md-4">
+                <label for="content" style="display: block; margin-bottom: 5px; font-weight: bold;">
+                    Computer name 
+                </label>
+                {% if caseEdit.status_id != 1 or request.user.is_staff %}
+                <input type="text" id="name" name="computer_name" class="form-control" placeholder="Please enter your Computer name" value="{{caseEdit.computer_name}}" disabled>
+                <input type="hidden" name="computer_name" value="{{ caseEdit.computer_name }}">
+                {%else%}
+                <input type="text" id="name" name="computer_name" class="form-control" placeholder="Please enter your Computer name" value="{{caseEdit.computer_name}}">
+                {%endif%}
+            </div>   
+            <div class="col-md-4">
+                <label for="content" style="display: block; margin-bottom: 5px; font-weight: bold;">
+                    IP Address 
+                </label>
+                {% if caseEdit.status_id != 1 or request.user.is_staff %}
+                <input type="text" id="name" name="ip_address" class="form-control" placeholder="IP Address" value="{{caseEdit.ip_address}}" disabled>
+                <input type="hidden" name="ip_address" value="{{ caseEdit.ip_address }}">
+                {%else%}
+                <input type="text" id="name" name="ip_address" class="form-control" placeholder="IP Address" value="{{caseEdit.ip_address}}">
+                {%endif%}
+            </div>
+            <div class="col-md-4">
+                <label for="content" style="display: block; margin-bottom: 5px; font-weight: bold;">
+                    Create datetimes
+                </label>
+                <input type="text" id="name" name="date_created" class="form-control" placeholder="IP Address" value="{{caseEdit.date_created|date:'d M Y, h:i a'}}" disabled>
+            </div>
+        </div>
+        
+        <div class="form-group">
+            <div class="col-md-12">
+                <label for="case_detail" style="display: block; margin-bottom: 5px; font-weight: bold;">
+                    Subject 
+                </label>
+                {% if caseEdit.status_id != 1 or request.user.is_staff %}
+                <input type="text" name="subject_detail" class="form-control" value="{{caseEdit.subject_detail}}" disabled>
+                <input type="hidden" name="subject_detail" value="{{ caseEdit.subject_detail }}">
+                {%else%}
+                <input type="text" name="subject_detail" class="form-control" value="{{caseEdit.subject_detail}}">
+                {%endif%}
+            </div>
+        </div>
+        <div class="form-group">
+            <div class="col-md-12">
+                <label for="case_detail" style="display: block; margin-bottom: 5px; font-weight: bold;">
+                    Description 
+                </label>
+                {% if caseEdit.status_id != 1 or request.user.is_staff %}
+                <textarea type="text" name="case_detail" rows="5" class="form-control" disabled>{{caseEdit.case_detail}}</textarea>
+                <input type="hidden" name="case_detail" value="{{ caseEdit.case_detail }}">
+                {%else%}
+                <textarea type="text" name="case_detail" rows="5" class="form-control">{{caseEdit.case_detail}}</textarea>
+                {%endif%}
+            </div>
+        </div>
+
+        <!-- <script>
+              CKEDITOR.replace('case_detail', {
+                versionCheck: false,  // ปิดการตรวจสอบเวอร์ชัน
+                });
+        </script> -->
+
+        <div class="form-group">
+            <div class="col-md-6">
+                    <label for="content" style="display: block; margin-bottom: 10px; font-weight: bold;">
+                        Images and Files
+                    </label>
+                    {% if caseEdit.image %}
+                        {% if is_case_edit_pdf %}
+                            <a href="{{ caseEdit.image.url }}" target="_blank">
+                                <img src="{% static 'backend/pdf.png' %}" alt="PDF Placeholder" style="width: 100px; height: 100px; ">
+                            </a>
+                        {% else %}
+                            <a href="{{ caseEdit.image.url }}" data-fancybox="gallery">
+                                <img src="{{ caseEdit.image.url }}" alt="Case Edit Image" style="width: 100px; height: 100px;">
+                            </a>
+                        {% endif %}
+                    {% endif %}
+                    {% for img in caseImg %}
+                        {% if img.case_image %}
+                            {% if img.is_pdf %}
+                                <a href="{{ img.case_image.url }}" target="_blank">
+                                    <img src="{% static 'backend/pdf.png' %}" alt="PDF Placeholder" style="width: 100px; height: 100px;">
+                                </a>
+                            {% else %} 
+                                <a href="{{ img.case_image.url }}" data-fancybox="gallery">
+                                    <img src="{{ img.case_image.url }}" alt="Case Image" style="width: 100px; height: 100px;">
+                                </a>
+                            {% endif %}
+                        {% endif %}
+                        {% endfor %}
+                    {% if caseEdit.status_id is None %}
+                    <input type="file" name="image" class="form-control" placeholder="แนบภาพปัญหาที่พบ" value="{{ caseEdit.image }}">
+                    {% endif %}
+            </div>
+            <div class="col-md-6">  
+                <label for="content" style="display: block; margin-bottom: 5px; font-weight: bold;">
+                    Ticket Status <label for="" style="color: red;">*</label>
+                </label>                      
+                <select name="status_id" class="select-chosen" style="width: 250px;" {% if user.is_staff == 0 and caseEdit.status_id != 1 or caseEdit.status_id == 5  %}disabled{% endif %}>
+                    <option value="{{caseEdit.status_id}}">--- {{caseEdit.status}} ---</option>
+                    <option value="">--- Please select status ---</option>
+                    {% if caseEdit.status_id == 1 and not user.is_staff %}
+                        {% for status_user in status_user %}
+                            <option value="{{status_user.id}}">{{status_user.name}}</option>
+                        {% endfor %}
+                    {% else %}
+                        {% for status in status %}
+                            <option value="{{status.id}}">{{status.name}}</option>
+                        {% endfor %}
+                    {% endif %}
+                    <!-- <input type="hidden" name="status_id" value="{{ caseEdit.status_id }}"> -->
+                </select> <h1></h1>
+
+                <label for="content" style="display: block; margin-bottom: 5px; font-weight: bold;">
+                    Category <label for="" style="color: red;">*</label>
+                </label>    
+                <select name="sub_category" class="select-chosen" style="width: 250px;" 
+                {% if not user.is_staff or caseEdit.status_id == 5 or caseEdit.status_id == 4 %}disabled{% endif %}>
+                <option value="{{ caseEdit.sub_category_id }}">
+                    --- {{ caseEdit.sub_category.name }} ---
+                </option>
+                <option value="">--- Please select Category ---</option>
+                {% if caseEdit.category_id == 1 %}
+                    {% for sub_category in sub_categories_1 %}
+                        <option value="{{ sub_category.id }}">
+                            {{ sub_category.name }}
+                        </option>
+                    {% endfor %}
+                
+                {% elif caseEdit.category_id == 2 %}
+                    {% for sub_category in sub_categories_2 %}
+                        <option value="{{ sub_category.id }}">
+                            {{ sub_category.name }}
+                        </option>
+                    {% endfor %}
+                {% endif %}
+                    {% if not caseEdit.sub_category_id != "" or caseEdit.sub_category_id != None %}
+                        <input type="hidden" name="sub_category" value="{{ caseEdit.sub_category_id }}">
+                    {% endif %}                
+            </select><h1></h1>
+            
+
+                {% if caseEdit.status_id != 1 %}
+                <label for="content" style="display: block; margin-bottom: 5px; font-weight: bold;">
+                    Assign name   <label for="" style="color: red;">*</label>
+                </label>           
+                <!-- <select name="assign_name" class="select-chosen" style="width: 250px;" {% if not user.is_staff %}disabled{% endif %}> -->
+                <select name="assign_name" class="select-chosen" style="width: 250px;" {% if user.is_staff == 0 or caseEdit.status_id == 5 or caseEdit.status_id == 4 or caseEdit.status_id == 2 %}disabled{% endif %}>
+                    {% if caseEdit.assign_name != ""%}
+                        <option value="{{caseEdit.assign_name}}" selected>--- {{ assigned_user.first_name }} {{ assigned_user.last_name }} ---</option>
+                    {% endif %}
+                        <option value="">--- Please select assign name ---</option>
+                    {% for assign_name in assign_name %}
+                        <option value="{{assign_name.username}}" {% if assign_name.username == request.POST.assign_name %}selected{% endif %}>{{assign_name.first_name}}  {{assign_name.last_name}}</option>
+                    {% endfor %}
+                <input type="hidden" name="assign_name" value="{{caseEdit.assign_name}}">
+                </select>
+                {%endif%} <h1></h1>
+                       
+                <label for="update_note" style="display: block; margin-bottom: 3px; font-weight: bold;">
+                    Edit details <label for="" style="color: red;">*</label>
+                </label>
+                {% if user.is_staff == 0 or caseEdit.status_id == 5 %}
+                    <textarea type="text" name="update_note" rows="5" class="form-control" disabled>{{caseEdit.update_note}}</textarea>
+                {% else %}
+                    <textarea type="text" name="update_note" rows="5" class="form-control" required>{{caseEdit.update_note}}</textarea>
+                {% endif %}
+                {% if caseEdit.status_id == 5 %}
+                    <input type="hidden" name="update_note" value="{{caseEdit.update_note}}">
+                {% endif %}
+                {% if not user.is_staff %}
+                <input type="hidden" name="update_note" value="{{caseEdit.update_note}}">
+                {% endif %} <h1></h1>
+                
+                {% if caseEdit.status_id == 3 or caseEdit.status_id == 4 or caseEdit.status_id == 5 %}
+                <label for="content" style="display: block; margin-bottom: 5px; font-weight: bold;">
+                    Receive datetimes
+                </label>
+                <input type="text" id="name" name="receive_date" class="form-control"  value="{{caseEdit.receive_date|date:'d M Y, h:i a'}}" disabled>
+                <h1></h1>
+                <label for="content" style="display: block; margin-bottom: 5px; font-weight: bold;">
+                    Complete datetimes
+                </label>
+                <input type="text" id="name" name="complete_date" class="form-control"  value="{{caseEdit.complete_date|date:'d M Y, h:i a'}}" disabled>
+                {%endif%}
+
+                {% if caseEdit.status_id == 2 %}
+                <label for="content" style="display: block; margin-bottom: 5px; font-weight: bold;">
+                    Receive datetimes
+                </label>
+                <input type="text" id="name" name="receive_date" class="form-control"  value="{{caseEdit.receive_date|date:'d M Y, h:i a'}}" disabled>
+                {%endif%}
+
+                {% if caseEdit.status_id == 6 %}
+                <label for="content" style="display: block; margin-bottom: 5px; font-weight: bold;">
+                    Cancel datetimes
+                </label>
+                <input type="text" id="name" name="cancel_date" class="form-control"  value="{{caseEdit.cancel_date|date:'d M Y, h:i a'}}" disabled>
+                {%endif%}
+
+                <!-- {% if caseEdit.status_id == 4 %}
+                <label for="content" style="display: block; margin-bottom: 5px; font-weight: bold;">
+                    Receive datetimes
+                </label>
+                <input type="text" id="name" name="modify_date" class="form-control"  value="{{caseEdit.receive_date|date:'d M Y, h:i a'}}" disabled>
+                <h1></h1>
+                <label for="content" style="display: block; margin-bottom: 5px; font-weight: bold;">
+                    Cancel datetimes
+                </label>
+                <input type="text" id="name" name="satisfied_date" class="form-control"  value="{{caseEdit.satisfied_date|date:'d M Y, h:i a'}}" disabled>
+                {%endif%} -->
+            </div>
+        </div>
+
+        {% if caseEdit.status_id == 4 or caseEdit.status_id == 5  %}
+        <div class="form-group">
+            <div class="col-md-6">
+                <label for="score" style="display: block; margin-bottom: 5px; font-weight: bold; margin-top: 10px;">
+                    Evaluate satisfaction <span style="color: red;">*</span>
+                </label>
+                {% if caseEdit.score == None or caseEdit.feedback == None  %}
+                <!-- Radio Buttons for Rating -->
+                <div>
+                    <label style="margin-left: 5px;"><input type="radio" name="score" value="1"> 1</label>
+                    <label style="margin-left: 5px;"><input type="radio" name="score" value="2"> 2</label>
+                    <label style="margin-left: 5px;"><input type="radio" name="score" value="3"> 3</label>
+                    <label style="margin-left: 5px;"><input type="radio" name="score" value="4"> 4</label>
+                    <label style="margin-left: 5px;"><input type="radio" name="score" value="5"> 5</label>
+                </div>
+        
+                <!-- Textarea for Additional Feedback -->
+                <label for="feedback" style="display: block; margin-top: 10px;">
+                    Additional Feedback
+                </label>
+                <textarea name="feedback" rows="4" class="form-control">{{caseEdit.feedback|default_if_none:""}}</textarea>
+            {% else %}
+            <!-- Radio Buttons for Rating -->
+            <div>
+                <label style="margin-left: 5px;"><input type="radio" name="score" value="1" disabled> 1</label>
+                <label style="margin-left: 5px;"><input type="radio" name="score" value="2" disabled> 2</label>
+                <label style="margin-left: 5px;"><input type="radio" name="score" value="3" disabled> 3</label>
+                <label style="margin-left: 5px;"><input type="radio" name="score" value="4" disabled> 4</label>
+                <label style="margin-left: 5px;"><input type="radio" name="score" value="5" disabled> 5</label>
+            </div> 
+    
+            <!-- Textarea for Additional Feedback -->
+            <label for="feedback" style="display: block; margin-top: 10px;">
+                Additional Feedback
+            </label>
+                <textarea name="feedback" rows="4" class="form-control" disabled>{{caseEdit.feedback}}</textarea>
+            <script>
+                document.addEventListener("DOMContentLoaded", function () {
+                    var selectedScore = "{{caseEdit.score}}"; // ดึงค่าคะแนนที่เลือกไว้
+                    if (selectedScore) {
+                        var radio = document.querySelector('input[name="score"][value="' + selectedScore + '"]');
+                        if (radio) {
+                            radio.checked = true; // ทำให้ radio ถูกเลือก
+                        }
+                    }
+                });
+            </script>
+            {%endif%}
+            </div>
+            <div class="col-md-6">
+            {% if caseEdit.status_id == 3 or caseEdit.status_id == 5 %}
+            <label for="content" style="display: block; margin-bottom: 5px; margin-top: 125px; font-weight: bold;">
+                Satisfaction  datetimes
+            </label>
+            <input type="text" id="name" name="satisfied_date" class="form-control"  value="{{caseEdit.satisfied_date|date:'d M Y, h:i a'}}" disabled>
+            {%endif%}
+        </div>
+        </div>
+        {%endif%} 
+        
+        {% if request.user.is_staff%}
+        <div class="form-group">
+            <div class="col-md-12">
+                {% if caseEdit.status_id != 5 %}
+                <button type="submit" class="btn btn-sm btn-primary">Save</button>
+                {%endif%}
+                <a href="{% url 'case' %}">
+                    <button type="button" class="btn btn-sm btn-danger" style="margin-left: 1px;">
+                        Back
+                    </button>
+                </a>
+            </div>
+        </div>
+        {%else%}
+        <div class="form-group">
+            <div class="col-md-12">
+                {% if caseEdit.status_id == 1 %}
+                    <button type="submit" class="btn btn-sm btn-primary">Save</button>
+                {% elif caseEdit.status_id == 3 and caseEdit.score == "" or caseEdit.feedback == "" %}
+                    <button type="submit" class="btn btn-sm btn-primary">Save</button>
+                {%endif%}
+                <a href="{% url 'case' %}">
+                    <button type="button" class="btn btn-sm btn-danger" style="margin-left: 1px;">
+                        Back
+                    </button>
+                </a>
+            </div>
+        </div>
+        {% endif %}
+    </form>
+    <!-- END Basic Form Elements Content -->
+</div>
+{% endblock%}

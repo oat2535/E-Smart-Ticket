@@ -1,0 +1,84 @@
+{% extends "backend/layout.html" %}
+
+{% block content %}
+{% load static %}
+<!-- ตารางบทความ -->
+<div class="block full">
+    <!-- All Title -->
+    <div class="block-title">
+        <!-- <div class="block-options pull-right">
+            <a href="javascript:void(0)" class="btn btn-alt btn-sm btn-default"
+                data-toggle="tooltip" title="Settings"><i
+                    class="fa fa-cog"></i></a>
+        </div> -->
+        <h2><strong>Additional repair image upload form</strong></h2>
+    </div>
+    {% for message in messages %}
+        <p style="color: red;">{{message}}</p>
+    {% endfor %}
+    <!-- Title -->
+    <form action="{% url 'uloadImages'  addImage.id %}" method="POST" enctype="multipart/form-data" class="form-horizontal form-bordered" >
+        {% csrf_token %}
+        
+        <div class="form-group">
+            <div class="col-md-12">
+                <label for="content" style="display: block; margin-bottom: 5px; font-weight: bold;">
+                    Attach files or images <label for="content" style="color: red;">*</label>
+                </label>
+                <input type="file" name="case_image" class="form-control" placeholder="แนบภาพปัญหาที่พบ" multiple>
+                <label style="color: red; display: block; font-weight: normal; margin-top: 10px;" >** You can only attach files with the extension .jpg, .jpeg, .png, .pdf, Limit file size 10MB only !</label>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <div class="col-md-12">
+                <button type="submit" class="btn btn-sm btn-primary">Save</button>
+                <a href="{% url 'case' %}">
+                    <button type="button" class="btn btn-sm btn-danger" style="margin-left: 1px;">
+                        Back
+                    </button>
+                </a>
+            </div>
+        </div>
+    </form>
+    <!--Content -->
+    <table id="ecom-products"
+        class="table table-bordered table-striped table-vcenter table-hover">
+        <thead>
+            <tr>
+                <th class="text-center" style="width: 70px;">No.</th>
+                <th class="hidden-xs text-center">Images and Files</th>
+                <th class="hidden-xs text-center">Images and file folder</th>
+                <th class="text-center">Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for caseImage in caseImage %}
+            <tr>
+                <td class="text-center">{{forloop.counter}}</td>
+                <td class="text-center">
+                    {% if caseImage.is_pdf %}
+                            <a href="{{ caseImage.case_image.url }}" target="_blank">
+                                <img src="{% static 'backend/pdf.png' %}" alt="PDF Placeholder" style="width: 100px; height: 100px;">
+                            </a>
+                    {% else %}
+                            <a href="{{ caseImage.case_image.url }}" data-fancybox="gallery">
+                                <img src="{{ caseImage.case_image.url }}" alt="Case Image" style="width: 100px; height: 100px;">
+                            </a>
+                    {% endif %}
+                </td>
+                <td class="text-center hidden-xs">{{caseImage.case_image}}</td>
+                <td class="text-center hidden-xs">
+                    <div class="btn-group btn-group-xs">
+                        <a href="{% url 'deleteImage' caseImage.id %}" data-toggle="tooltip" onclick="return confirm('Do you want to delete the data ?')" title="Delete" class="btn btn-xs btn-danger">
+                            <i class="fa fa-times"></i>
+                        </a>
+                    </div>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    <!-- END All Products Content -->
+</div>
+{% endblock %}
