@@ -3,8 +3,18 @@ from django import template
 
 register = template.Library()
 
+#ข้อความยาวเกิน 50 ตัวอักษรจะถูกขึ้นบรรทัดใหม่
+# @register.filter
+# def wrap_50(value):
+#     if not isinstance(value, str):
+#         return value
+#     return '<br>'.join([value[i:i+50] for i in range(0, len(value), 50)])
+
+#ตัดข้อความที่ยาวเกิน 50 ตัวอักษร
 @register.filter
 def wrap_50(value):
     if not isinstance(value, str):
         return value
-    return '<br>'.join([value[i:i+50] for i in range(0, len(value), 50)])
+    if len(value) > 50:
+        return value[:50] + '...'
+    return value

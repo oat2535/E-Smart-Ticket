@@ -61,21 +61,13 @@
                 <td class="text-center hidden-xs">{{case.category.name}}</td>    
             <td class="text-left hidden-xs">
                 <span title="{{ case.subject_detail }}">
-                    {% if case.subject_detail|length > 50 %}
-                    {{ case.subject_detail|slice:":50" }}...
-                    {% else %}
-                    {{ case.subject_detail }}
-                    {% endif %}
+                    {{ case.subject_detail|wrap_50 }}
                 </span>
             </td>
             
             <td class="text-left hidden-xs">
                 <span title="{{ case.case_detail }}">
-                    {% if case.case_detail|length > 50 %}
-                    {{ case.case_detail|slice:":50" }}...
-                    {% else %}
-                    {{ case.case_detail }}
-                    {% endif %}
+                    {{ case.case_detail|wrap_50 }}
                 </span>
             </td>
 
