@@ -2,7 +2,7 @@
 
 {% block content %}
 {% load static %}
-
+{% load custom_filters %}
 <!-- ตารางบทความ -->
 <div class="block full">
     <!-- All Title -->
@@ -61,22 +61,25 @@
                 <td class="text-center hidden-xs">{{case.category.name}}</td>    
             <td class="text-left hidden-xs">
                 <span title="{{ case.subject_detail }}">
-                    {% if case.subject_detail|length > 20 %}
-                    {{ case.subject_detail|slice:":20" }}...
+                    {% if case.subject_detail|length > 50 %}
+                    {{ case.subject_detail|slice:":50" }}...
                     {% else %}
                     {{ case.subject_detail }}
                     {% endif %}
                 </span>
             </td>
+            
             <td class="text-left hidden-xs">
                 <span title="{{ case.case_detail }}">
-                    {% if case.case_detail|length > 20 %}
-                    {{ case.case_detail|slice:":20" }}...
+                    {% if case.case_detail|length > 50 %}
+                    {{ case.case_detail|slice:":50" }}...
                     {% else %}
                     {{ case.case_detail }}
                     {% endif %}
                 </span>
             </td>
+
+
                 <td class="text-left hidden-center">{{case.name}}</td>
                 <td class="text-left hidden-center">{{case.date_created|date:"d-m-Y, h:i a"}}</td>
                 <td class="text-left hidden-center">{{case.branch.branch_name}}</td>

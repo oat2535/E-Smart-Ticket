@@ -19,6 +19,7 @@ from datetime import datetime
 from django.utils import timezone
 from django.urls import reverse
 
+
 # Create your views here.
 @login_required(login_url="member")  # บังคับให้ login ก่อนใช้งาน
 def case(request):
