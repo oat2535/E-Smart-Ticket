@@ -35,62 +35,52 @@
     <!-- Title -->
 
     <!--Content -->
-    <div class="table-responsive">
+    <div class="table-responsive"  style="overflow-x:auto;">
     <table id="ecom-products"
         class="table table-bordered table-striped table-vcenter table-hover">
         <thead>
             <tr>
-                <th class="text-center">No.</th>
+                <th class="text-center" >No.</th>
                 <!-- <th class="hidden-xs text-center">ภาพปัญหา</th> --> 
-                <th class="text-center">Department</th>            
-                <th class="text-center">Type</th>
-                <th class="text-center">Subject</th>
-                <th class="text-center">Description</th>
-                <th class="text-center">Request name</th>
-                <th class="text-center">Request date</th>
-                {% if request.user.is_staff%}
-                <th class="text-center">Company</th> 
-                {%endif%}               
-                <th class="text-center">Status</th>
-                <th class="text-center">Action</th>
+                <th class="hidden-xs text-center">Department</th>            
+                <th class="hidden-xs text-center">Type</th>
+                <th class="hidden-xs text-center">Subject</th>
+                <th class="hidden-xs text-center">Description</th>
+                <th class="hidden-xs text-center">Request name</th>
+                <th class="hidden-xs text-center">Request date</th>             
+                <th class="hidden-xs text-center">Company</th>       
+                <th class="hidden-xs text-center">Status</th>
+                <th class="hidden-xs text-center">Action</th>
             </tr>
         </thead>
         <tbody>
             {% for case in case %}
             <tr>
                 <td class="text-center">{{forloop.counter }}</td>
-                <!-- <td class="text-center">
-                    {% for case_item in case_with_pdf_flag %}
-                        {% if case_item.is_pdf %}
-                            
-                            <a href="{{ case_item.case.image.url }}" target="_blank">
-                                <img src="{% static 'backend/pdf.png' %}" alt="PDF Placeholder" style="width: 100px; height: 100px;">
-                            </a>
-                        {% else %}
-                            
-                            <a href="{{ case_item.case.image.url }}">
-                                <img src="{{ case_item.case.image.url }}" alt="Case Image" style="width: 100px; height: 100px;">
-                            </a>
-                        {% endif %}
-                    {% endfor %}
-                    
-                </td> -->
-                <td class="text-center">{{case.department.department_name}}</td>
-                <td class="text-center">{{case.category.name}}</td>              
-                <td class="text-left">
-                    <!-- {{ case.subject_detail}} -->
-                    {{ case.subject_detail|slice:":100" }}
-                    <!-- {% if case.subject_detail|length > 100 %}<br>{{ case.subject_detail|slice:"100:" }}{% endif %} -->
-                </td>
-                <td class="text-left">{{case.case_detail|slice:":100"}}
-                    {% if case.case_detail|length > 50 %}<br>{{ case.case_detail|slice:"100:" }}{% endif %}
-                </td>
-                <td class="text-center">{{case.name}}</td>
-                <td class="text-center">{{case.date_created|date:"d-m-Y, h:i a"}}</td>
-                {% if request.user.is_staff%}
-                <td class="text-center">{{case.branch.branch_name}}</td>
-                {%endif%}
-                <td class="text-center">
+                <td class="text-center hidden-xs">{{case.department.department_name}}</td>
+                <td class="text-center hidden-xs">{{case.category.name}}</td>    
+            <td class="text-left hidden-xs">
+                <span title="{{ case.subject_detail }}">
+                    {% if case.subject_detail|length > 20 %}
+                    {{ case.subject_detail|slice:":20" }}...
+                    {% else %}
+                    {{ case.subject_detail }}
+                    {% endif %}
+                </span>
+            </td>
+            <td class="text-left hidden-xs">
+                <span title="{{ case.case_detail }}">
+                    {% if case.case_detail|length > 20 %}
+                    {{ case.case_detail|slice:":20" }}...
+                    {% else %}
+                    {{ case.case_detail }}
+                    {% endif %}
+                </span>
+            </td>
+                <td class="text-left hidden-center">{{case.name}}</td>
+                <td class="text-left hidden-center">{{case.date_created|date:"d-m-Y, h:i a"}}</td>
+                <td class="text-left hidden-center">{{case.branch.branch_name}}</td>
+                <td class="text-left hidden-center">
                     {% if case.status_id == 1 %}
                         <button class="btn btn-primary btn-fixed-width">{{ case.status.name }}</button> 
                     {% elif case.status_id == 2 %}
@@ -112,7 +102,7 @@
                     </style>
                 </td>
                           
-                <td class="text-center">                 
+                <td class="text-center hidden-xs">                 
                     <div class="btn-group btn-group-xs">
                         {% if request.user.is_staff == 1 %}
                         <a href="{% url 'editData' case.id %}" data-toggle="tooltip" title="Manage job"

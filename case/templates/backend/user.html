@@ -38,12 +38,7 @@
                 <td class="text-center hidden-xs">{{user.username}}</td>
                 <td class="text-center hidden-xs">{{user.first_name}}</td>
                 <td class="text-center hidden-xs">{{user.last_name}}</td>
-                <td class="text-center hidden-xs">
-                {% if user.branch %}
-                    {{ user.branch }}
-                {% else %}
-                    &nbsp;  <!-- or just leave it empty to show blank -->
-                {% endif %}</td>
+                <td class="text-center hidden-xs">{{ user.branch }}</td>
                 <td class="text-center hidden-xs">
                     {% if user.is_staff %}
                         <i class="fa fa-check text-success"></i> <!-- ไอคอนติ๊กถูก สีเขียว -->
