@@ -3,6 +3,7 @@ from category.models import Category
 from sub_category.models import SubCategory
 from status.models import Status
 from branch.models import Branch
+from sub_branch.models import SubBranch
 from department.models import Department
 from priority.models import Priority
 from django.contrib.auth.models import User
@@ -35,6 +36,7 @@ class Case(models.Model):
     sub_category = models.ForeignKey(SubCategory, on_delete=models.SET_NULL,null=True, blank=True)
     status = models.ForeignKey(Status, on_delete=models.CASCADE,default=1,null=True, blank=True)
     branch = models.ForeignKey(Branch, on_delete=models.CASCADE)
+    sub_branch = models.ForeignKey(SubBranch, on_delete=models.SET_NULL,null=True, blank=True)
     department = models.ForeignKey(Department, on_delete=models.CASCADE)
     priority = models.ForeignKey(Priority, on_delete=models.CASCADE)
     nickname = models.CharField(max_length=255,blank=True)

@@ -7,12 +7,14 @@ from members.models import Members
 from .forms import UserStaffStatusForm
 from branch.models import Branch
 from department.models import Department
+from sub_branch.models import SubBranch
+from django.http import JsonResponse
 
 
 @login_required(login_url="member")
 # Create your views here.
 def displayUser(request):
-    user = Members.objects.all().order_by('-pk')
+    user = Members.objects.all().order_by('-pk').select_related('branch','sub_branch') #ดึงข้อมูลทั้งหมดจากฐานข้อมูล
     create_username = auth.get_user(request) #get user ตามที่ login
 
     return render(request,"backend/user.html",{
@@ -25,13 +27,14 @@ def addUser(request):
     create_username = request.user #get user ตามที่ login
     form = UserStaffStatusForm() 
     branches = Branch.objects.all()
+    sub_branches = SubBranch.objects.all()
     departments = Department.objects.all()
 
     return render(request,"backend/addUser.html",{
         "user":user,
         'create_username':create_username,
         'form':form,'branches':branches,
-        'departments':departments})
+        'departments':departments,'sub_branches':sub_branches})
 
 @login_required(login_url="member")
 def register(request):
@@ -40,6 +43,7 @@ def register(request):
         user = Members.objects.all()
         form = UserStaffStatusForm(request.POST)
         branches = Branch.objects.all()
+        sub_branches = SubBranch.objects.all()
         departments = Department.objects.all()
   
         username = request.POST["username"]
@@ -48,6 +52,7 @@ def register(request):
         password = request.POST["password"] 
         repassword = request.POST["repassword"]
         branch = request.POST["branch"]
+        sub_branches = request.POST["sub_branch"]
         phone_number = request.POST["phone_number"]
         department = request.POST.get("department", "").strip() 
         is_staff = request.POST.get("is_staff")  # รับค่าจากฟอร์ม
@@ -58,7 +63,22 @@ def register(request):
             return redirect("addUser")
         
         elif not branch:
-            messages.info(request, "กรุณาเลือกสาขา !")
+            messages.info(request, "กรุณาเลือก Company !")
+            return render(request,"backend/addUser.html", {
+                "form": form,
+                "username": username,
+                "first_name": first_name,
+                "last_name": last_name,
+                "password": password,
+                "repassword": repassword,
+                "phone_number": phone_number,
+                "is_staff": is_staff,
+                "branches": branches,
+                "departments": departments,
+                "selected_department": department  # เพิ่มข้อมูลแผนกที่เลือกไว้
+            })
+        elif not sub_branches:
+            messages.info(request, "กรุณาเลือก Branch !")
             return render(request,"backend/addUser.html", {
                 "form": form,
                 "username": username,
@@ -132,6 +152,7 @@ def register(request):
                         first_name = first_name,
                         last_name = last_name,
                         branch_id = branch,
+                        sub_branch_id = sub_branches,
                         phone_number = phone_number,
                         password = password,
                         department_id=department_id  # ใช้ค่า department_id
@@ -159,11 +180,13 @@ def editUser(request,id):
     create_username = auth.get_user(request) #get user ตามที่ login 
     form = UserStaffStatusForm(instance=userEdit) 
     branches = Branch.objects.all()
+    sub_branches = SubBranch.objects.filter(branch_id=userEdit.branch_id)
 
     return render(request,"backend/editUser.html",{
         "userEdit":userEdit,
         'create_username':create_username,
-        'form':form,'branches':branches})
+        'form':form,'branches':branches,
+        'sub_branches':sub_branches})
 
 @login_required(login_url="member")
 def updateUser(request,id):
@@ -177,6 +200,7 @@ def updateUser(request,id):
         first_name = request.POST["first_name"]
         last_name = request.POST["last_name"]
         branch = request.POST["branch"]
+        sub_branch = request.POST["sub_branch"]
         phone_number = request.POST["phone_number"]
         # permission = request.POST["permission"]
 
@@ -186,6 +210,7 @@ def updateUser(request,id):
             user.first_name = first_name
             user.last_name = last_name 
             user.branch_id = branch
+            user.sub_branch_id = sub_branch
             user.phone_number = phone_number
             # # กำหนดสิทธิ์ผู้ใช้ (is_staff) ตามค่า permission ที่ส่งมาจากฟอร์ม
             # if permission == "1":  # ถ้า checkbox ถูกติ๊ก (permission ส่งค่าเป็น '1')
@@ -258,3 +283,9 @@ def updatePassword(request, id):
             return redirect("editPassword", id=id)
 
     return redirect("displayUser")
+
+
+def load_subbranches(request):
+    branch_id = request.GET.get('branch_id')
+    subbranches = SubBranch.objects.filter(branch_id=branch_id).values('sub_branch_id', 'sub_branch_name')
+    return JsonResponse(list(subbranches), safe=False)

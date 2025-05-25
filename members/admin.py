@@ -2,7 +2,7 @@ from django.contrib import admin
 from .models import Members
 
 class TaskMembers(admin.ModelAdmin):
-    list_display=["username","first_name","last_name","email","phone_number","branch_id"] #แสดงข้อมูลในหน้า Admin
+    list_display=["username","first_name","last_name","email","phone_number","branch_id","sub_branch_id"] #แสดงข้อมูลในหน้า Admin
 
 
 # Register your models here.

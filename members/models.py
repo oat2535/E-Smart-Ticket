@@ -1,6 +1,7 @@
 from django.contrib.auth.models import AbstractUser
 from django.db import models
 from branch.models import Branch
+from sub_branch.models import SubBranch
 from department.models import Department
 from django.utils import timezone
 from django.contrib.auth.signals import user_logged_in
@@ -11,6 +12,7 @@ class Members(AbstractUser):
     phone_number = models.CharField(max_length=255, blank=True, null=True)
     address = models.TextField(blank=True, null=True)
     branch = models.ForeignKey(Branch, on_delete=models.CASCADE, blank=True, null=True)
+    sub_branch = models.ForeignKey(SubBranch, on_delete=models.CASCADE, blank=True, null=True)
     department = models.ForeignKey(Department, on_delete=models.CASCADE, blank=True, null=True)
 
     is_staff = models.IntegerField(choices=[(0, 'False'), (1, 'True')], default=0)

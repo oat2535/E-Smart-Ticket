@@ -19,19 +19,103 @@
     <form action="{% url 'register' %}" method="POST" id="form-register" class="form-horizontal form-bordered" >
         {% csrf_token %}
         <div class="form-group">
-            <div class="col-md-4">     
-                <label for="content" style="display: block; margin-bottom: 5px; font-weight: bold;">
-                    Branch <label for="" style="color: red;">*</label>
-                </label>        
-                <select name="branch" class="select-chosen" style="width: 250px;">
-                    <option value="" {% if selected_branch == "" %}selected{% endif %}>-- Please select branch --</option>
+            <!-- <div class="col-md-2">     
+                        <label for="content" style="display: block; margin-bottom: 5px; font-weight: bold;">
+                            Company <label for="" style="color: red;">*</label>
+                        </label>        
+                        <select name="branch" class="select-chosen" style="width: 250px;">
+                            <option value="" {% if selected_branch == "" %}selected{% endif %}>-- Please select company --</option>
+                            {% for branch in branches %}
+                                <option value="{{ branch.branch_id }}" {% if branch.branch_id == selected_branch %}selected{% endif %}>{{ branch.branch_name }}</option>
+                            {% endfor %}
+                        </select>                
+                    </div>
+        
+                    <div class="col-md-2">     
+                        <label for="content" style="display: block; margin-bottom: 5px; font-weight: bold;">
+                            Branch <label for="" style="color: red;">*</label>
+                        </label>        
+                        <select name="sub_branch" class="select-chosen" style="width: 250px;">
+                            <option value="" {% if selected_sub_branch == "" %}selected{% endif %}>-- Please select branch --</option>
+                            {% for sub_branches in sub_branches %}
+                                <option value="{{ sub_branches.sub_branch_id }}" {% if sub_branches.sub_branch_id == selected_sub_branch %}selected{% endif %}>{{ sub_branches.sub_branch_name }}</option>
+                            {% endfor %}
+                        </select>                
+                    </div> -->
+        
+            <!-- Company -->
+            <div class="col-md-2">
+                <label style="display: block; margin-bottom: 5px; font-weight: bold;">
+                    Company <label style="color: red;">*</label>
+                </label>
+                <select name="branch" id="branch-select" class="select-chosen" style="width: 250px;">
+                    <option value="">-- Please select company --</option>
                     {% for branch in branches %}
-                        <option value="{{ branch.branch_id }}" {% if branch.branch_id == selected_branch %}selected{% endif %}>{{ branch.branch_name }}</option>
+                    <option value="{{ branch.branch_id }}" {% if branch.branch_id|stringformat:"s" == selected_branch|stringformat:"s" %}selected{% endif %}>
+                        {{ branch.branch_name }}
+                    </option>
                     {% endfor %}
-                </select>                
+                </select>
             </div>
+        
+            <!-- Branch -->
+            <div class="col-md-2">
+                <label style="display: block; margin-bottom: 5px; font-weight: bold;">
+                    Branch <label style="color: red;">*</label>
+                </label>
+                <select name="sub_branch" id="sub-branch-select" class="select-chosen" style="width: 250px;">
+                    <option value="">-- Please select branch --</option>
+                    <!-- {% for sub_branches in sub_branches %}
+                    <option value="{{ sub_branches.sub_branch_id }}" {% if sub_branches.sub_branch_id == selected_sub_branch %}selected{% endif %}>
+                        {{ sub_branches.sub_branch_name }} -->
+                    <!-- </option>
+                    {% endfor %} -->
+                </select>
+            </div>
+        
+            <!-- เปลี่ยน Branch ตาม Company ที่เลือก -->
+            <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+            <script>
+                $(document).ready(function () {
+                    // Event เมื่อเลือก Company
+                    $('#branch-select').on('change', function () {
+                        var branchId = $(this).val();  // ดึงค่า company ที่เลือก
 
-            <div class="col-md-4">     
+                        $.ajax({
+                            url: "/usermanage/addUser/ajax/load-subbranches/", // Django URL name
+                            data: {
+                                'branch_id': branchId
+                            },
+                            dataType: 'json',
+                            success: function (data) {
+                                var $subBranch = $('#sub-branch-select');
+                                $subBranch.empty(); // ล้าง options เดิม
+
+                                $subBranch.append('<option value="">-- Please select branch --</option>');
+
+                                if (data.length > 0) {
+                                    for (var i = 0; i < data.length; i++) {
+                                        var option = $('<option></option>')
+                                            .attr("value", data[i].sub_branch_id)
+                                            .text(data[i].sub_branch_name);
+                                        $subBranch.append(option);
+                                    }
+                                } else {
+                                    $subBranch.append('<option value="">-- No branch available --</option>');
+                                }
+
+                                // รีเฟรช chosen plugin ถ้าใช้
+                                if ($subBranch.hasClass('select-chosen')) {
+                                    $subBranch.trigger("chosen:updated");
+                                }
+                            }
+
+                        });
+                    });
+                });
+            </script>
+
+            <div class="col-md-2">     
                 <label for="content" style="display: block; margin-bottom: 5px; font-weight: bold;">
                     Department
                 </label>        

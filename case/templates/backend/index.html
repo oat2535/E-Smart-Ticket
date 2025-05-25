@@ -47,8 +47,13 @@
                 <th class="hidden-xs text-center">Subject</th>
                 <th class="hidden-xs text-center">Description</th>
                 <th class="hidden-xs text-center">Request name</th>
-                <th class="hidden-xs text-center">Request date</th>             
-                <th class="hidden-xs text-center">Company</th>       
+                <th class="hidden-xs text-center">Request date</th> 
+                {% if user.is_staff == 1 %}             
+                <th class="hidden-xs text-center">Company</th>  
+                {%endif%}   
+                {% if user.is_staff == 1 or user.is_staff == 0%} 
+                <th class="hidden-xs text-center">Branch</th> 
+                {%endif%}   
                 <th class="hidden-xs text-center">Status</th>
                 <th class="hidden-xs text-center">Action</th>
             </tr>
@@ -74,7 +79,12 @@
 
                 <td class="text-left hidden-center">{{case.name}}</td>
                 <td class="text-left hidden-center">{{case.date_created|date:"d-m-Y, h:i a"}}</td>
-                <td class="text-left hidden-center">{{case.branch.branch_name}}</td>
+                {% if user.is_staff == 1 %}   
+                <td class="text-left hidden-center">{{ case.branch.branch_name|linebreak_after:"โรงพยาบาลสัตว์"|safe }}</td>
+                {%endif%}
+                {% if user.is_staff == 1 or user.is_staff == 0 %}
+                <td class="text-left hidden-center">{{case.sub_branch.sub_branch_name}}</td>
+                {%endif%}
                 <td class="text-left hidden-center">
                     {% if case.status_id == 1 %}
                         <button class="btn btn-primary btn-fixed-width">{{ case.status.name }}</button> 

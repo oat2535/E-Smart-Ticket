@@ -18,3 +18,10 @@ def wrap_50(value):
     if len(value) > 50:
         return value[:50] + '...'
     return value
+
+#ตัดข้อความหลังโรงพยาบาลสัตว์ ให้ขึ้นบรรทัดใหม่
+@register.filter
+def linebreak_after(value, text):
+    if text in value:
+        return value.replace(text, f"{text}<br>")
+    return value

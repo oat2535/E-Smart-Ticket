@@ -27,6 +27,7 @@
                 <th class="hidden-xs text-center">First Name</th>
                 <th class="hidden-xs text-center">Last Name</th>
                 <th class="hidden-xs text-center">Company</th>
+                <th class="hidden-xs text-center">Branch</th>
                 <th class="hidden-xs text-center">Admin</th>
                 <th class="text-center">Action</th>
             </tr>
@@ -39,6 +40,7 @@
                 <td class="text-center hidden-xs">{{user.first_name}}</td>
                 <td class="text-center hidden-xs">{{user.last_name}}</td>
                 <td class="text-center hidden-xs">{{ user.branch }}</td>
+                <td class="text-center hidden-xs">{{ user.sub_branch.sub_branch_name }}</td>
                 <td class="text-center hidden-xs">
                     {% if user.is_staff %}
                         <i class="fa fa-check text-success"></i> <!-- ไอคอนติ๊กถูก สีเขียว -->

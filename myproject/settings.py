@@ -48,7 +48,8 @@ INSTALLED_APPS = [
     'case_image',
     'priority',
     'department',
-    'sub_category'
+    'sub_category',
+    'sub_branch'
 ]
 
 MIDDLEWARE = [

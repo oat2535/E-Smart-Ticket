@@ -5,6 +5,7 @@ from django.contrib import auth,messages #import auth
 from category.models import Category
 from sub_category.models import SubCategory
 from branch.models import Branch
+from sub_branch.models import SubBranch
 from status.models import Status
 from django.core.files.storage import FileSystemStorage #import model อัพโหลด file
 from members.models import Members
@@ -130,6 +131,7 @@ def displayForm(request):
             'categories_it': categories_it,
             'categories_pur': categories_pur,
             'categories_fin': categories_fin,
+            
         }
     )
 
@@ -153,6 +155,7 @@ def insertData(request):
             case_detail = request.POST["case_detail"]
             create_username = auth.get_user(request)
             branch = request.user.branch_id
+            sub_branch = request.user.sub_branch_id
             department = request.POST["department"]
             priority = request.POST["priority"]
             subject_detail = request.POST["subject_detail"]
@@ -395,10 +398,10 @@ def insertData(request):
             status_id = 1
             case = Case(
                 email=email, subject_detail=subject_detail, department_id=department,
-                priority_id=priority, branch_id=branch, category_id=category, name=name,
+                priority_id=priority, branch_id=branch, sub_branch_id=sub_branch, category_id=category, name=name,
                 mobile=mobile, ip_address=ip_address, computer_name=computer_name,
                 case_detail=case_detail, create_username=create_username,
-                status_id=status_id, image=img_url if img_url else None, ticket_number=ticket_number  # ถ้าไม่มีไฟล์ให้เป็น None
+                status_id=status_id, image=img_url if img_url else None, ticket_number=ticket_number,   # ถ้าไม่มีไฟล์ให้เป็น None
             )
             case.save()
             if source == "blogFormIT":
@@ -452,6 +455,7 @@ def editData(request,id):
     sub_categories_1 = SubCategory.objects.filter(category_id=1)
     sub_categories_2 = SubCategory.objects.filter(category_id=2)
     branches = Branch.objects.all()
+    sub_branches = SubBranch.objects.all()
     status = Status.objects.exclude(id__in=[4, 5]).order_by('pk')
     status_user = Status.objects.exclude(id__in=[2, 3, 4, 5]).order_by('pk')
     assign_name = Members.objects.filter(is_staff=1).exclude(username="admin")
@@ -476,6 +480,7 @@ def editData(request,id):
         'status_user':status_user,
         'assign_name':assign_name,
         'assigned_user':assigned_user,
+        'sub_branches':sub_branches,
         'modify_username':modify_username,
         "is_case_edit_pdf": is_case_edit_pdf})
 

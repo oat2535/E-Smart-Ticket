@@ -34,7 +34,7 @@
     <form action="{% url 'updateData' caseEdit.id %}" method="post" enctype="multipart/form-data" class="form-horizontal form-bordered" >
         {% csrf_token %}
         <div class="form-group">
-            <div class="col-md-3">  
+            <div class="col-md-2">  
                 <label for="content" style="display: block; margin-bottom: 5px; font-weight: bold;">
                     Company 
                 </label>           
@@ -47,7 +47,20 @@
                 <input type="hidden" name="branch" value="{{caseEdit.branch_id}}">
             </div>
 
-            <div class="col-md-3">  
+            <div class="col-md-2">  
+                <label for="content" style="display: block; margin-bottom: 5px; font-weight: bold;">
+                    Branch 
+                </label>           
+                <select name="branch" class="select-chosen" style="width: 250px;" disabled>
+                    <option value="{{caseEdit.branch_id}}">{{caseEdit.sub_branch|default_if_none:""}}</option>
+                    {% for sub_branch in sub_branch %}
+                        <option value="{{sub_branch.sub_branch_id}}">{{sub_branch.sub_branch_name|default_if_none:""}}</option>
+                    {% endfor %}
+                </select>
+                <input type="hidden" name="branch" value="{{caseEdit.branch_id}}">
+            </div>
+
+            <div class="col-md-2">  
                 <label for="content" style="display: block; margin-bottom: 5px; font-weight: bold;">
                     Department 
                 </label>           
@@ -60,7 +73,7 @@
                 <input type="hidden" name="department" value="{{caseEdit.departmentid}}">
             </div>
 
-            <div class="col-md-3">  
+            <div class="col-md-2">  
                 <label for="content" style="display: block; margin-bottom: 5px; font-weight: bold;">
                     Type 
                 </label> 
@@ -88,7 +101,7 @@
                 </select>
                 {%endif%}
             </div>   
-            <div class="col-md-3">  
+            <div class="col-md-2">  
                 <label for="content" style="display: block; margin-bottom: 5px; font-weight: bold;">
                     Priority 
                 </label> 
@@ -378,7 +391,7 @@
                 <label for="score" style="display: block; margin-bottom: 5px; font-weight: bold; margin-top: 10px;">
                     Evaluate satisfaction <span style="color: red;">*</span>
                 </label>
-                {% if caseEdit.score == None or caseEdit.feedback == None  %}
+                {% if user.is_staff == 0 and caseEdit.score == None and caseEdit.feedback == None  %}
                 <!-- Radio Buttons for Rating -->
                 <div>
                     <label style="margin-left: 5px;"><input type="radio" name="score" value="1"> 1</label>
@@ -386,6 +399,12 @@
                     <label style="margin-left: 5px;"><input type="radio" name="score" value="3"> 3</label>
                     <label style="margin-left: 5px;"><input type="radio" name="score" value="4"> 4</label>
                     <label style="margin-left: 5px;"><input type="radio" name="score" value="5"> 5</label>
+                    <label style="margin-left: 5px;"><input type="radio" name="score" value="5" > 5</label>
+                    <label style="margin-left: 5px;"><input type="radio" name="score" value="6" > 6</label>
+                    <label style="margin-left: 5px;"><input type="radio" name="score" value="7" > 7</label>
+                    <label style="margin-left: 5px;"><input type="radio" name="score" value="8" > 8</label>
+                    <label style="margin-left: 5px;"><input type="radio" name="score" value="9" > 9</label>
+                    <label style="margin-left: 5px;"><input type="radio" name="score" value="10" > 10</label>
                 </div>
         
                 <!-- Textarea for Additional Feedback -->
@@ -401,13 +420,18 @@
                 <label style="margin-left: 5px;"><input type="radio" name="score" value="3" disabled> 3</label>
                 <label style="margin-left: 5px;"><input type="radio" name="score" value="4" disabled> 4</label>
                 <label style="margin-left: 5px;"><input type="radio" name="score" value="5" disabled> 5</label>
+                <label style="margin-left: 5px;"><input type="radio" name="score" value="6" disabled> 6</label>
+                <label style="margin-left: 5px;"><input type="radio" name="score" value="7" disabled> 7</label>
+                <label style="margin-left: 5px;"><input type="radio" name="score" value="8" disabled> 8</label>
+                <label style="margin-left: 5px;"><input type="radio" name="score" value="9" disabled> 9</label>
+                <label style="margin-left: 5px;"><input type="radio" name="score" value="10" disabled> 10</label>
             </div> 
     
             <!-- Textarea for Additional Feedback -->
             <label for="feedback" style="display: block; margin-top: 10px;">
                 Additional Feedback
             </label>
-                <textarea name="feedback" rows="4" class="form-control" disabled>{{caseEdit.feedback}}</textarea>
+                <textarea name="feedback" rows="4" class="form-control" disabled>{{caseEdit.feedback|default_if_none:""}}</textarea>
             <script>
                 document.addEventListener("DOMContentLoaded", function () {
                     var selectedScore = "{{caseEdit.score}}"; // ดึงค่าคะแนนที่เลือกไว้
