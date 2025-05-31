@@ -44,6 +44,7 @@ class Case(models.Model):
     feedback = models.TextField(null=True, blank=True)
     cancel_date = models.DateTimeField(null=True, blank=True, default=None)
     cancel_name = models.CharField(max_length=255,blank=True)
+    product_receive_date = models.CharField(null=True, blank=True, default=None)
 
     class Meta:
         db_table = "case_list"  # กำหนดชื่อ table ในฐานข้อมูล

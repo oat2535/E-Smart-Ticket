@@ -98,7 +98,7 @@
                                         <li>
                                             <a class="fa fa-laptop" href="{% url 'displayForm' %}?department_id=IT"> IT </a>
                                             <a class="fa fa-product-hunt" href="{% url 'displayForm' %}?department_id=PUR"> Purchasing </a>
-                                            <a class="fa fa-money" aria-hidden="true" href="{% url 'displayForm' %}?department_id=FIN"> Accounting </a>
+                                            <!-- <a class="fa fa-money" aria-hidden="true" href="{% url 'displayForm' %}?department_id=FIN"> Accounting </a> -->
                                         </li>
                                     </ul>
                                 </li>
@@ -249,7 +249,7 @@
                         <!-- Mini Top Stats Row -->
                         <div class="row">  
                             {% if request.user.username == "admin"  or request.user.department_id is None %}                                       
-                            <div class="col-sm-4 col-lg-4">
+                            <div class="col-sm-6 col-lg-6">
                                 <!-- Widget -->
                                 <a href="{% url 'case'%}?department_id=IT" class="widget widget-hover-effect1">
                                     <div class="widget-simple">
@@ -288,7 +288,7 @@
                             {% endif %}
 
                             {% if request.user.username == "admin" or request.user.department_id is None %}
-                            <div class="col-sm-4 col-lg-4">
+                            <div class="col-sm-6 col-lg-6">
                                 <!-- Widget -->
                                 <a href="{% url 'case' %}?department_id=PUR" class="widget widget-hover-effect1">
                                     <div class="widget-simple">
@@ -326,9 +326,8 @@
                             </div>
                             {% endif %}
 
-                            {% if request.user.username == "admin" or request.user.department_id is None %}
+                            {% if request.user.username == "admin" %}
                             <div class="col-sm-4 col-lg-4">
-                                <!-- Widget -->
                                 <a href="{% url 'case' %}?department_id=FIN" class="widget widget-hover-effect1">
                                     <div class="widget-simple">
                                         <div
@@ -341,13 +340,11 @@
                                             <small>Accounting</small>
                                         </h3>
                                     </div>
-                                </a>                               
-                                <!-- END Widget -->
-                            </div>
-                            {% endif %}
-                            {%if request.user.department_id == "FIN"%}
+                                </a>                                
+                            </div> 
+                             {% endif %} 
+                             {%if request.user.department_id == "FIN"%}
                             <div class="col-sm-12 col-lg-12">
-                                <!-- Widget -->
                                 <a href="{% url 'case' %}?department_id=FIN" class="widget widget-hover-effect1">
                                     <div class="widget-simple">
                                         <div
@@ -361,7 +358,6 @@
                                         </h3>
                                     </div>
                                 </a>                               
-                                <!-- END Widget -->
                             </div>
                             {% endif %}
 

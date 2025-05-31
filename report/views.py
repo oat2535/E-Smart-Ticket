@@ -78,7 +78,7 @@ def reportCase(request):
         'create_username':create_username,
         'members': members,
         'assign_name': assign_name, 
-        'status':status
+        'status':status,
     }
     return render(request, "backend/report.html",context)
 

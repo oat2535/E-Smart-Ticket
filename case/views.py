@@ -509,7 +509,8 @@ def updateData(request,id):
             modify_username = auth.get_user(request).username
             score = request.POST.get("score")
             feedback = request.POST.get("feedback")
-            print(status)
+            product_receive_date = request.POST.get('product_receive_date')
+            print(f"Product Receive Date: {product_receive_date}")  # Debugging line to check the value
 
             #กรองไฟล์ที่เป็นรูปภาพ
             # if not assign_name:
@@ -550,12 +551,13 @@ def updateData(request,id):
                 case.receive_date = timezone.now().replace(microsecond=0)
                 case.complete_date = timezone.now().replace(microsecond=0)
                 case.assign_name = assign_name
-
-            
+                         
             if status in [1,6]:  
                 case.cancel_date = timezone.now().replace(microsecond=0)
                 case.cancel_name = modify_username
                 case.status_id = status
+            
+
             
             # if status in [1,3]:  # จากสถานะ 1 -> 3
             #     case.receive_date = timezone.now().replace(microsecond=0)  # บันทึกเวลาปัจจุบันใน receive_date
@@ -572,7 +574,11 @@ def updateData(request,id):
             #     case.cancel_date = timezone.now().replace(microsecond=0)  # บันทึกเวลาปัจจุบันใน complete_date
             #     case.assign_name = assign_name
 
-            if status == 3:
+            if status == 3 and case.department_id == "PUR":
+                case.complete_date = timezone.now().replace(microsecond=0)
+                case.status_id = 7
+                case.assign_name = modify_username
+            elif status == 3:
                 case.complete_date = timezone.now().replace(microsecond=0)
                 case.status_id = 4
                 case.assign_name = modify_username
@@ -582,6 +588,13 @@ def updateData(request,id):
                 case.status_id = status
             elif status == 4 and (score is not None or feedback):
                 case.satisfied_date = timezone.now().replace(microsecond=0)
+                case.status_id = 5
+                case.satisfied_name = modify_username
+                case.score = score
+                case.feedback = feedback
+            elif status == 7 and (score is not None or feedback):
+                case.satisfied_date = timezone.now().replace(microsecond=0)
+                case.product_receive_date = product_receive_date
                 case.status_id = 5
                 case.satisfied_name = modify_username
                 case.score = score
