@@ -26,7 +26,7 @@
                     Attach files or images <label for="content" style="color: red;">*</label>
                 </label>
                 <input type="file" name="case_image" class="form-control" placeholder="แนบภาพปัญหาที่พบ" multiple>
-                <label style="color: red; display: block; font-weight: normal; margin-top: 10px;" >** You can only attach files with the extension .jpg, .jpeg, .png, .pdf, Limit file size 10MB only !</label>
+                <label style="color: red; display: block; font-weight: normal; margin-top: 10px;" >** You can only attach files with the extension .jpg, .jpeg, .png, .pdf, .xls, .xlsx, .csv, Limit file size 10MB only !</label>
             </div>
         </div>
 
@@ -48,7 +48,7 @@
             <tr>
                 <th class="text-center" style="width: 70px;">No.</th>
                 <th class="hidden-xs text-center">Images and Files</th>
-                <th class="hidden-xs text-center">Images and file folder</th>
+                <th class="hidden-xs text-center">Images and Files Name</th>
                 <th class="text-center">Action</th>
             </tr>
         </thead>
@@ -61,13 +61,17 @@
                             <a href="{{ caseImage.case_image.url }}" target="_blank">
                                 <img src="{% static 'backend/pdf.png' %}" alt="PDF Placeholder" style="width: 100px; height: 100px;">
                             </a>
+                    {% elif caseImage.is_excel %}
+                            <a href="{{ caseImage.case_image.url }}" target="_blank">
+                                <img src="{% static 'backend/excel.png' %}" alt="PDF Placeholder" style="width: 100px; height: 100px;">
+                            </a>
                     {% else %}
                             <a href="{{ caseImage.case_image.url }}" data-fancybox="gallery">
                                 <img src="{{ caseImage.case_image.url }}" alt="Case Image" style="width: 100px; height: 100px;">
                             </a>
                     {% endif %}
                 </td>
-                <td class="text-center hidden-xs">{{caseImage.case_image}}</td>
+                <td class="text-center hidden-xs">{{caseImage.case_image|cut:'caseGallery/'}}</td>
                 <td class="text-center hidden-xs">
                     <div class="btn-group btn-group-xs">
                         <a href="{% url 'deleteImage' caseImage.id %}" data-toggle="tooltip" onclick="return confirm('Do you want to delete the data ?')" title="Delete" class="btn btn-xs btn-danger">

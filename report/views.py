@@ -8,7 +8,10 @@ import csv
 from django.http import HttpResponse
 from members.models import Members
 from status.models import Status
+from branch.models import Branch
+from sub_branch.models import SubBranch
 from django.db.models import Q
+from django.http import JsonResponse
 
 # Create your views here.
 
@@ -21,6 +24,8 @@ def reportCase(request):
     start_date = request.POST.get('start_date')
     end_date = request.POST.get('end_date')
     assign_name = request.POST.get('assign_name')
+    branch_id = request.POST.get('branch_id')
+    sub_branch_id = request.POST.get('sub_branch_id')
     status = request.POST.get('status')
     # ตรวจสอบค่าเริ่มต้นของ start_date และ end_date
     cases = Case.objects.none()  # กำหนดค่าเริ่มต้นเป็น queryset ว่าง
@@ -59,6 +64,12 @@ def reportCase(request):
     
     if status:
         cases = cases.filter(status_id=status)
+    
+    if branch_id:
+        cases = cases.filter(branch_id=branch_id)
+
+    if sub_branch_id:
+        cases = cases.filter(sub_branch_id=sub_branch_id)
 
     for case in cases:
         # ดึงข้อมูลจาก model Members โดยใช้ assign_name (username) เทียบกับ Members.username
@@ -69,8 +80,20 @@ def reportCase(request):
             case.assign_name_full = ""  # กรณีที่ไม่พบสมาชิก
   
     # ส่งข้อมูลไปยัง Template
-    members = Members.objects.filter(Q(is_staff=True) & ~Q(username='admin')) # ดึงข้อมูลสมาชิกทั้งหมด
+    if create_username.is_staff:
+    # กรณี user เป็น staff: filter ตาม department_id
+        members = Members.objects.filter(
+            is_staff=True,
+            department_id=create_username.department_id  # สมมุติว่ามี field นี้
+        ).exclude(username='admin')
+    else:
+        # กรณีไม่ใช่ staff: ดึง staff ทั้งหมด
+        members = Members.objects.filter(
+            is_staff=True
+        ).exclude(username='admin')
     status = Status.objects.all().order_by('pk')
+    branches = Branch.objects.all().order_by('branch_name')
+    sub_branches = SubBranch.objects.all().order_by('sub_branch_name')
     context = {
         'cases': cases,
         'start_date': start_date,
@@ -79,6 +102,8 @@ def reportCase(request):
         'members': members,
         'assign_name': assign_name, 
         'status':status,
+        'branches': branches,
+        'sub_branches': sub_branches,
     }
     return render(request, "backend/report.html",context)
 
@@ -95,13 +120,13 @@ def export_csv(request):
 
     # เขียนข้อมูลใน CSV
     writer = csv.writer(response)
-    writer.writerow(['รหัสเคส', 'ประเภท', 'รายละเอียด', 'ผู้แจ้งซ่อม', 'วันที่แจ้ง', 'วันที่รับเคส', 'วันที่ปิดเคส', 'สาขา', 'สถานะ', 'คะแนน'])  # ใช้หัวข้อภาษาไทย
+    writer.writerow(['รหัสเคส', 'ประเภท', 'รายละเอียด', 'ผู้แจ้งซ่อม', 'วันที่แจ้ง', 'วันที่รับเคส', 'วันที่ปิดเคส', 'Company', 'สาขา', 'สถานะ', 'คะแนน'])  # ใช้หัวข้อภาษาไทย
 
     # ดึงข้อมูลจากฐานข้อมูล
     if request.user.is_staff == 1:
-        cases = Case.objects.select_related('status','branch','category').filter(department_id=department_id).order_by('-pk')
+        cases = Case.objects.select_related('status','branch','category','sub_branch').filter(department_id=department_id).order_by('-pk')
     else :
-        cases = Case.objects.select_related('status','branch','category').filter(create_username=create_username).order_by('-pk')  # ใช้ select_related เพื่อดึงข้อมูล Status พร้อมกัน
+        cases = Case.objects.select_related('status','branch','category','sub_branch').filter(create_username=create_username).order_by('-pk')  # ใช้ select_related เพื่อดึงข้อมูล Status พร้อมกัน
   
     for case in cases:
         date_created = case.date_created.strftime('%d/%m/%Y %H:%M') if case.date_created else ''
@@ -117,8 +142,14 @@ def export_csv(request):
             receive_date,
             complete_date,
             case.branch.branch_name, 
+            case.sub_branch.sub_branch_name, 
             case.status.name,
             case.score
         ])
 
     return response
+
+def load_subbranches(request):
+    branch_id = request.GET.get('branch_id')
+    subbranches = SubBranch.objects.filter(branch_id=branch_id).values('sub_branch_id', 'sub_branch_name')
+    return JsonResponse(list(subbranches), safe=False)

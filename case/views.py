@@ -21,6 +21,7 @@ from django.utils import timezone
 from django.urls import reverse
 
 
+
 # Create your views here.
 @login_required(login_url="member")  # บังคับให้ login ก่อนใช้งาน
 def case(request):
@@ -33,6 +34,7 @@ def case(request):
     caseCountDoing = 0
     caseCountDone = 0
     caseCountSatisfied = 0
+    caseCountReceive = 0
     caseCountIT = 0
     caseCountPUR = 0
     caseCountFIN = 0
@@ -58,7 +60,7 @@ def case(request):
         caseCountPeding = Case.objects.filter(status_id=1, department_id="PUR").count()
         caseCountDoing = Case.objects.filter(status_id=2, department_id="PUR").count()
         caseCountDone = Case.objects.filter(status_id=5, department_id="PUR").count()
-        caseCountSatisfied = Case.objects.filter(status_id=4, department_id="PUR").count()
+        caseCountReceive = Case.objects.filter(status_id=7, department_id="PUR").count()
         caseCountPUR = Case.objects.filter(department_id="PUR").count()
     elif user.department_id == "FIN":  # ถ้าเป็นแอดมิน ให้ดูทั้งหมด
         case = Case.objects.filter(department_id="FIN").order_by('-pk').select_related('status', 'category', 'branch', 'department', 'priority')
@@ -73,6 +75,7 @@ def case(request):
         caseCountDoing = Case.objects.filter(status_id=2, create_username=create_username).count()
         caseCountDone = Case.objects.filter(status_id=5, create_username=create_username).count()
         caseCountSatisfied = Case.objects.filter(status_id=4, create_username=create_username).count()
+        caseCountReceive = Case.objects.filter(status_id=7, department_id="PUR", create_username=create_username).count()
         caseCountIT = Case.objects.filter(department_id="IT", create_username=create_username).count()
         caseCountPUR = Case.objects.filter(department_id="PUR", create_username=create_username).count()
         caseCountFIN = Case.objects.filter(department_id="FIN", create_username=create_username).count()
@@ -100,6 +103,7 @@ def case(request):
         'status_id': status_id,
         'priority': priority,
         'department_id': department_id,
+        'caseCountReceive': caseCountReceive,
     }
     return render(request, "backend/index.html", context)
 
@@ -315,9 +319,22 @@ def insertData(request):
             #         "create_username": create_username
             #     })  
               
+            # รายการของ mimetypes ที่อนุญาต
+            ALLOWED_CONTENT_TYPES = [
+                "image/jpeg", "image/png", "application/pdf",
+                "application/vnd.ms-excel",  # .xls
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",  # .xlsx
+                "text/csv", "application/csv", "application/vnd.ms-excel"  # .csv (บาง browser อาจใช้แบบนี้)
+            ]
+
+            # ขนาดไฟล์สูงสุด (10MB)
+            MAX_FILE_SIZE = 10 * 1024 * 1024  # bytes
+
             if dataFile:  # ตรวจสอบว่าอัปโหลดไฟล์มาหรือไม่
-                if not (str(dataFile.content_type).startswith("image") or str(dataFile.content_type) == "application/pdf"):
+                if dataFile.content_type not in ALLOWED_CONTENT_TYPES:
                     messages.error(request, "ไฟล์ที่อัปโหลดไม่รองรับ กรุณาอัปโหลดไฟล์รูปภาพหรือ PDF เท่านั้น!")
+                if dataFile.size > MAX_FILE_SIZE:
+                    messages.error(request, "ขนาดไฟล์เกิน 10MB กรุณาอัปโหลดไฟล์ที่มีขนาดไม่เกิน 10MB!")
                     if source == "blogFormPUR":
                         return render(request, "backend/blogFormPUR.html", {
                             "name": name,
@@ -448,16 +465,20 @@ def editData(request,id):
     categories_fin = Category.objects.filter(department_id="FIN").order_by('pk')
      # ตรวจสอบไฟล์ PDF
     is_case_edit_pdf = caseEdit.image.name.endswith('.pdf') if caseEdit.image else False
+    is_case_edit_excel = caseEdit.image.name.lower().endswith(('.xls', '.xlsx', '.csv')) if caseEdit.image else False
     for img in caseImg:
-        img.is_pdf = img.case_image.name.endswith('.pdf') if img.case_image else False
+        # filename = img.case_image.name.lower() if img.case_image else ''
+        img.is_pdf = img.case_image.name.endswith('.pdf')
+        img.is_excel = img.case_image.name.endswith(('.xls', '.xlsx', '.csv'))
     categories = Category.objects.all()
     sub_categories = SubCategory.objects.all()
     sub_categories_1 = SubCategory.objects.filter(category_id=1)
     sub_categories_2 = SubCategory.objects.filter(category_id=2)
+    sub_categories_3 = SubCategory.objects.filter(category_id=3)
     branches = Branch.objects.all()
     sub_branches = SubBranch.objects.all()
-    status = Status.objects.exclude(id__in=[4, 5]).order_by('pk')
-    status_user = Status.objects.exclude(id__in=[2, 3, 4, 5]).order_by('pk')
+    status = Status.objects.exclude(id__in=[4, 5, 7]).order_by('pk')
+    status_user = Status.objects.exclude(id__in=[1, 2, 3, 4, 5, 7]).order_by('pk')
     assign_name = Members.objects.filter(is_staff=1).exclude(username="admin")
     assigned_user = Members.objects.filter(username=caseEdit.assign_name).first()
     departments = Department.objects.all()
@@ -475,6 +496,7 @@ def editData(request,id):
         'sub_categories':sub_categories,
         'sub_categories_1':sub_categories_1,
         'sub_categories_2':sub_categories_2,
+        'sub_categories_3':sub_categories_3,
         'branches':branches,
         'status':status,
         'status_user':status_user,
@@ -482,6 +504,8 @@ def editData(request,id):
         'assigned_user':assigned_user,
         'sub_branches':sub_branches,
         'modify_username':modify_username,
+        'score_range' : list(range(1, 11)),
+        'is_case_edit_excel': is_case_edit_excel,
         "is_case_edit_pdf": is_case_edit_pdf})
 
 @login_required(login_url="member")
@@ -507,25 +531,98 @@ def updateData(request,id):
             assign_name = auth.get_user(request).username
             update_note = request.POST.get("update_note", "")
             modify_username = auth.get_user(request).username
-            score = request.POST.get("score")
+            score = request.POST.get("score",0)
             feedback = request.POST.get("feedback")
             product_receive_date = request.POST.get('product_receive_date')
-            print(f"Product Receive Date: {product_receive_date}")  # Debugging line to check the value
 
-            #กรองไฟล์ที่เป็นรูปภาพ
-            # if not assign_name:
-            #     messages.error(request, "กรุณาเลือก ผู้ดำเนินการ!")
-            #     return render(request,"backend/editForm.html", {
-            #         "caseEdit": case,
-            #         "update_note": update_note,
-            #         "status": status,
-            #         "computer_name": computer_name,
-            #         "case_detail": case_detail,
-            #         "assign_name": Members.objects.filter(is_staff=True),
-            #         "selected_assign_name": assign_name
-            #         }) 
-            # else:
+            if status in [4,7] and int(score) == 0 and request.user.is_staff == 0 :
+                messages.error(request, "กรุณาเลือกคะแนนความพึงพอใจ !")
+                caseEdit = Case.objects.select_related('sub_category__category').get(id=id)
+                caseImg = CaseImage.objects.filter(case_id=id)
+                assign_name = Members.objects.filter(is_staff=1).exclude(username="admin")
+                assigned_user = Members.objects.filter(username=caseEdit.assign_name).first()
+
+                for img in caseImg:
+                    img.is_pdf = img.case_image.name.endswith('.pdf')
+                    img.is_excel = img.case_image.name.endswith(('.xls', '.xlsx', '.csv'))
+
+                categories_it = Category.objects.filter(department_id="IT").order_by('pk')
+                categories_pur = Category.objects.filter(department_id="PUR").order_by('pk')
+                categories_fin = Category.objects.filter(department_id="FIN").order_by('pk')
+
+                return render(request, "backend/editForm.html", {
+                    "caseImg": caseImg,
+                    "departments": Department.objects.all(),
+                    "priorities": Priority.objects.all(),
+                    "caseEdit": caseEdit,
+                    'create_username': auth.get_user(request),
+                    'categories': Category.objects.all(),
+                    'categories_it': categories_it,
+                    'categories_pur': categories_pur,
+                    'categories_fin': categories_fin,
+                    'sub_categories': SubCategory.objects.all(),
+                    'sub_categories_1': SubCategory.objects.filter(category_id=1),
+                    'sub_categories_2': SubCategory.objects.filter(category_id=2),
+                    'sub_categories_3': SubCategory.objects.filter(category_id=3),
+                    'branches': Branch.objects.all(),
+                    'status': Status.objects.exclude(id__in=[4, 5, 7]).order_by('pk'),
+                    'status_user': Status.objects.exclude(id__in=[1, 2, 3, 4, 5, 7]).order_by('pk'),
+                    'assign_name': assign_name,
+                    'assigned_user': assigned_user,
+                    'sub_branches': SubBranch.objects.all(),
+                    'modify_username': auth.get_user(request).username,
+                    'feedback': feedback,
+                    "score_range": list(range(1, 11)),
+                    'product_receive_date': product_receive_date,
+                    'is_case_edit_excel': caseEdit.image.name.lower().endswith(('.xls', '.xlsx', '.csv')) if caseEdit.image else False,
+                    "is_case_edit_pdf": caseEdit.image.name.endswith('.pdf') if caseEdit.image else False
+                })
             
+            if status == 7 and not product_receive_date and request.user.is_staff == 0:
+                messages.error(request, "กรุณาเลือกวันรับสินค้า !")
+                caseEdit = Case.objects.select_related('sub_category__category').get(id=id)
+                caseImg = CaseImage.objects.filter(case_id=id)
+                assign_name = Members.objects.filter(is_staff=1).exclude(username="admin")
+                assigned_user = Members.objects.filter(username=caseEdit.assign_name).first()
+
+                for img in caseImg:
+                    img.is_pdf = img.case_image.name.endswith('.pdf')
+                    img.is_excel = img.case_image.name.endswith(('.xls', '.xlsx', '.csv'))
+
+                categories_it = Category.objects.filter(department_id="IT").order_by('pk')
+                categories_pur = Category.objects.filter(department_id="PUR").order_by('pk')
+                categories_fin = Category.objects.filter(department_id="FIN").order_by('pk')
+
+                return render(request, "backend/editForm.html", {
+                    "caseImg": caseImg,
+                    "departments": Department.objects.all(),
+                    "priorities": Priority.objects.all(),
+                    "caseEdit": caseEdit,
+                    'create_username': auth.get_user(request),
+                    'categories': Category.objects.all(),
+                    'categories_it': categories_it,
+                    'categories_pur': categories_pur,
+                    'categories_fin': categories_fin,
+                    'sub_categories': SubCategory.objects.all(),
+                    'sub_categories_1': SubCategory.objects.filter(category_id=1),
+                    'sub_categories_2': SubCategory.objects.filter(category_id=2),
+                    'sub_categories_3': SubCategory.objects.filter(category_id=3),
+                    'branches': Branch.objects.all(),
+                    'status': Status.objects.exclude(id__in=[4, 5, 7]).order_by('pk'),
+                    'status_user': Status.objects.exclude(id__in=[1, 2, 3, 4, 5, 7]).order_by('pk'),
+                    'assign_name': assign_name,
+                    'assigned_user': assigned_user,
+                    'sub_branches': SubBranch.objects.all(),
+                    'modify_username': auth.get_user(request).username,
+                    'feedback': feedback,
+                    "score_range": list(range(1, 11)),
+                    'score': score,
+                    'product_receive_date': product_receive_date,
+                    'is_case_edit_excel': caseEdit.image.name.lower().endswith(('.xls', '.xlsx', '.csv')) if caseEdit.image else False,
+                    "is_case_edit_pdf": caseEdit.image.name.endswith('.pdf') if caseEdit.image else False
+                })
+
+                                
             #อัพเดทข้อมูล
             case.branch_id = branch
             case.category_id = category
@@ -555,24 +652,7 @@ def updateData(request,id):
             if status in [1,6]:  
                 case.cancel_date = timezone.now().replace(microsecond=0)
                 case.cancel_name = modify_username
-                case.status_id = status
-            
-
-            
-            # if status in [1,3]:  # จากสถานะ 1 -> 3
-            #     case.receive_date = timezone.now().replace(microsecond=0)  # บันทึกเวลาปัจจุบันใน receive_date
-            #     case.complete_date = timezone.now().replace(microsecond=0)  # บันทึกเวลาปัจจุบันใน complete_date
-            #     case.assign_name = assign_name
-            #     case.status_id = status
-            # if case.score != "" and case.feedback != "":  # จากสถานะ 4 -> 5
-            #     case.status_id = 5
-            #     case.complete_date = timezone.now().replace(microsecond=0)  # บันทึกเวลาปัจจุบันใน complete_date
-            #     case.assign_name = assign_name
-            
-            # if case.status_id == 1 and status == 4:  # จากสถานะ 1 -> 4
-            #     case.receive_date = timezone.now().replace(microsecond=0)  # บันทึกเวลาปัจจุบันใน receive_date
-            #     case.cancel_date = timezone.now().replace(microsecond=0)  # บันทึกเวลาปัจจุบันใน complete_date
-            #     case.assign_name = assign_name
+                case.status_id = status       
 
             if status == 3 and case.department_id == "PUR":
                 case.complete_date = timezone.now().replace(microsecond=0)
@@ -594,7 +674,13 @@ def updateData(request,id):
                 case.feedback = feedback
             elif status == 7 and (score is not None or feedback):
                 case.satisfied_date = timezone.now().replace(microsecond=0)
-                case.product_receive_date = product_receive_date
+                if product_receive_date:
+                    try:
+                        product_receive_date_dt = datetime.strptime(product_receive_date, "%d %b %Y, %I:%M %p")
+                        case.product_receive_date = product_receive_date_dt
+                    except ValueError:
+                        messages.error(request, "กรุณาเลือกวันที่รับสินค้า")
+                        return redirect("editData", id=id)
                 case.status_id = 5
                 case.satisfied_name = modify_username
                 case.score = score
@@ -634,7 +720,17 @@ def addImages(request,id):
     caseImage = CaseImage.objects.filter(case_id=id)
     create_username = auth.get_user(request) #get user ตามที่ login 
     for img in caseImage:
+        # filename = img.case_image.name.lower() if img.case_image else ''
         img.is_pdf = img.case_image.name.endswith('.pdf') if img.case_image else False
+        img.is_excel = img.case_image.name.endswith(('.xls', '.xlsx', '.csv'))
+    # # ตรวจสอบไฟล์ PDF
+    # is_case_edit_pdf = caseEdit.image.name.endswith('.pdf') if caseEdit.image else False
+    # is_case_edit_excel = caseEdit.image.name.lower().endswith(('.xls', '.xlsx', '.csv')) if caseEdit.image else False
+    # for img in caseImg:
+    #     # filename = img.case_image.name.lower() if img.case_image else ''
+    #     img.is_pdf = img.case_image.name.endswith('.pdf')
+    #     img.is_excel = img.case_image.name.endswith(('.xls', '.xlsx', '.csv'))
+
 
     return render(request,"backend/addImages.html",{
         "addImage":addImage,
@@ -646,37 +742,44 @@ def uloadImages(request, id):
     try:
         if request.method == "POST":
             dataFiles = request.FILES.getlist("case_image")
-            
-            if not dataFiles:
-                messages.error(request, "กรุณาเลือกไฟล์รูปภาพเพื่ออัปโหลด!")
-                return redirect("addImages", id=id)
+
+
+             # ประเภทไฟล์ที่อนุญาต
+            ALLOWED_CONTENT_TYPES = [
+                "image/jpeg", "image/png", "application/pdf",
+                "application/vnd.ms-excel",  # .xls
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",  # .xlsx
+                "text/csv", "application/csv"
+            ]
+
+            # ขนาดไฟล์สูงสุด (10MB)
+            MAX_FILE_SIZE = 10 * 1024 * 1024  # bytes
 
             for dataFile in dataFiles:
-                # ตรวจสอบว่าเป็นไฟล์รูปภาพหรือไม่
-                if not (str(dataFile.content_type).startswith("image") or str(dataFile.content_type) == "application/pdf"):
-                    messages.error(request, "ไฟล์ที่อัปโหลดไม่รองรับ กรุณาอัปโหลดไฟล์รูปภาพหรือ PDF เท่านั้น!")
+                # ✅ ตรวจสอบประเภทไฟล์ (แก้ logic ตรงนี้)
+                if dataFile.content_type not in ALLOWED_CONTENT_TYPES:
+                    messages.error(request, "ประเภทไฟล์ไม่ถูกต้อง! กรุณาอัปโหลดเฉพาะไฟล์รูปภาพ, PDF, Excel หรือ CSV เท่านั้น")
                     return redirect("addImages", id=id)
 
-                 # สร้างชื่อไฟล์ใหม่ด้วยวันที่ปัจจุบัน
+                # ✅ ตรวจสอบขนาดไฟล์
+                if dataFile.size > MAX_FILE_SIZE:
+                    messages.error(request, "ขนาดไฟล์เกิน 10MB กรุณาอัปโหลดไฟล์ที่มีขนาดไม่เกิน 10MB!")
+                    return redirect("addImages", id=id)
+
+                # ✅ ตั้งชื่อไฟล์ใหม่
                 current_date = datetime.now().strftime("%Y%m%d%H%M%S")
                 file_name, file_extension = os.path.splitext(dataFile.name)
                 new_file_name = f"{file_name}_{current_date}{file_extension}"
                 img_url = f"caseGallery/{new_file_name}"
 
-                # บันทึกไฟล์
+                # ✅ บันทึกไฟล์ลง storage
                 fs = FileSystemStorage()
-                filename = fs.save(img_url, dataFile)
+                fs.save(img_url, dataFile)
 
-                # ตรวจสอบว่า img_url ถูกตั้งค่าแล้วหรือไม่
-                if not img_url:
-                    messages.error(request, "ไม่สามารถบันทึกไฟล์ได้!")
-                    return redirect("addImages", id=id)
+                # ✅ บันทึกข้อมูลลงฐานข้อมูล
+                CaseImage.objects.create(case_id=id, case_image=img_url)
 
-                # บันทึกข้อมูลรูปภาพในตาราง case_image
-                case_image = CaseImage(case_id=id, case_image=img_url)
-                case_image.save()
-
-            messages.success(request, "บันทึกข้อมูลสำเร็จ")
+            messages.success(request, "อัปโหลดไฟล์สำเร็จ")
             return redirect("addImages", id=id)
     except Exception as e:
         messages.error(request, f"เกิดข้อผิดพลาด: {e}")
@@ -700,3 +803,4 @@ def deleteImage(request, id):
     except Exception as e:
         messages.error(request, f"เกิดข้อผิดพลาด: {e}")
         return redirect("addImages", id=case_id)
+

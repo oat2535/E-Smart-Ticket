@@ -40,11 +40,11 @@ class Case(models.Model):
     department = models.ForeignKey(Department, on_delete=models.CASCADE)
     priority = models.ForeignKey(Priority, on_delete=models.CASCADE)
     nickname = models.CharField(max_length=255,blank=True)
-    score = models.IntegerField(null=True, blank=True)
+    score = models.IntegerField(null=True, blank=True, default=0)
     feedback = models.TextField(null=True, blank=True)
     cancel_date = models.DateTimeField(null=True, blank=True, default=None)
     cancel_name = models.CharField(max_length=255,blank=True)
-    product_receive_date = models.CharField(null=True, blank=True, default=None)
+    product_receive_date = models.DateTimeField(null=True, blank=True, default=None)
 
     class Meta:
         db_table = "case_list"  # กำหนดชื่อ table ในฐานข้อมูล

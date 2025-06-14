@@ -37,8 +37,34 @@
                 {% endfor %}
             </select>
         </div>
+
+         <div class="form-group">
+                <label for="branch_id" style="margin-left: 10px;">Company:</label>
+                <select style="margin-left: 10px;" id="branch-select" name="branch_id" class="form-control">
+                    <option value="">-- Please select company --</option>
+                    {% for branch in branches %}
+                    <option value="{{ branch.branch_id }}">
+                        {{ branch.branch_name }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+        
+            <!-- Branch -->
+            <div class="form-group">
+               <label for="sub_branch_id" style="margin-left: 10px;">Branch:</label>
+                <select style="margin-left: 10px;" id="sub-branch-select" name="sub_branch_id" class="form-control">
+                    <option value="">-- Please select branch --</option>
+                    <!-- {% for sub_branches in sub_branches %}
+                    <option value="{{ sub_branches.sub_branch_id }}" {% if sub_branches.sub_branch_id == selected_sub_branch %}selected{% endif %}>
+                        {{ sub_branches.sub_branch_name }} -->
+                    <!-- </option>
+                    {% endfor %} -->
+                </select>
+            </div><h2></h2>
+        
         <div class="form-group">
-            <label for="status" style="margin-left: 10px;">Status:</label>
+            <label for="status">Status:</label>
             <select style="margin-left: 10px;" id="status" name="status" class="form-control">
                 <option value="">-- Select Status --</option>
                 {% for status in status %}
@@ -52,6 +78,49 @@
         <a href="{% url 'reportCase' %}" class="btn btn-warning">Clear</a>
     </form>
 </div>
+
+ <!-- เปลี่ยน Branch ตาม Company ที่เลือก -->
+            <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+            <script>
+                $(document).ready(function () {
+                    // Event เมื่อเลือก Company
+                    $('#branch-select').on('change', function () {
+                        var branchId = $(this).val();  // ดึงค่า company ที่เลือก
+
+                        $.ajax({
+                            url: "/report/reportCase/ajax/load-subbranches/", // Django URL name
+                            data: {
+                                'branch_id': branchId
+                            },
+                            dataType: 'json',
+                            success: function (data) {
+                                var $subBranch = $('#sub-branch-select');
+                                $subBranch.empty(); // ล้าง options เดิม
+
+                                $subBranch.append('<option value="">-- Please select branch --</option>');
+
+                                if (data.length > 0) {
+                                    for (var i = 0; i < data.length; i++) {
+                                        var option = $('<option></option>')
+                                            .attr("value", data[i].sub_branch_id)
+                                            .text(data[i].sub_branch_name);
+                                        $subBranch.append(option);
+                                    }
+                                } else {
+                                    $subBranch.append('<option value="">-- No branch available --</option>');
+                                }
+
+                                // รีเฟรช chosen plugin ถ้าใช้
+                                if ($subBranch.hasClass('select-chosen')) {
+                                    $subBranch.trigger("chosen:updated");
+                                }
+                            }
+
+                        });
+                    });
+                });
+            </script>
+
 
     <!-- Data Table -->
 <div class="table-responsive">
@@ -74,6 +143,7 @@
             <th class="hidden-xs text-center">Receive Date</th>
             <th class="hidden-xs text-center">Complete Date</th>
             <th class="hidden-xs text-center">Company</th>
+            <th class="hidden-xs text-center">ฺBranch</th>
             <th class="hidden-xs text-center">Assign name</th>
             <th class="hidden-xs text-center">Status</th>
             <th class="hidden-xs text-center">Score</th>
@@ -84,7 +154,10 @@
         <tr>
             <td class="text-center">{{ forloop.counter }}</td>
             <td class="text-center hidden-xs">{{ case.category.name }}</td>
-            <td class="text-left hidden-xs">{{ case.case_detail | striptags | safe }}</td>
+            <td class="text-left hidden-xs">
+                 <span title="{{ case.case_detail }}">
+                {{ case.case_detail|slice:":20" }}{% if case.case_detail|length > 20 %}...{% endif %}</td>
+                </span>
             <td class="text-center hidden-xs">{{ case.name }}</td>
             <td class="text-center hidden-xs">{{ case.date_created|date:"d-m-Y" }}, {{ case.date_created|date:"H:i" }}</td>
             <td class="text-center hidden-xs">
@@ -100,6 +173,7 @@
                 {%endif%}    
             </td>
             <td class="text-center hidden-xs">{{ case.branch.branch_name }}</td>
+             <td class="text-center hidden-xs">{{ case.sub_branch.sub_branch_name }}</td>
             <td class="text-center hidden-xs">{{ case.assign_name_full   }}</td>
             <td class="text-center hidden-xs">{{ case.status.name }}
             <td class="text-center hidden-xs">{{ case.score|default_if_none:""  }}

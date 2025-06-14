@@ -66,13 +66,13 @@
                 <td class="text-center hidden-xs">{{case.category.name}}</td>    
             <td class="text-left hidden-xs">
                 <span title="{{ case.subject_detail }}">
-                    {{ case.subject_detail|wrap_50 }}
+                    {{ case.subject_detail|slice:":20" }}{% if case.subject_detail|length > 20 %}...{% endif %}
                 </span>
             </td>
             
             <td class="text-left hidden-xs">
                 <span title="{{ case.case_detail }}">
-                    {{ case.case_detail|wrap_50 }}
+                    {{ case.case_detail|slice:":20" }}{% if case.case_detail|length > 20 %}...{% endif %}
                 </span>
             </td>
 
@@ -92,16 +92,16 @@
                         <button class="btn btn-warning btn-fixed-width">{{ case.status.name }}</button> 
                     {% elif case.status_id == 5 %}
                         <button class="btn btn-success btn-fixed-width">{{ case.status.name }}</button> 
-                    {% elif case.status_id == 4 %}
+                    {% elif case.status_id == 4 or case.status_id == 7 %}
                         <button class="btn btn-info btn-fixed-width">{{ case.status.name }}</button> 
                     {% elif case.status_id == 6 %}
-                        <button class="btn btn-danger btn-fixed-width">{{ case.status.name }}</button> 
+                        <button class="btn btn-danger btn-fixed-width">{{ case.status.name }}</button>    
                     {% else %}
                         <button class="btn btn-secondary btn-fixed-width">{{ case.status.name }}</button> 
                     {% endif %}
                     <style>
                         .btn-fixed-width {
-                        min-width: 120px;
+                        min-width: 140px;
                         text-align: center;
                     }
                     </style>
