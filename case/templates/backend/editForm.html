@@ -481,9 +481,9 @@
                     style="display: block; margin-bottom: 5px; margin-top: 125px; font-weight: bold;">
                     Product receive datetimes <span style="color: red;">*</span>
                 </label>
-                <input type="text" id="product_receive_date" name="product_receive_date" class="form-control"
+                <input type="text" id="product_receive_date" name="product_receive_date" class="form-control bg-disabled"
                     value="{{ product_receive_date|default:caseEdit.product_receive_date|date:'j M Y, h:i a' }}" disabled>
-            </div>     
+            </div>   
         {%endif%}
         </div>
         {%endif%}

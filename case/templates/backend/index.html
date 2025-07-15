@@ -46,8 +46,8 @@
                 <th class="hidden-xs text-center">Type</th>
                 <th class="hidden-xs text-center">Subject</th>
                 <th class="hidden-xs text-center">Description</th>
-                <th class="hidden-xs text-center">Request name</th>
-                <th class="hidden-xs text-center">Request date</th> 
+                <th class="hidden-xs text-center">Request <br>Name</th>
+                <th class="hidden-xs text-center">Request <br> Date</th> 
                 {% if user.is_staff == 1 %}             
                 <th class="hidden-xs text-center">Company</th>  
                 {%endif%}   
@@ -78,7 +78,7 @@
 
 
                 <td class="text-left hidden-center">{{case.name}}</td>
-                <td class="text-left hidden-center">{{case.date_created|date:"d-m-Y, h:i a"}}</td>
+                <td class="text-left hidden-center">{{ case.date_created|date:"d-m-Y, h:i a"|linebreak_after:","|safe }}</td>
                 {% if user.is_staff == 1 %}   
                 <td class="text-left hidden-center">{{ case.branch.branch_name|linebreak_after:"โรงพยาบาลสัตว์"|safe }}</td>
                 {%endif%}
