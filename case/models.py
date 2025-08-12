@@ -4,6 +4,7 @@ from sub_category.models import SubCategory
 from status.models import Status
 from branch.models import Branch
 from sub_branch.models import SubBranch
+from members.models import Members
 from department.models import Department
 from priority.models import Priority
 from django.contrib.auth.models import User
@@ -24,7 +25,14 @@ class Case(models.Model):
     image = models.ImageField(upload_to="blogImages",blank=True,null=True)
     create_username = models.CharField(max_length=255)
     date_created = models.DateTimeField()
-    assign_name = models.CharField(max_length=255,blank=True)
+    assign_name = models.ForeignKey(Members,
+        to_field='username',  # อ้างอิงด้วย username
+        on_delete=models.SET_NULL,
+        db_column='assign_name',
+        null=True,
+        blank=True,
+        related_name='assigned_cases'
+    )
     update_note = models.TextField(blank=True)
     modify_date = models.DateTimeField()
     modify_username = models.CharField(max_length=255,blank=True)

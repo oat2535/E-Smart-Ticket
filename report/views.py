@@ -135,16 +135,16 @@ def export_csv(request):
 
         writer.writerow([
             case.id,    
-            case.category.name, 
+            case.category.name if case.category else '',
             case.case_detail,
             case.name, 
             date_created,
             receive_date,
             complete_date,
-            case.branch.branch_name, 
-            case.sub_branch.sub_branch_name, 
-            case.status.name,
-            case.score
+            case.branch.branch_name if case.branch else '',
+            case.sub_branch.sub_branch_name if case.sub_branch else '', 
+            case.status.name if case.status else '',
+            case.score if case.score is not None else ''
         ])
 
     return response

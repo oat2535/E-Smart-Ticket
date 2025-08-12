@@ -15,7 +15,7 @@ from case_image.models import CaseImage
 from datetime import datetime
 import os
 from django.http import HttpResponse
-from django.db.models import Count, Q, Max
+from django.db.models import Count, Q, Max, OuterRef, Subquery
 from datetime import datetime
 from django.utils import timezone
 from django.urls import reverse
@@ -29,6 +29,9 @@ def case(request):
     create_username = user.username  # ผู้ใช้งานที่ login
     branch = Members.objects.select_related('branch').all()
     priority = Priority.objects.all()
+    members_qs = Members.objects.filter(username=OuterRef('assign_name'))
+
+
      # กำหนดค่าเริ่มต้นให้กับตัวแปร
     caseCountPeding = 0
     caseCountDoing = 0
@@ -38,6 +41,7 @@ def case(request):
     caseCountIT = 0
     caseCountPUR = 0
     caseCountFIN = 0
+    caseCountITAssignName = 0
 
     if request.user.username == "admin":  # ถ้าเป็นแอดมิน ให้ดูทั้งหมด
         case = Case.objects.all().order_by('-pk').select_related('status', 'category', 'branch', 'department', 'priority')
@@ -49,12 +53,13 @@ def case(request):
         caseCountPUR = Case.objects.filter(department_id="PUR").count()
         caseCountFIN = Case.objects.filter(department_id="FIN").count()
     elif user.department_id == "IT":  # ถ้าเป็นแอดมิน ให้ดูทั้งหมด
-        case = Case.objects.filter(department_id="IT").order_by('-pk').select_related('status', 'category', 'branch', 'department', 'priority')
+        case = Case.objects.filter(department_id="IT").order_by('-pk').select_related('status', 'category', 'branch', 'department', 'priority', 'assign_name')
         caseCountPeding = Case.objects.filter(status_id=1, department_id="IT").count()
         caseCountDoing = Case.objects.filter(status_id=2, department_id="IT").count()
         caseCountDone = Case.objects.filter(status_id=5, department_id="IT").count()
         caseCountSatisfied = Case.objects.filter(status_id=4, department_id="IT").count()
         caseCountIT = Case.objects.filter(department_id="IT").count()
+        caseCountITAssignName = Case.objects.filter(department_id="IT", assign_name=user).count()
     elif user.department_id == "PUR":  # ถ้าเป็นแอดมิน ให้ดูทั้งหมด
         case = Case.objects.filter(department_id="PUR").order_by('-pk').select_related('status', 'category', 'branch', 'department', 'priority')
         caseCountPeding = Case.objects.filter(status_id=1, department_id="PUR").count()
@@ -82,12 +87,16 @@ def case(request):
 
     status_id = request.GET.get('status_id')
     department_id = request.GET.get('department_id')
+    mycase = request.GET.get('mycase')
 
     if status_id:
         case = case.filter(status_id=status_id)
 
     if department_id:
         case = case.filter(department_id=department_id)
+    
+    if mycase == "1":
+        case = case.filter(assign_name=user)
 
     context = {
         'case': case,
@@ -104,6 +113,8 @@ def case(request):
         'priority': priority,
         'department_id': department_id,
         'caseCountReceive': caseCountReceive,
+        'caseCountITAssignName': caseCountITAssignName,
+        'mycase': mycase,
     }
     return render(request, "backend/index.html", context)
 
@@ -528,7 +539,7 @@ def updateData(request,id):
             case_detail = request.POST["case_detail"]
             email = request.POST["email"]
             status = int(request.POST.get("status_id"))
-            assign_name = auth.get_user(request).username
+            assign_name = Members.objects.get(username=auth.get_user(request).username)
             update_note = request.POST.get("update_note", "")
             modify_username = auth.get_user(request).username
             score = request.POST.get("score",0)
@@ -657,11 +668,11 @@ def updateData(request,id):
             if status == 3 and case.department_id == "PUR":
                 case.complete_date = timezone.now().replace(microsecond=0)
                 case.status_id = 7
-                case.assign_name = modify_username
+                case.assign_name = assign_name
             elif status == 3:
                 case.complete_date = timezone.now().replace(microsecond=0)
                 case.status_id = 4
-                case.assign_name = modify_username
+                case.assign_name = assign_name
             elif status == 2:
                 case.receive_date = timezone.now().replace(microsecond=0)
                 case.assign_name = assign_name

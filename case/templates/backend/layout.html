@@ -50,6 +50,7 @@
                     cursor: not-allowed;
                 }
             </style>
+
         
         {% block header %}
         {% endblock %}
@@ -281,7 +282,7 @@
                             </div>
                             {% endif %}    
                             {%if request.user.department_id == "IT"%}
-                            <div class="col-sm-12 col-lg-12">
+                            <div class="col-sm-6 col-lg-6">
                                 <!-- Widget -->
                                 <a href="{% url 'case'%}?department_id=IT" class="widget widget-hover-effect1">
                                     <div class="widget-simple">
@@ -293,6 +294,23 @@
                                             class="widget-content text-right animation-pullDown">
                                             <strong>{{caseCountIT | intcomma}}  Cases</strong><br>
                                             <small>IT</small>
+                                        </h3>
+                                    </div>
+                                </a> 
+                                <!-- END Widget -->
+                            </div>
+                            <div class="col-sm-6 col-lg-6">
+                                <!-- Widget -->
+                                <a href="{% url 'case'%}?department_id=IT&mycase=1" class="widget widget-hover-effect1">
+                                    <div class="widget-simple">
+                                        <div
+                                            class="widget-icon pull-left themed-background-waterlily animation-fadeIn">
+                                            <i class="bi bi-file-earmark-person"></i>
+                                        </div>
+                                        <h3
+                                            class="widget-content text-right animation-pullDown">
+                                            <strong>{{caseCountITAssignName | intcomma}}  Cases</strong><br>
+                                            <small>My Cases</small>
                                         </h3>
                                     </div>
                                 </a> 

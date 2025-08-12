@@ -161,10 +161,20 @@ USE_TZ = False
 # MEDIA_ROOT = '/app/media/'
 
 # UAT
-STATIC_URL = 'static/'
-STATIC_ROOT = 'static/'
-MEDIA_URL = 'media/'
-MEDIA_ROOT = 'media/'
+# STATIC_URL = 'static/'
+# STATIC_ROOT = 'static/'
+# MEDIA_URL = 'media/'
+# MEDIA_ROOT = 'media/'
+
+BASE_DIR = Path(__file__).resolve().parent.parent
+
+# Static files
+STATIC_URL = '/static/'
+STATIC_ROOT = os.environ.get('STATIC_ROOT', BASE_DIR / 'staticfiles')
+
+# Media files
+MEDIA_URL = '/media/'
+MEDIA_ROOT = os.environ.get('MEDIA_ROOT', BASE_DIR / 'media')
 
 
 # MEDIA_URL = '/media/' #ระบุ path ที่เก็บไฟล์รูป
@@ -196,7 +206,8 @@ SESSION_COOKIE_SECURE = False
 # CSRF_COOKIE_SECURE = True
 
 CSRF_TRUSTED_ORIGINS = [
-    'https://uat-ticket-jv.thonglorpet.com',  # Domain ที่คุณใช้งาน
+    'https://uat-ticket-jv.thonglorpet.com',
+    'https://e-smartticket-jv.thonglorpet.com',  # Domain ที่คุณใช้งาน
     'http://localhost:82',  # เพิ่ม localhost ถ้าใช้งานในเครื่องพัฒนา
 ]
 

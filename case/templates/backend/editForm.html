@@ -427,9 +427,9 @@
             </div>
         </div>
 
-    {% if caseEdit.status_id == 4 or caseEdit.status_id == 5 or caseEdit.status_id == 7 %}  
+    <!-- {% if caseEdit.status_id == 4 or caseEdit.status_id == 5 or caseEdit.status_id == 7 %}   -->
         <div class="form-group">
-            {% if caseEdit.status_id == 4 or caseEdit.status_id == 5 or caseEdit.status_id == 7 %}
+            <!-- {% if caseEdit.status_id == 4 or caseEdit.status_id == 5 or caseEdit.status_id == 7 %} -->
             <div class="col-md-6">
                 <label for="score" style="display: block; margin-bottom: 5px; font-weight: bold; margin-top: 10px;"
                     id="score">
@@ -438,16 +438,19 @@
 
                 {% for i in score_range %}
                 <label style="margin-left: 5px;">
-                <input type="radio" name="score" value="{{ i }}" {% if score|default:caseEdit.score|stringformat:"s" == i|stringformat:"s" %}checked{% endif %} 
-                    {% if not user.is_staff == 0 or caseEdit.score != 0 or caseEdit.status_id == 5 %}disabled{% endif %}> {{ i }}
+                <input type="radio" name="score" value="{{ i }}" 
+                {% if score|default:caseEdit.score|stringformat:"s" == i|stringformat:"s" %}checked{% endif %}> 
+                <!-- {% if not user.is_staff == 0 or caseEdit.score != 0 or caseEdit.status_id == 5 %}disabled{% endif %} -->
+                    {{ i }}
                 </label>
                 {% endfor %}
                 <label for="feedback" style="display: block; margin-top: 10px;">
                     Additional Feedback
                 </label>
-                <textarea name="feedback" rows="4" class="form-control"  {% if not user.is_staff == 0 or caseEdit.feedback != None or caseEdit.status_id == 5 %}disabled{% endif %}>{{feedback|default_if_none:""|default:caseEdit.feedback|default_if_none:""}}</textarea>
+                <textarea name="feedback" rows="4" class="form-control">{{feedback|default_if_none:""|default:caseEdit.feedback|default_if_none:""}}</textarea>
+                <!-- {% if not user.is_staff == 0 or caseEdit.feedback != None or caseEdit.status_id == 5 %}disabled{% endif %} -->
             </div>
-        {% endif %}
+        <!-- {% endif %} -->
 
         {% if caseEdit.status_id == 3 or caseEdit.status_id == 5 %}
             <div class="col-md-3">
