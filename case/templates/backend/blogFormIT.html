@@ -16,7 +16,7 @@
     {% for message in messages %}
         <p style="color: red;">{{message}}</p>
     {% endfor %}
-    <form action="{% url 'insertData' %}" method="post"
+    <form action="{% url 'insertData' %}" method="post" id="caseForm"
         enctype="multipart/form-data" class="form-horizontal form-bordered">
         {% csrf_token %}
         <div class="form-group">
@@ -27,7 +27,7 @@
                 <label for="category" style="display: block; margin-bottom: 5px; font-weight: bold;">
                     Type <label style="color: red;">*</label>
                 </label>
-                <select name="category" class="select-chosen" style="width: 250px;">
+                <select id="category" name="category" class="select-chosen" style="width: 250px;">
                     <option value="">-- Please select type --</option>
                     {% for category in categories_it %}
                     <option value="{{ category.id }}" {% if category.id|stringformat:"s" == selected_category %}selected{% endif %}>
@@ -41,7 +41,7 @@
                 <label for="content" style="display: block; margin-bottom: 5px; font-weight: bold;">
                     Priority <label style="color: red;">*</label>
                 </label>
-                <select name="priority" class="select-chosen" style="width: 250px;">
+                <select id="priority" name="priority" class="select-chosen" style="width: 250px;">
                     <option value="">-- Please select priority --</option>
                     {% for priorities in priorities %}
                         <option value="{{ priorities.id }}" {% if priorities.id|stringformat:"s" == selected_priority %}selected{% endif %}>
@@ -83,6 +83,7 @@
                         placeholder="Please enter your E-mail, Ex. thonglor@hospital.com">
                 </div>             
             </div>
+            
 
         <div class="form-group">
             <!-- <div class="col-md-4">
@@ -157,15 +158,51 @@
                     Attach File 
                     <!-- <label for="content" style="color: red;">*</label> -->
                 </label>
-                <input type="file" name="image" class="form-control" accept="image/*,application/pdf,.xls,.xlsx,.csv"
+                <input type="file" name="image" class="form-control" accept="image/*,application/pdf,.xls,.xlsx,.csv" id="uploadFile"
                     placeholder="แนบภาพปัญหาที่พบ"><br>
                     <label style="color: red; display: block; font-weight: normal;" >** You can only attach files with the extension .jpg, .jpeg, .png, .pdf, .xls, .xlsx, .csv, Limit file size 10MB only !</label>
             </div>
         </div>
 
+        <script>
+            const allowedTypes = [
+                "image/jpeg", "image/png", "application/pdf",
+                "application/vnd.ms-excel",
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                "text/csv", "application/csv"
+            ];
+            const maxFileSize = 10 * 1024 * 1024; // 10MB
+
+            document.getElementById("uploadFile").addEventListener("change", function () {
+                const file = this.files[0];
+                if (!file) return;
+
+                // ตรวจสอบประเภทไฟล์
+                if (!allowedTypes.includes(file.type)) {
+                    Swal.fire({
+                        icon: "error",
+                        title: "ไฟล์ไม่ถูกต้อง",
+                        text: "อนุญาตเฉพาะไฟล์ .jpg, .jpeg, .png, .pdf, .xls, .xlsx, .csv เท่านั้น!",
+                    });
+                    this.value = ""; // reset input
+                    return;
+                }
+
+                // ตรวจสอบขนาดไฟล์
+                if (file.size > maxFileSize) {
+                    Swal.fire({
+                        icon: "error",
+                        title: "ไฟล์ใหญ่เกินไป",
+                        text: "ไฟล์ต้องมีขนาดไม่เกิน 10MB เท่านั้น!",
+                    });
+                    this.value = ""; // reset input
+                }
+            });
+        </script>
+
         <div class="form-group">
             <div class="col-md-12">
-                <button type="submit" class="btn btn-sm btn-primary">Save</button>                            
+                <button id="save" type="submit" class="btn btn-sm btn-primary">Save</button>                            
                 <a href="{% url 'case' %}?department_id=IT" {% if "displayForm?department_id=IT" in request.path%}{%endif%}>                    
                     <button type="button" class="btn btn-sm btn-danger" style="margin-left: 1px;">
                         Back
@@ -173,9 +210,64 @@
                 </a>
             </div>
         </div>
-        
+
+        <script>
+            document.getElementById("caseForm").addEventListener("submit", function(e) {
+                e.preventDefault(); // ป้องกัน form submit ปกติ
+                let form = this;
+                let formData = new FormData(form);
+
+                // Validate แบบเดิม
+                let category = document.getElementById("category").value;
+                let priority = document.getElementById("priority").value;
+                if (!category || !priority) {
+                    Swal.fire({
+                        icon: 'warning',
+                        title: !category ? 'กรุณาเลือก Type' : 'กรุณาเลือก Priority',
+                        text: !category ? 'คุณต้องเลือกประเภทก่อนจึงจะส่งได้' : 'คุณต้องเลือกระดับความสำคัญก่อนจึงจะส่งได้',
+                        confirmButtonText: 'ตกลง'
+                    });
+                    return;
+                }
+
+                fetch("{% url 'insertData' %}", {
+                    method: "POST",
+                    headers: {
+                        "X-CSRFToken": "{{ csrf_token }}"
+                    },
+                    body: formData
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === "success") {
+                        Swal.fire({
+                            icon: "success",
+                            title: "Success",
+                            text: data.message,
+                            confirmButtonText: "ตกลง"
+                        }).then(() => {
+                            window.location.href = data.redirect_url;
+                        });
+                    } else {
+                        Swal.fire({
+                            icon: "error",
+                            title: "Error",
+                            text: data.message
+                        });
+                    }
+                })
+                .catch(error => {
+                    Swal.fire({
+                        icon: "error",
+                        title: "Error",
+                        text: "เกิดข้อผิดพลาด"
+                    });
+                });
+            });
+        </script>
     </form>
 
     <!-- END Basic Form Elements Content -->
 </div>
 {% endblock%}
+

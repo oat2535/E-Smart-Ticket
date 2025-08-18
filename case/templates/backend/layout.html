@@ -34,6 +34,7 @@
         <!-- Include Fancybox CSS -->
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.5.7/jquery.fancybox.min.css" />
         <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox.css"/>
         
         <!-- flatpickr CSS -->
         <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
@@ -220,18 +221,43 @@
                                         class="dropdown-header text-center">Member</li>
                                     <li class="divider"></li>
                                     <li>
-                                        <!-- <a href="#">
-                                            <i
-                                                class="fa fa-user fa-fw pull-right"></i>
-                                            โปรไฟล์
-                                        </a> -->
-                                        <!-- Opens the user settings modal that can be found at the bottom of each page (page_footer.html in PHP version) -->
-                                        <a href="{% url 'logout' %}" onclick="return confirm('Do you want to log out ?')"><i class="fa fa-ban fa-fw pull-right"></i>
-                                            Logout</a>
+                                        <a href="#" 
+                                        class="btn-logout" 
+                                        data-url="{% url 'logout' %}">
+                                            <i class="fa fa-ban fa-fw pull-right"></i>
+                                            Logout
+                                        </a>
                                     </li>
                                     <li class="divider"></li>
                                 </ul>
                             </li>
+                            <script>
+                                document.addEventListener("DOMContentLoaded", function() {
+                                    const logoutBtn = document.querySelector(".btn-logout");
+                                    if (logoutBtn) {
+                                        logoutBtn.addEventListener("click", function(e) {
+                                            e.preventDefault(); // ❌ กันไม่ให้กดแล้ว redirect ทันที
+
+                                            const url = this.getAttribute("data-url");
+
+                                            Swal.fire({
+                                                title: "คุณต้องการออกจากระบบหรือไม่?",
+                                                icon: "warning",
+                                                showCancelButton: true,
+                                                confirmButtonColor: "#d33",
+                                                cancelButtonColor: "#3085d6",
+                                            confirmButtonText: "ออกจากระบบ",
+                                            cancelButtonText: "ยกเลิก"
+                                        }).then((result) => {
+                                            if (result.isConfirmed) {
+                                                window.location.href = url; // ✅ ไปหน้า logout
+                                            }
+                                        });
+                                    });
+                                }
+                            });
+                            </script>
+
                             <!-- END User Dropdown -->
                              <!-- Add Time Display -->
                              <li style="display: flex; align-items: center; margin-right: 10px;">
@@ -282,7 +308,7 @@
                             </div>
                             {% endif %}    
                             {%if request.user.department_id == "IT"%}
-                            <div class="col-sm-6 col-lg-6">
+                            <div class="col-sm-12 col-lg-12">
                                 <!-- Widget -->
                                 <a href="{% url 'case'%}?department_id=IT" class="widget widget-hover-effect1">
                                     <div class="widget-simple">
@@ -299,8 +325,7 @@
                                 </a> 
                                 <!-- END Widget -->
                             </div>
-                            <div class="col-sm-6 col-lg-6">
-                                <!-- Widget -->
+                            <!-- <div class="col-sm-6 col-lg-6">                            
                                 <a href="{% url 'case'%}?department_id=IT&mycase=1" class="widget widget-hover-effect1">
                                     <div class="widget-simple">
                                         <div
@@ -313,9 +338,8 @@
                                             <small>My Cases</small>
                                         </h3>
                                     </div>
-                                </a> 
-                                <!-- END Widget -->
-                            </div>
+                                </a>                              
+                            </div> -->
                             {% endif %}
 
                             {% if request.user.username == "admin" or request.user.department_id is None %}
@@ -573,6 +597,7 @@
 
         <!-- Include Fancybox JS -->
         <script src="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.5.7/jquery.fancybox.min.js"></script>  
+        <script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox.umd.js"></script>
 
         <!-- flatpickr JS -->
         <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
