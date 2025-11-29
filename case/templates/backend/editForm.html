@@ -328,44 +328,111 @@
                 </select>
                 <h1></h1>
 
-                <label for="content" style="display: block; margin-bottom: 5px; font-weight: bold;">
-                    Category <label style="color: red;">*</label>
-                </label>
-                <select name="sub_category" class="select-chosen" style="width: 250px;" id = "sub_category"
-                        {% if not user.is_staff or caseEdit.status_id == 5 %}disabled{% endif %}>
-                    
-                    <option value="{{ caseEdit.sub_category_id }}">
-                        --- {{ caseEdit.sub_category.name }} ---
-                    </option>
-                    <option value="">--- Please select Category ---</option>
+                <!-- ✅ Category -->
+                    <label for="sub-category-select" style="display: block; margin-bottom: 5px; font-weight: bold;">
+                        Category <label style="color: red;">*</label>
+                    </label>
 
-                    {% for sub_category in sub_categories %}
-                        <option value="{{ sub_category.id }}">
-                            {{ sub_category.name }}
-                        </option>
-                    {% endfor %}
-                </select>
+                    <select id="sub-category-select" name="sub_category" class="select-chosen" style="width: 250px;"
+                            {% if not user.is_staff or caseEdit.status_id == 5 %}disabled{% endif %}>
 
-                {% if caseEdit.sub_category_id %}
-                    <input type="hidden" name="sub_category" value="{{ caseEdit.sub_category_id }}">
-                {% endif %}
-                <h1></h1>
+                        {% if caseEdit.sub_category %}
+                            <option value="{{ caseEdit.sub_category_id }}">--- {{ caseEdit.sub_category.name }} ---</option>
+                        {% else %}
+                            <option value="">--- Please select Category ---</option>
+                        {% endif %}
 
-                {% if caseEdit.status_id != 1 %}
+                        {% for sub_category in sub_categories %}
+                            <option value="{{ sub_category.id }}"
+                                {% if caseEdit.sub_category_id == sub_category.id %}selected{% endif %}>
+                                {{ sub_category.name }}
+                            </option>
+                        {% endfor %}
+                    </select>
+
+                    <h1></h1>
+
+                    <!-- ✅ Sub Category -->
+                    <label for="second-sub-category-select" style="display: block; margin-bottom: 5px; font-weight: bold;">
+                        Sub Category <label style="color: red;">*</label>
+                    </label>
+
+                    <select id="second-sub-category-select" name="second_sub_category" class="select-chosen" style="width: 250px;"
+                            {% if not user.is_staff or caseEdit.status_id == 5 %}disabled{% endif %}>
+
+                        {% if caseEdit.second_sub_category %}
+                            <option value="{{ caseEdit.second_sub_category_id }}">--- {{ caseEdit.second_sub_category.name }} ---</option>
+                        {% else %}
+                            <option value="">--- Please select Sub Category ---</option>
+                        {% endif %}
+
+                        {% for second_sub_category in second_sub_categories %}
+                            <option value="{{ second_sub_category.id }}"
+                                {% if caseEdit.second_sub_category_id == second_sub_category.id %}selected{% endif %}>
+                                {{ second_sub_category.name }}
+                            </option>
+                        {% endfor %}
+                    </select>
+       <h1></h1>
+
+                    <!-- ✅ Ajax โหลด sub-category -->
+                    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+                    <script>
+                    $(document).ready(function () {
+                        $('#sub-category-select').on('change', function () {
+                            var subCategoryId = $(this).val();
+
+                            $.ajax({
+                                url: "{% url 'ajax_load_second_subcategories' %}",
+                                data: {
+                                    'sub_category_id': subCategoryId
+                                },
+                                dataType: 'json',
+                                success: function (data) {
+                                    var $secondSubCategory = $('#second-sub-category-select');
+                                    $secondSubCategory.empty();
+                                    $secondSubCategory.append('<option value="">--- Please select Sub Category ---</option>');
+
+                                    if (data.length > 0) {
+                                        for (var i = 0; i < data.length; i++) {
+                                            $secondSubCategory.append(
+                                                $('<option></option>')
+                                                    .attr('value', data[i].id)
+                                                    .text(data[i].name)
+                                            );
+                                        }
+                                    } else {
+                                        $secondSubCategory.append('<option value="">--- No Sub Category available ---</option>');
+                                    }
+
+                                    if ($secondSubCategory.hasClass('select-chosen')) {
+                                        $secondSubCategory.trigger("chosen:updated");
+                                    }
+                                }
+                            });
+                        });
+                    });
+                    </script>
+
+
                 <label for="content" style="display: block; margin-bottom: 5px; font-weight: bold;">
                     Assign name <label for="" style="color: red;">*</label>
                 </label>
-                <!-- <select name="assign_name" class="select-chosen" style="width: 250px;" {% if not user.is_staff %}disabled{% endif %}> -->
-                <select name="assign_name" class="select-chosen" style="width: 250px;" 
-                {% if user.is_staff == 0 or caseEdit.status_id == 5 or caseEdit.status_id == 4 or caseEdit.status_id == 2 or caseEdit.status_id == 7 %}disabled{% endif %}>
-                    <option value="{{caseEdit.assign_name}}" selected>--- {{ assigned_user.first_name }} {{assigned_user.last_name }} ---</option>
+                <select name="assign_name" class="select-chosen" style="width: 250px;"
+                {% if user.is_staff == 0 or caseEdit.status_id == 2 or caseEdit.status_id == 4 or caseEdit.status_id == 5 or caseEdit.status_id == 7 %}disabled{% endif %}>
+                    <option value="{{caseEdit.assign_name}}" selected>
+                        --- {{ assigned_user.first_name }} {{ assigned_user.last_name }} ---
+                    </option>
                     <option value="">--- Please select assign name ---</option>
-                    {% for assign_name in assign_name %}
-                        <option value="{{assign_name.username}}" {% if assign_name.username == request.POST.assign_name %} selected {% endif %}>{{assign_name.first_name}} {{assign_name.last_name}}</option>
-                    {% endfor %}
-                    <input type="hidden" name="assign_name" value="{{caseEdit.assign_name}}">
-                </select>
-                {%endif%} <h1></h1>
+
+                    {% if request.user.username == "kanchana" %}
+                        {% for member in assign_name_it %}
+                            <option value="{{ member.username }}">{{ member.first_name }} {{ member.last_name }}</option>
+                        {% endfor %}
+                    {% elif request.user.username != "kanchana" %}
+                            <option value="{{ create_username.username }}">{{ create_username.first_name }} {{ create_username.last_name }}</option>
+                    {% endif %}
+                </select> <h1></h1>
 
                 <label for="update_note" style="display: block; margin-bottom: 3px; font-weight: bold;">
                     Edit details <label for="" style="color: red;">*</label>

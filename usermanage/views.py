@@ -52,7 +52,9 @@ def register(request):
         password = request.POST["password"] 
         repassword = request.POST["repassword"]
         branch = request.POST["branch"]
-        sub_branches = request.POST["sub_branch"]
+        if sub_branches:
+            sub_branches = request.POST["sub_branch"]
+            sub_branches = sub_branches if sub_branches else None
         phone_number = request.POST["phone_number"]
         department = request.POST.get("department", "").strip() 
         is_staff = request.POST.get("is_staff")  # รับค่าจากฟอร์ม
@@ -77,21 +79,21 @@ def register(request):
                 "departments": departments,
                 "selected_department": department  # เพิ่มข้อมูลแผนกที่เลือกไว้
             })
-        elif not sub_branches:
-            messages.info(request, "กรุณาเลือก Branch !")
-            return render(request,"backend/addUser.html", {
-                "form": form,
-                "username": username,
-                "first_name": first_name,
-                "last_name": last_name,
-                "password": password,
-                "repassword": repassword,
-                "phone_number": phone_number,
-                "is_staff": is_staff,
-                "branches": branches,
-                "departments": departments,
-                "selected_department": department  # เพิ่มข้อมูลแผนกที่เลือกไว้
-            })
+        # elif not sub_branches:
+        #     messages.info(request, "กรุณาเลือก Branch !")
+        #     return render(request,"backend/addUser.html", {
+        #         "form": form,
+        #         "username": username,
+        #         "first_name": first_name,
+        #         "last_name": last_name,
+        #         "password": password,
+        #         "repassword": repassword,
+        #         "phone_number": phone_number,
+        #         "is_staff": is_staff,
+        #         "branches": branches,
+        #         "departments": departments,
+        #         "selected_department": department  # เพิ่มข้อมูลแผนกที่เลือกไว้
+        #     })
         
         # elif not department:
         #     messages.info(request, "กรุณาเลือกแผนก !")
@@ -199,8 +201,8 @@ def updateUser(request,id):
         username = request.POST["username"]
         first_name = request.POST["first_name"]
         last_name = request.POST["last_name"]
-        branch = request.POST["branch"]
-        sub_branch = request.POST["sub_branch"]
+        branch = request.POST.get("branch") or None
+        sub_branch_id = request.POST.get("sub_branch")
         phone_number = request.POST["phone_number"]
         # permission = request.POST["permission"]
 
@@ -209,8 +211,14 @@ def updateUser(request,id):
             user.username = username
             user.first_name = first_name
             user.last_name = last_name 
-            user.branch_id = branch
-            user.sub_branch_id = sub_branch
+            user.branch_id = branch if branch else None
+            if sub_branch_id:
+                try:
+                    user.sub_branch = SubBranch.objects.get(pk=sub_branch_id)
+                except SubBranch.DoesNotExist:
+                    user.sub_branch = None
+            else:
+                user.sub_branch = None
             user.phone_number = phone_number
             # # กำหนดสิทธิ์ผู้ใช้ (is_staff) ตามค่า permission ที่ส่งมาจากฟอร์ม
             # if permission == "1":  # ถ้า checkbox ถูกติ๊ก (permission ส่งค่าเป็น '1')

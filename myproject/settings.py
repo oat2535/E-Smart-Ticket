@@ -49,7 +49,8 @@ INSTALLED_APPS = [
     'priority',
     'department',
     'sub_category',
-    'sub_branch'
+    'sub_branch',
+    'second_sub_category'
 ]
 
 MIDDLEWARE = [
@@ -106,11 +107,11 @@ WSGI_APPLICATION = 'myproject.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'imedx_tlp_new',
+        'NAME': 'tlph',
         'USER':'eservices',
         'PASSWORD':'Tlp@2023',
-        'HOST': '192.168.98.254', 
-        'PORT': '5434',
+        'HOST': '173.16.200.35', 
+        'PORT': '5435',
         'OPTIONS': {
             'options': '-c search_path=intra_tl'
         },

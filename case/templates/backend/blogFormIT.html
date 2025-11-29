@@ -22,7 +22,97 @@
         <div class="form-group">
             <input type="hidden" name="department" value="IT">
             <input type="hidden" name="source" value="blogFormIT">
+
+        {% if request.user.department_id == "IT" %}
+        <div class="col-md-2">
+            <label for="content" style="display: block; margin-bottom: 5px; font-weight: bold;">
+                Company <label style="color: red;">*</label>
+            </label>            
+                <select id="branch-select" name="branch" class="select-chosen" style="width: 250px;">
+                    <option value="">-- Please select company --</option>
+                    {% for branch in branches %}
+                        <option value="{{branch.branch_id}}">{{branch.branch_name}}</option>
+                    {% endfor %}
+                </select>         
+        </div>
+
+        <div class="col-md-2">
+            <label for="content" style="display: block; margin-bottom: 5px; font-weight: bold;">
+                Branch <label style="color: red;">*</label>
+            </label>            
+                <select id="sub-branch-select" name="sub_branch" class="select-chosen" style="width: 250px;">
+                    <option value="">-- Please select branch --</option>
+                    {% for sub_branches in sub_branches %}
+                        <option value="{{sub_branches.sub_branch_id}}">{{sub_branches.sub_branch_name}}</option>
+                    {% endfor %}
+                </select>         
+        </div>
+        <!-- ✅ Ajax โหลด sub-branch -->
+        <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+        <script>
+            $(document).ready(function () {
+                $('#branch-select').on('change', function () {
+                    var branchId = $(this).val();
+                    $.ajax({
+                        url: "{% url 'ajax_load_subbranches' %}",
+                        data: {
+                            'branch_id': branchId
+                        },
+                        dataType: 'json',
+                        success: function (data) {
+                            var $subBranch = $('#sub-branch-select');
+                            $subBranch.empty();
+                            $subBranch.append('<option value="">-- Please select branch --</option>');
+
+                            if (data.length > 0) {
+                                for (var i = 0; i < data.length; i++) {
+                                    $subBranch.append(
+                                        $('<option></option>')
+                                            .attr("value", data[i].sub_branch_id)
+                                            .text(data[i].sub_branch_name)
+                                    );
+                                }
+                            } else {
+                                $subBranch.append('<option value="">-- No branch available --</option>');
+                            }
+
+                            if ($subBranch.hasClass('select-chosen')) {
+                                $subBranch.trigger("chosen:updated");
+                            }
+                        }
+                    });
+                });
+            });
+        </script>
+        
+        <div class="col-md-2">
+                <label for="category" style="display: block; margin-bottom: 5px; font-weight: bold;">
+                    Type <label style="color: red;">*</label>
+                </label>
+                <select id="category" name="category" class="select-chosen" style="width: 250px;">
+                    <option value="">-- Please select type --</option>
+                    {% for category in categories_it %}
+                    <option value="{{ category.id }}" {% if category.id|stringformat:"s" == selected_category %}selected{% endif %}>
+                        {{ category.name }}
+                    </option>                    
+                    {% endfor %}
+                </select>
+            </div>
             
+            <div class="col-md-2">
+                <label for="content" style="display: block; margin-bottom: 5px; font-weight: bold;">
+                    Priority <label style="color: red;">*</label>
+                </label>
+                <select id="priority" name="priority" class="select-chosen" style="width: 250px;">
+                    <option value="">-- Please select priority --</option>
+                    {% for priorities in priorities %}
+                        <option value="{{ priorities.id }}" {% if priorities.id|stringformat:"s" == selected_priority %}selected{% endif %}>
+                            {{ priorities.priority_name }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+        {% else %}
             <div class="col-md-4">
                 <label for="category" style="display: block; margin-bottom: 5px; font-weight: bold;">
                     Type <label style="color: red;">*</label>
@@ -50,6 +140,7 @@
                     {% endfor %}
                 </select>
             </div>
+            {% endif %}
         </div>
 
             <div class="form-group">
@@ -220,11 +311,12 @@
                 // Validate แบบเดิม
                 let category = document.getElementById("category").value;
                 let priority = document.getElementById("priority").value;
-                if (!category || !priority) {
+                let branch = document.getElementById("branch-select").value;
+                if (!category || !priority || !branch) {
                     Swal.fire({
                         icon: 'warning',
-                        title: !category ? 'กรุณาเลือก Type' : 'กรุณาเลือก Priority',
-                        text: !category ? 'คุณต้องเลือกประเภทก่อนจึงจะส่งได้' : 'คุณต้องเลือกระดับความสำคัญก่อนจึงจะส่งได้',
+                        title: !category ? 'กรุณาเลือก Type' : !priority ? 'กรุณาเลือก Priority' : 'กรุณาเลือก Company',
+                        text: !category ? 'คุณต้องเลือกประเภทก่อนจึงจะส่งได้' : !priority ? 'คุณต้องเลือกระดับความสำคัญก่อนจึงจะส่งได้': 'คุณต้องเลือก Company ก่อนจึงจะส่งได้',
                         confirmButtonText: 'ตกลง'
                     });
                     return;

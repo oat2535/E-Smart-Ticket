@@ -19,11 +19,13 @@
         {% csrf_token %}
         <div class="form-group">
             <label for="start_date">Report date from:</label>
-            <input style="margin-left: 10px;" type="date" id="start_date" name="start_date" class="form-control" value="{{ start_date }}">        
+            <input style="margin-left: 10px;" type="date" id="start_date" name="start_date" class="form-control" 
+            value="{{ start_date|date:'Y-m-d' }}">        
         </div>
         <div class="form-group">
             <label for="end_date" style="margin-left: 10px;">to:</label>
-            <input style="margin-left: 10px;" type="date" id="end_date" name="end_date" class="form-control" value="{{ end_date }}">
+            <input style="margin-left: 10px;" type="date" id="end_date" name="end_date" class="form-control" 
+            value="{{ end_date|date:'Y-m-d' }}">
         </div>
             <!-- Add Assign Name Dropdown -->
         <div class="form-group">
@@ -31,7 +33,7 @@
             <select style="margin-left: 10px;" id="assign_name" name="assign_name" class="form-control">
                 <option value="">-- Select Assign Name --</option>
                 {% for member in members %}
-                    <option value="{{ member.username }}">
+                    <option value="{{ member.username }}" {% if member.username|stringformat:"s" == assign_name %}selected{% endif %}>
                         {{ member.first_name }} {{ member.last_name }}
                     </option>
                 {% endfor %}
@@ -43,7 +45,7 @@
                 <select style="margin-left: 10px;" id="branch-select" name="branch_id" class="form-control">
                     <option value="">-- Please select company --</option>
                     {% for branch in branches %}
-                    <option value="{{ branch.branch_id }}">
+                    <option value="{{ branch.branch_id }}" {% if branch.branch_id|stringformat:"s" == branch_id %}selected{% endif %}>
                         {{ branch.branch_name }}
                     </option>
                     {% endfor %}
@@ -54,7 +56,7 @@
             <div class="form-group">
                <label for="sub_branch_id" style="margin-left: 10px;">Branch:</label>
                 <select style="margin-left: 10px;" id="sub-branch-select" name="sub_branch_id" class="form-control">
-                    <option value="">-- Please select branch --</option>
+                    <option value="" >-- Please select branch --</option>
                     <!-- {% for sub_branches in sub_branches %}
                     <option value="{{ sub_branches.sub_branch_id }}" {% if sub_branches.sub_branch_id == selected_sub_branch %}selected{% endif %}>
                         {{ sub_branches.sub_branch_name }} -->
@@ -67,28 +69,27 @@
             <label for="status">Status:</label>
             <select style="margin-left: 10px;" id="status" name="status" class="form-control">
                 <option value="">-- Select Status --</option>
-                {% for status in status %}
-                    <option value="{{ status.id }}">
-                        {{ status.name }}
+                {% for s in status %}
+                    <option value="{{ s.id }}" {% if s.id|stringformat:"s" == status_selected %}selected{% endif %}>
+                        {{ s.name }}
                     </option>
                 {% endfor %}
             </select>
         </div>
+
         <button style="margin-left: 10px;" type="submit" class="btn btn-primary">Search</button>
         <a href="{% url 'reportCase' %}" class="btn btn-warning">Clear</a>
     </form>
 </div>
 
- <!-- เปลี่ยน Branch ตาม Company ที่เลือก -->
+         <!-- เปลี่ยน Branch ตาม Company ที่เลือก -->
             <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
             <script>
                 $(document).ready(function () {
-                    // Event เมื่อเลือก Company
-                    $('#branch-select').on('change', function () {
-                        var branchId = $(this).val();  // ดึงค่า company ที่เลือก
-
+                    // ฟังก์ชันโหลดข้อมูล Sub-Branch จาก branch_id ที่เลือก
+                    function loadSubBranches(branchId, selectedSubBranchId = null) {
                         $.ajax({
-                            url: "/report/reportCase/ajax/load-subbranches/", // Django URL name
+                            url: "/usermanage/addUser/ajax/load-subbranches/",
                             data: {
                                 'branch_id': branchId
                             },
@@ -96,7 +97,6 @@
                             success: function (data) {
                                 var $subBranch = $('#sub-branch-select');
                                 $subBranch.empty(); // ล้าง options เดิม
-
                                 $subBranch.append('<option value="">-- Please select branch --</option>');
 
                                 if (data.length > 0) {
@@ -104,30 +104,56 @@
                                         var option = $('<option></option>')
                                             .attr("value", data[i].sub_branch_id)
                                             .text(data[i].sub_branch_name);
+
+                                        // ✅ ถ้ามีค่าเดิม ให้เลือก (selected)
+                                        if (selectedSubBranchId && data[i].sub_branch_id == selectedSubBranchId) {
+                                            option.attr("selected", "selected");
+                                        }
+
                                         $subBranch.append(option);
                                     }
                                 } else {
                                     $subBranch.append('<option value="">-- No branch available --</option>');
                                 }
 
-                                // รีเฟรช chosen plugin ถ้าใช้
+                                // ปิดการใช้งาน select ถ้าไม่มี company
+                                $subBranch.prop('disabled', !branchId);
+
+                                // ✅ ถ้ามีใช้ chosen หรือ select2 ให้รีเฟรช
                                 if ($subBranch.hasClass('select-chosen')) {
                                     $subBranch.trigger("chosen:updated");
+                                } else if ($subBranch.hasClass('select2-hidden-accessible')) {
+                                    $subBranch.trigger("change.select2");
                                 }
+                            },
+                            error: function () {
+                                alert("❌ Error loading sub-branches. Please try again.");
                             }
-
                         });
+                    }
+
+                    // 🔹 Event: เมื่อเลือก Company → โหลด Branch ใหม่
+                    $('#branch-select').on('change', function () {
+                        var branchId = $(this).val();
+                        loadSubBranches(branchId);
                     });
+
+                    // 🔹 โหลดอัตโนมัติเมื่อเปิดหน้า (ถ้ามีค่าที่เคยเลือกไว้)
+                    var initialBranch = "{{ branch_id|default:'' }}";
+                    var initialSubBranch = "{{ sub_branch_id|default:'' }}";
+
+                    if (initialBranch) {
+                        loadSubBranches(initialBranch, initialSubBranch);
+                    }
                 });
             </script>
-
 
     <!-- Data Table -->
 <div class="table-responsive">
     <table id="ecom-products" class="table table-bordered table-striped table-vcenter table-hover">
     <h2 class="text-center"><strong>Report services request </strong></h2>
-        <h3 class="text-center"><strong>Form</strong> {{ start_date|date:"d-m-Y" }} <strong>To</strong> {{ end_date|date:"d-m-Y" }}</h3><br>
-        <a href="{% url 'export_csv' %}" class="btn btn-success">
+    <h3 class="text-center"><strong>Form</strong> {{ start_date|date:"d-m-Y" }} <strong>To</strong> {{ end_date|date:"d-m-Y" }}</h3><br>
+        <a href="{% url 'export_csv' %}?start_date={{ start_date }}&end_date={{ end_date }}&assign_name={{ assign_name }}&status={{ status_selected }}&branch_id={{ branch_id }}&sub_branch_id={{ sub_branch_id }}" class="btn btn-success">
             <i class="fa fa-download"></i> CSV
         </a>
         <!-- <button id="print-button" style="margin-left: 5px;" class="btn btn-success" onclick="printPage()">
@@ -137,6 +163,8 @@
         <tr>
             <th class="text-center" style="width: 70px;">No.</th>
             <th class="hidden-xs text-center">Type</th>
+            <th class="hidden-xs text-center">Category</th>
+            <!-- <th class="hidden-xs text-center">Sub Category</th> -->
             <th class="hidden-xs text-center">Description</th>
             <th class="hidden-xs text-center">Name</th>
             <th class="hidden-xs text-center">Create Date</th>
@@ -154,6 +182,8 @@
         <tr>
             <td class="text-center">{{ forloop.counter }}</td>
             <td class="text-center hidden-xs">{{ case.category.name }}</td>
+            <td class="text-center hidden-xs">{{ case.sub_category.name }}</td>
+            <!-- <td class="text-center hidden-xs">{{ case.second_sub_category.name }}</td> -->
             <td class="text-left hidden-xs">
                  <span title="{{ case.case_detail }}">
                 {{ case.case_detail|slice:":20" }}{% if case.case_detail|length > 20 %}...{% endif %}</td>

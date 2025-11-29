@@ -43,7 +43,7 @@
                 value="{{ request.GET.request_date }}" class="form-control" style="margin: 5px;">
             {% if user.is_staff%}
             <label for="branch_id">Company:</label>
-            <select style="margin-left: 10px;" id="branch-select" name="branch_id" class="form-control">
+            <select style="margin-left: 5px;" id="branch-select" name="branch_id" class="form-control">
                     <option value="">-- Please select company --</option>
                     {% for branch in branches %}
                     <option value="{{ branch.branch_id }}" {% if request.GET.branch_id == branch.branch_id|stringformat:"s" %}selected{% endif %}>
@@ -52,8 +52,8 @@
                     {% endfor %}
                 </select>
   
-            <label style="margin-left: 10px;" for="mycase">Assign Name:</label>
-                <select style="margin-left: 10px;" id="mycase-select" name="mycase" class="form-control">
+            <label style="margin-left: 5px;" for="mycase">Assign Name:</label>
+                <select style="margin-left: 5px;" id="mycase-select" name="mycase" class="form-control">
                     <option value="">-- Please select user --</option>
                     {% for assignName in members_qs %}
                         <option value="{{ assignName.username }}" 
@@ -64,8 +64,8 @@
                 </select>
             {% endif %}
 
-            <label for="request_date" style="margin-left: 10px;">Status:</label>
-            <select style="margin-left: 10px;" id="status-select" name="status_id" class="form-control">
+            <label for="status_id" style="margin-left: 5px;">Status:</label>
+            <select style="margin-left: 5px;" id="status-select" name="status_id" class="form-control">
                     <option value="">-- Please select status --</option>
                     {% for status in status %}  
                     <option value="{{ status.id }}" {% if request.GET.status_id == status.id %}selected{% endif %}>
@@ -73,8 +73,24 @@
                     </option>
                     {% endfor %}
                 </select>
-            <button type="submit" class="btn btn-primary" style="margin-left: 3px;">Search</button>
-            <a href="?" class="btn btn-default">Clear</a>
+<!-- 
+                <label for="sub_category_id" style="margin-left: 5px;">Status:</label>
+                <select style="margin-left: 5px;" id="sub_category_id-select" name="sub_category_id" class="form-control">
+                        <option value="">-- Please select category --</option>
+                        {% for sub_categories in sub_categories %}  
+                        <option value="{{ sub_categories.id }}" {% if request.GET.sub_category_id == sub_categories.id %}selected{% endif %}>
+                            {{ sub_categories.name }}
+                        </option>
+                        {% endfor %}
+                    </select> -->
+
+                <style>
+                    .btn-equal {
+                        min-width: 70px; /* กำหนดค่าตามความกว้างของปุ่ม Search */
+                    }
+                </style>
+            <button type="submit" class="btn btn-primary btn-equal" style="margin-left: 10px;">Search</button>
+            <a href="?" class="btn btn-default btn-equal" style="margin-left: 3px;">Clear</a>
         </form>
 
     <!--Content -->
@@ -98,10 +114,10 @@
                 <th class="hidden-xs text-center">Description</th>
                 <th class="hidden-xs text-center">Request <br>Name</th>
                 <th class="hidden-xs text-center">Request <br> Date</th> 
-                {% if user.is_staff == 1 %}             
+                {% if user.is_staff == 1 or user.is_staff == 0 %}             
                 <th class="hidden-xs text-center">Company</th>  
                 {%endif%}   
-                {% if user.is_staff == 1 or user.is_staff == 0%} 
+                {% if user.is_staff == 1 %} 
                 <th class="hidden-xs text-center">Branch</th> 
                 {%endif%}
                 {% if user.is_staff %}   
@@ -132,10 +148,10 @@
                 <td data-sort="{{ case.date_created|date:'Y-m-d H:i' }}">
                     {{ case.date_created|date:"d-m-Y, h:i a"|linebreak_after:","|safe }}
                 </td>
-                {% if user.is_staff == 1 %}   
+                {% if user.is_staff == 1 or user.is_staff == 0 %}   
                 <td class="text-left hidden-center">{{ case.branch.branch_name|linebreak_after:"โรงพยาบาลสัตว์"|safe }}</td>
                 {%endif%}
-                {% if user.is_staff == 1 or user.is_staff == 0 %}
+                {% if user.is_staff == 1%}
                 <td class="text-left hidden-center">{{case.sub_branch.sub_branch_name}}</td>
                 {%endif%}
                 {% if user.is_staff %}

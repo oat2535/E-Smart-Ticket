@@ -74,9 +74,9 @@
                     Branch
                 </label>           
                 <select name="sub_branch" id="sub-branch-select" class="select-chosen" style="width: 250px;">
-                    <option value="{{userEdit.sub_branch_id}}">--- {{userEdit.sub_branch}} ---</option>
+                    <option value="{{userEdit.sub_branch_id}}">--- {{userEdit.sub_branch|default_if_none:""}} ---</option>
                     {% for sub_branches in sub_branches %}
-                        <option value="{{sub_branches.sub_branch_id}}">{{sub_branches.sub_branch_name}}</option>
+                        <option value="{{sub_branches.sub_branch_id}}">{{sub_branches.sub_branch_name|default_if_none:""}}</option>
                     {% endfor %}
                 </select>
                 <!-- Input ที่ซ่อนอยู่เพื่อส่งค่ากลับ -->

@@ -4,6 +4,7 @@ from django.contrib.auth.decorators import login_required #import model บั�
 from django.contrib import auth,messages #import auth
 from category.models import Category
 from sub_category.models import SubCategory
+from second_sub_category.models import SecondSubCategory
 from branch.models import Branch
 from sub_branch.models import SubBranch
 from status.models import Status
@@ -22,6 +23,8 @@ from django.urls import reverse
 from django.utils.dateparse import parse_date
 
 
+
+
 # Create your views here.
 @login_required(login_url="member")  # บังคับให้ login ก่อนใช้งาน
 def case(request):
@@ -32,6 +35,7 @@ def case(request):
     members_qs = Members.objects.all()
     branches = Branch.objects.all().order_by('branch_name')
     status = Status.objects.all().order_by('pk')
+    sub_categories = SubCategory.objects.all().order_by('name')
 
      # filter members ตาม department ของ user
     if user.username == "admin" or user.is_superuser:  # admin เห็นทุกคน
@@ -50,7 +54,7 @@ def case(request):
     caseCountFIN = 0
     caseCountITAssignName = 0
 
-    if request.user.username == "admin":  # ถ้าเป็นแอดมิน ให้ดูทั้งหมด
+    if request.user.username == "admin" :  # ถ้าเป็นแอดมิน ให้ดูทั้งหมด
         case = Case.objects.all().order_by('-pk').select_related('status', 'category', 'branch', 'department', 'priority')
         caseCountPeding = Case.objects.filter(status_id=1).count()
         caseCountDoing = Case.objects.filter(status_id=2).count()
@@ -59,7 +63,7 @@ def case(request):
         caseCountIT = Case.objects.filter(department_id="IT").count()
         caseCountPUR = Case.objects.filter(department_id="PUR").count()
         caseCountFIN = Case.objects.filter(department_id="FIN").count()
-    elif user.department_id == "IT":  # ถ้าเป็นแอดมิน ให้ดูทั้งหมด
+    elif user.department_id == "IT" and request.user.username == "kanchana":  # User kanchana ดูเฉพาะ IT ทั้งหมด
         case = Case.objects.filter(department_id="IT").order_by('-pk').select_related('status', 'category', 'branch', 'department', 'priority', 'assign_name')
         caseCountPeding = Case.objects.filter(status_id=1, department_id="IT").count()
         caseCountDoing = Case.objects.filter(status_id=2, department_id="IT").count()
@@ -67,20 +71,35 @@ def case(request):
         caseCountSatisfied = Case.objects.filter(status_id=4, department_id="IT").count()
         caseCountIT = Case.objects.filter(department_id="IT").count()
         caseCountITAssignName = Case.objects.filter(department_id="IT", assign_name=user).count()
-    elif user.department_id == "PUR":  # ถ้าเป็นแอดมิน ให้ดูทั้งหมด
+    elif user.department_id == "IT":  # User IT ดูเฉพาะเคสที่เกี่ยวข้องกับตัวเอง
+        case = Case.objects.filter(department_id="IT").filter(Q(assign_name=user) | Q(assign_name__isnull=True)).order_by('-pk').select_related('status', 'category', 'branch', 'department', 'priority', 'assign_name')
+        caseCountPeding = Case.objects.filter(status_id=1, department_id="IT").count()
+        caseCountDoing = Case.objects.filter(status_id=2, department_id="IT", assign_name=user).count()
+        caseCountDone = Case.objects.filter(status_id=5, department_id="IT", assign_name=user).count()
+        caseCountSatisfied = Case.objects.filter(status_id=4, department_id="IT", assign_name=user).count()
+        caseCountIT = Case.objects.filter(department_id="IT").count()
+        caseCountITAssignName = Case.objects.filter(department_id="IT", assign_name=user).count()
+    elif user.department_id == "PUR"  and request.user.username == "nisarat":  # User nisrat ดูเฉพาะ PUR ทั้งหมด
         case = Case.objects.filter(department_id="PUR").order_by('-pk').select_related('status', 'category', 'branch', 'department', 'priority')
         caseCountPeding = Case.objects.filter(status_id=1, department_id="PUR").count()
         caseCountDoing = Case.objects.filter(status_id=2, department_id="PUR").count()
         caseCountDone = Case.objects.filter(status_id=5, department_id="PUR").count()
         caseCountReceive = Case.objects.filter(status_id=7, department_id="PUR").count()
         caseCountPUR = Case.objects.filter(department_id="PUR").count()
-    elif user.department_id == "FIN":  # ถ้าเป็นแอดมิน ให้ดูทั้งหมด
-        case = Case.objects.filter(department_id="FIN").order_by('-pk').select_related('status', 'category', 'branch', 'department', 'priority')
-        caseCountPeding = Case.objects.filter(status_id=1, department_id="FIN").count()
-        caseCountDoing = Case.objects.filter(status_id=2, department_id="FIN").count()
-        caseCountDone = Case.objects.filter(status_id=5, department_id="FIN").count()
-        caseCountSatisfied = Case.objects.filter(status_id=4, department_id="FIN").count()
-        caseCountFIN = Case.objects.filter(department_id="FIN").count()
+    elif user.department_id == "PUR":  # User nisrat ดูเฉพาะ PUR ทั้งหมด
+        case = Case.objects.filter(department_id="PUR").filter(Q(assign_name=user) | Q(assign_name__isnull=True)).order_by('-pk').select_related('status', 'category', 'branch', 'department', 'priority')
+        caseCountPeding = Case.objects.filter(status_id=1, department_id="PUR", assign_name=user).count()
+        caseCountDoing = Case.objects.filter(status_id=2, department_id="PUR", assign_name=user).count()
+        caseCountDone = Case.objects.filter(status_id=5, department_id="PUR", assign_name=user).count()
+        caseCountReceive = Case.objects.filter(status_id=7, department_id="PUR", assign_name=user).count()
+        caseCountPUR = Case.objects.filter(department_id="PUR").count()
+    # elif user.department_id == "FIN":  # ถ้าเป็นแอดมิน ให้ดูทั้งหมด
+    #     case = Case.objects.filter(department_id="FIN").order_by('-pk').select_related('status', 'category', 'branch', 'department', 'priority')
+    #     caseCountPeding = Case.objects.filter(status_id=1, department_id="FIN").count()
+    #     caseCountDoing = Case.objects.filter(status_id=2, department_id="FIN").count()
+    #     caseCountDone = Case.objects.filter(status_id=5, department_id="FIN").count()
+    #     caseCountSatisfied = Case.objects.filter(status_id=4, department_id="FIN").count()
+    #     caseCountFIN = Case.objects.filter(department_id="FIN").count()
     elif not request.user.is_staff:
         case = Case.objects.filter(create_username=create_username).order_by('-pk').select_related('status', 'category', 'branch', 'department', 'priority')
         caseCountPeding = Case.objects.filter(status_id=1, create_username=create_username).count()
@@ -134,6 +153,7 @@ def case(request):
         'branches': branches,
         'status': status,
         'members_qs': members_qs,
+        'sub_categories': sub_categories,
     }
     return render(request, "backend/index.html", context)
 
@@ -145,6 +165,8 @@ def displayForm(request):
     categories_pur = Category.objects.filter(department_id="PUR").order_by('pk')
     categories_fin = Category.objects.filter(department_id="FIN").order_by('pk')
     priorities = Priority.objects.all().order_by('pk')
+    branches = Branch.objects.all()
+    sub_branches = SubBranch.objects.all()
 
 # Render ไฟล์ HTML ตาม department_id
     if department_id == 'IT':
@@ -165,6 +187,8 @@ def displayForm(request):
             'categories_it': categories_it,
             'categories_pur': categories_pur,
             'categories_fin': categories_fin,
+            'branches': branches,
+            'sub_branches': sub_branches,
             
         }
     )
@@ -183,8 +207,14 @@ def insertData(request):
             computer_name = request.POST["computer_name"]
             case_detail = request.POST["case_detail"]
             create_username = auth.get_user(request)
-            branch = request.user.branch_id
-            sub_branch = request.user.sub_branch_id
+            # ✅ IT เลือก branch/sub_branch ได้เอง
+            if request.user.department_id == "IT":
+                branch = request.POST.get("branch")
+                sub_branch = request.POST.get("sub_branch")
+                sub_branch = sub_branch if sub_branch else None
+            else:
+                branch = request.user.branch_id
+                sub_branch = request.user.sub_branch_id
             department = request.POST["department"]
             priority = request.POST["priority"]
             subject_detail = request.POST["subject_detail"]
@@ -274,38 +304,50 @@ def editData(request,id):
         img.is_pdf = img.case_image.name.endswith('.pdf')
         img.is_excel = img.case_image.name.endswith(('.xls', '.xlsx', '.csv'))
     categories = Category.objects.all()
-    sub_categories = SubCategory.objects.filter(category=caseEdit.category)
+    sub_categories = SubCategory.objects.filter(category=caseEdit.category).order_by('name')
     sub_category_names = sub_categories.values_list('name', flat=True)
+    # ✅ ดึง SecondSubCategory ตาม SubCategory ของเคสปัจจุบัน
+    second_sub_categories = SecondSubCategory.objects.filter(
+        sub_category=caseEdit.sub_category
+    ).order_by('name')
+    second_sub_category_names = second_sub_categories.values_list('name', flat=True)
     branches = Branch.objects.all()
     sub_branches = SubBranch.objects.all()
     status = Status.objects.exclude(id__in=[4, 5, 7]).order_by('pk')
     status_user = Status.objects.exclude(id__in=[1, 2, 3, 4, 5, 7]).order_by('pk')
     assign_name = Members.objects.filter(is_staff=1).exclude(username="admin")
+    assign_name_it = Members.objects.filter(is_staff=1, department_id="IT").exclude(username="admin")
     assigned_user = Members.objects.filter(username=caseEdit.assign_name).first()
     departments = Department.objects.all()
     priorities = Priority.objects.all()
-    return render(request,"backend/editForm.html",{
-        "caseImg":caseImg,
-        "departments":departments,
-        "priorities":priorities,
-        "caseEdit":caseEdit,
-        'create_username':create_username,
-        'categories':categories,
-        'categories_it':categories_it,
-        'categories_pur':categories_pur,
-        'categories_fin':categories_fin,
-        'sub_categories':sub_categories,
-        'sub_category_names':sub_category_names,
-        'branches':branches,
-        'status':status,
-        'status_user':status_user,
-        'assign_name':assign_name,
-        'assigned_user':assigned_user,
-        'sub_branches':sub_branches,
-        'modify_username':modify_username,
-        'score_range' : list(range(1, 11)),
-        'is_case_edit_excel': is_case_edit_excel,
-        "is_case_edit_pdf": is_case_edit_pdf})
+    # ✅ ส่งค่าไปที่ template
+    return render(request, "backend/editForm.html", {
+        "caseImg": caseImg,
+        "departments": departments,
+        "priorities": priorities,
+        "caseEdit": caseEdit,
+        "create_username": create_username,
+        "categories": categories,
+        "categories_it": categories_it,
+        "categories_pur": categories_pur,
+        "categories_fin": categories_fin,
+        "sub_categories": sub_categories,
+        "sub_category_names": sub_category_names,
+        "branches": branches,
+        "status": status,
+        "status_user": status_user,
+        "assign_name": assign_name,
+        "assign_name_it": assign_name_it,
+        "assigned_user": assigned_user,
+        "sub_branches": sub_branches,
+        "modify_username": modify_username,
+        "score_range": list(range(1, 11)),
+        "is_case_edit_excel": is_case_edit_excel,
+        "is_case_edit_pdf": is_case_edit_pdf,
+        "second_sub_categories": second_sub_categories,
+        "second_sub_category_names": second_sub_category_names,
+    })
+ 
 
 @login_required(login_url="member")
 def updateData(request,id):
@@ -318,6 +360,7 @@ def updateData(request,id):
             branch = request.POST["branch"]
             category = request.POST["category"]
             sub_category = request.POST.get("sub_category")
+            second_sub_category = request.POST.get("second_sub_category")
             priority = request.POST["priority"]
             name = request.POST["name"]
             mobile = request.POST["mobile"]
@@ -327,12 +370,13 @@ def updateData(request,id):
             case_detail = request.POST["case_detail"]
             email = request.POST["email"]
             status = int(request.POST.get("status_id"))
-            assign_name = Members.objects.get(username=auth.get_user(request).username)
             update_note = request.POST.get("update_note", "")
             modify_username = auth.get_user(request).username
             score = request.POST.get("score",0)
             feedback = request.POST.get("feedback")
             product_receive_date = request.POST.get('product_receive_date')
+            assign_name_input = request.POST.get("assign_name", "")  # จาก dropdown
+            login_user = Members.objects.get(username=modify_username)  # user login
 
             if status in [4, 7]:
                 if not score or int(score) == 0:
@@ -349,13 +393,35 @@ def updateData(request,id):
             #อัพเดทข้อมูล
             case.branch_id = branch
             case.category_id = category
-            if not sub_category:  # กรณีไม่ได้เลือกค่า
-                case.sub_category = None
-            else:
+            # อัพเดท Category
+            if category and str(case.category_id) != str(category):
+                case.category_id = category  # เปลี่ยนเฉพาะเมื่อค่าต่างจากเดิม
+
+            # อัพเดท Sub Category
+            if sub_category:
                 try:
-                    case.sub_category = SubCategory.objects.get(id=int(sub_category))
+                    sub_cat_obj = SubCategory.objects.get(id=int(sub_category))
+                    if case.sub_category_id != sub_cat_obj.id:  # ตรวจว่าค่าต่างไหม
+                        case.sub_category = sub_cat_obj
                 except (SubCategory.DoesNotExist, ValueError):
-                    case.sub_category = None  # fallback กัน error กรณี id ไม่ถูกต้อง
+                    pass
+            else:
+                # ถ้าผู้ใช้ลบค่าออกจาก select ให้ลบใน DB ด้วย
+                if case.sub_category is not None:
+                    case.sub_category = None
+
+            # อัพเดท Second Sub Category
+            if second_sub_category:
+                try:
+                    second_sub_cat_obj = SecondSubCategory.objects.get(id=int(second_sub_category))
+                    if case.second_sub_category_id != second_sub_cat_obj.id:
+                        case.second_sub_category = second_sub_cat_obj
+                except (SecondSubCategory.DoesNotExist, ValueError):
+                    pass
+            else:
+                if case.second_sub_category is not None:
+                    case.second_sub_category = None
+
             case.priority_id = priority
             case.name = name
             case.mobile = mobile
@@ -367,45 +433,50 @@ def updateData(request,id):
             case.modify_username = modify_username
             case.modify_date = timezone.now().replace(microsecond=0)
 
-            if case.status_id == 1 and status == 3:
-                case.receive_date = timezone.now().replace(microsecond=0)
-                case.complete_date = timezone.now().replace(microsecond=0)
-                case.assign_name = assign_name
-                         
-            if status in [1,6]:  
-                case.cancel_date = timezone.now().replace(microsecond=0)
-                case.cancel_name = modify_username
-                case.status_id = status       
+            # Logic สำหรับ assign_name และ status
+            if case.status_id == 1 and status == 2:
+                # อัพเดท receive_date เฉพาะกรณี receive_date ว่าง
+                if case.receive_date == None:
+                    case.receive_date = timezone.now().replace(microsecond=0)
+                # kanchana สามารถเลือก assign_name จาก dropdown
+                if request.user.username == "kanchana" and assign_name_input:
+                    try:
+                        member_it = Members.objects.get(username=assign_name_input)
+                        case.assign_name = member_it
+                    except Members.DoesNotExist:
+                        pass
+                # user อื่น และ assign_name ยังไม่เคยถูกเซ็ต
+                elif not case.assign_name:
+                    case.assign_name = login_user
+                case.status_id = status
 
-            if status == 3 and case.department_id == "PUR":
+            elif case.status_id in [1, 2] and status == 3:
+                # --- จากสถานะ 1 → 3 (Complete)
+                if case.receive_date is None:
+                    case.receive_date = timezone.now().replace(microsecond=0)
                 case.complete_date = timezone.now().replace(microsecond=0)
-                case.status_id = 7
-                case.assign_name = assign_name
-            elif status == 3:
-                case.complete_date = timezone.now().replace(microsecond=0)
-                case.status_id = 4
-                case.assign_name = assign_name
-            elif status == 2:
-                case.receive_date = timezone.now().replace(microsecond=0)
-                case.assign_name = assign_name
-                case.status_id = status
-            elif status == 4 and (score is not None or feedback):
+                case.assign_name = login_user
+
+                # ✅ ถ้าแผนกเป็น PUR ให้สถานะ = 7, ถ้าอื่น ๆ = 4
+                if case.department_id == "PUR":
+                    case.status_id = 7
+                else:
+                    case.status_id = 4
+
+            elif status in [4, 7] and (score is not None or feedback):
                 case.satisfied_date = timezone.now().replace(microsecond=0)
                 case.status_id = 5
                 case.satisfied_name = modify_username
                 case.score = score
                 case.feedback = feedback
-            elif status == 7 and (score is not None or feedback):
-                case.satisfied_date = timezone.now().replace(microsecond=0)
-                case.status_id = 5
-                case.satisfied_name = modify_username
-                case.score = score
-                case.feedback = feedback
-            elif status == 6:
+
+            elif status in [1, 6]:
                 case.cancel_date = timezone.now().replace(microsecond=0)
                 case.cancel_name = modify_username
                 case.status_id = status
+
             else:
+                # กรณีอื่น ๆ เช่น status = 2 แต่ status_id เดิมไม่ใช่ 1 → ไม่อัพเดท assign_name
                 case.status_id = status
             case.update_note = update_note
             case.save()
@@ -491,4 +562,15 @@ def deleteImage(request, id):
     except Exception as e:
         messages.error(request, f"เกิดข้อผิดพลาด: {e}")
         return redirect("addImages", id=case_id)
+
+# ✅ AJAX โหลด sub_branch ตาม company
+def load_subbranches(request):
+    branch_id = request.GET.get('branch_id')
+    subbranches = SubBranch.objects.filter(branch_id=branch_id).values('sub_branch_id', 'sub_branch_name')
+    return JsonResponse(list(subbranches), safe=False)
+
+def load_second_subcategories(request):
+    sub_category_id = request.GET.get('sub_category_id')
+    second_subcategories = SecondSubCategory.objects.filter(sub_category_id=sub_category_id).values('id', 'name')
+    return JsonResponse(list(second_subcategories), safe=False)
 
