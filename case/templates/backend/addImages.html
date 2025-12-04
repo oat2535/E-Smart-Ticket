@@ -3,180 +3,214 @@
 {% block content %}
 {% load static %}
 <!-- ตารางบทความ -->
-<div class="block full">
+<div class="card shadow mb-4">
     <!-- All Title -->
-    <div class="block-title">
-        <!-- <div class="block-options pull-right">
-            <a href="javascript:void(0)" class="btn btn-alt btn-sm btn-default"
-                data-toggle="tooltip" title="Settings"><i
-                    class="fa fa-cog"></i></a>
-        </div> -->
-        <h2><strong>Additional repair image upload form</strong></h2>
+    <div class="card-header py-3">
+        <h6 class="m-0 font-weight-bold text-primary">Additional repair image upload form</h6>
     </div>
-    {% for message in messages %}
-        <p style="color: red;">{{message}}</p>
-    {% endfor %}
-    <!-- Title -->
-    <form action="{% url 'uloadImages'  addImage.id %}" method="POST" enctype="multipart/form-data" class="form-horizontal form-bordered" id="uploadForm">
-        {% csrf_token %}
-        
-        <div class="form-group">
-            <div class="col-md-12">
-                <label for="content" style="display: block; margin-bottom: 5px; font-weight: bold;">
-                    Attach files or images <label for="content" style="color: red;">*</label>
+    
+    <div class="card-body">
+        {% for message in messages %}
+            <p class="text-danger">{{message}}</p>
+        {% endfor %}
+        <!-- Title -->
+        <form action="{% url 'uloadImages'  addImage.id %}" method="POST" enctype="multipart/form-data" id="uploadForm">
+            {% csrf_token %}
+            
+            <div class="form-group">
+                <label class="font-weight-bold">
+                    Attach files or images <span class="text-danger">*</span>
                 </label>
-                <input type="file" name="case_image" class="form-control" placeholder="แนบภาพปัญหาที่พบ" id="uploadFile" accept="image/*,application/pdf,.xls,.xlsx,.csv"  multiple>
-                <label style="color: red; display: block; font-weight: normal; margin-top: 10px;" >** You can only attach files with the extension .jpg, .jpeg, .png, .pdf, .xls, .xlsx, .csv, Limit file size 10MB only !</label>
+                <div class="custom-file">
+                    <input type="file" name="case_image" class="custom-file-input" id="uploadFile" accept="image/*,application/pdf,.xls,.xlsx,.csv" multiple>
+                    <label class="custom-file-label" for="uploadFile">Choose files...</label>
+                </div>
+                <small class="text-danger d-block mt-2">** You can only attach files with the extension .jpg, .jpeg, .png, .pdf, .xls, .xlsx, .csv, Limit file size 10MB only !</small>
             </div>
-        </div>
 
-        <script>
-            const allowedExtensions = ["jpg","jpeg","png","pdf","xls","xlsx","csv"];
-            const maxFileSize = 10 * 1024 * 1024; // 10MB
+            <script>
+                const allowedExtensions = ["jpg","jpeg","png","pdf","xls","xlsx","csv"];
+                const maxFileSize = 10 * 1024 * 1024; // 10MB
 
-            // ตรวจสอบไฟล์ทันทีเมื่อเลือก
-            document.getElementById("uploadFile").addEventListener("change", function() {
-                const files = this.files;
-                for(let file of files){
-                    const ext = file.name.split('.').pop().toLowerCase();
-                    if(!allowedExtensions.includes(ext)){
-                        Swal.fire({
-                            icon: "error",
-                            title: "ไฟล์ไม่ถูกต้อง",
-                            text: "อนุญาตเฉพาะไฟล์ .jpg, .jpeg, .png, .pdf, .xls, .xlsx, .csv เท่านั้น!",
-                        });
-                        this.value = "";
-                        return;
-                    }
-                    if(file.size > maxFileSize){
-                        Swal.fire({
-                            icon: "error",
-                            title: "ไฟล์ใหญ่เกินไป",
-                            text: "ไฟล์ต้องมีขนาดไม่เกิน 10MB เท่านั้น!",
-                        });
-                        this.value = "";
-                        return;
-                    }
-                }
-            });
+                // ตรวจสอบไฟล์ทันทีเมื่อเลือก
+                document.getElementById("uploadFile").addEventListener("change", function() {
+                    const files = this.files;
+                    const label = this.nextElementSibling;
 
-            // AJAX Submit + SweetAlert
-            document.getElementById("uploadForm").addEventListener("submit", function(e){
-                e.preventDefault();
-                const form = this;
-                const formData = new FormData(form);
-
-                fetch("{% url 'uloadImages' addImage.id %}", {
-                    method: "POST",
-                    headers: {"X-CSRFToken": "{{ csrf_token }}"},
-                    body: formData
-                })
-                .then(response => {
-                    if(response.ok){
-                        return response.text(); // แค่ return HTML redirect ก็ได้
+                    // Update label with filename(s)
+                    if (files.length > 0) {
+                        if (files.length > 1) {
+                             label.innerText = files.length + " files selected";
+                        } else {
+                             label.innerText = files[0].name;
+                        }
                     } else {
-                        throw new Error("Error uploading files");
+                        label.innerText = "Choose files...";
                     }
-                })
-                .then(data => {
-                    Swal.fire({
-                        icon: "success",
-                        title: "บันทึกสำเร็จ",
-                        text: "ไฟล์ถูกบันทึกเรียบร้อยแล้ว",
-                        confirmButtonText: "ตกลง"
-                    }).then(() => {
-                        // Reload หน้าเดิมหลังปิด SweetAlert
-                        window.location.reload();
+
+                    for(let file of files){
+                        const ext = file.name.split('.').pop().toLowerCase();
+                        if(!allowedExtensions.includes(ext)){
+                            Swal.fire({
+                                icon: "error",
+                                title: "ไฟล์ไม่ถูกต้อง",
+                                text: "อนุญาตเฉพาะไฟล์ .jpg, .jpeg, .png, .pdf, .xls, .xlsx, .csv เท่านั้น!",
+                                buttonsStyling: false,
+                                customClass: {
+                                    confirmButton: 'btn btn-primary'
+                                }
+                            });
+                            this.value = "";
+                            label.innerText = "Choose files...";
+                            return;
+                        }
+                        if(file.size > maxFileSize){
+                            Swal.fire({
+                                icon: "error",
+                                title: "ไฟล์ใหญ่เกินไป",
+                                text: "ไฟล์ต้องมีขนาดไม่เกิน 10MB เท่านั้น!",
+                                buttonsStyling: false,
+                                customClass: {
+                                    confirmButton: 'btn btn-primary'
+                                }
+                            });
+                            this.value = "";
+                            label.innerText = "Choose files...";
+                            return;
+                        }
+                    }
+                });
+
+                // AJAX Submit + SweetAlert
+                document.getElementById("uploadForm").addEventListener("submit", function(e){
+                    e.preventDefault();
+                    const form = this;
+                    const formData = new FormData(form);
+
+                    fetch("{% url 'uloadImages' addImage.id %}", {
+                        method: "POST",
+                        headers: {"X-CSRFToken": "{{ csrf_token }}"},
+                        body: formData
+                    })
+                    .then(response => {
+                        if(response.ok){
+                            return response.text(); // แค่ return HTML redirect ก็ได้
+                        } else {
+                            throw new Error("Error uploading files");
+                        }
+                    })
+                    .then(data => {
+                        Swal.fire({
+                            icon: "success",
+                            title: "บันทึกสำเร็จ",
+                            text: "ไฟล์ถูกบันทึกเรียบร้อยแล้ว",
+                            confirmButtonText: "ตกลง",
+                            buttonsStyling: false,
+                            customClass: {
+                                confirmButton: 'btn btn-primary'
+                            }
+                        }).then(() => {
+                            // Reload หน้าเดิมหลังปิด SweetAlert
+                            window.location.reload();
+                        });
+                    })
+                    .catch(error => {
+                        Swal.fire({
+                            icon: "error",
+                            title: "เกิดข้อผิดพลาด",
+                            text: "ไม่สามารถบันทึกไฟล์ได้",
+                            buttonsStyling: false,
+                            customClass: {
+                                confirmButton: 'btn btn-primary'
+                            }
+                        });
                     });
-                })
-                .catch(error => {
+                });
+            </script>
+
+            <div class="form-group">
+                <button type="submit" class="btn btn-primary">Save</button>
+                <a href="{% url 'case' %}" class="btn btn-danger ml-1">
+                    Back
+                </a>
+            </div>
+        </form>
+        
+        <hr>
+
+        <!--Content -->
+        <div class="table-responsive">
+            <table id="ecom-products" class="table table-bordered table-striped table-hover" width="100%" cellspacing="0">
+                <thead>
+                    <tr>
+                        <th class="text-center" style="width: 70px;">No.</th>
+                        <th class="hidden-xs text-center">Images and Files</th>
+                        <th class="hidden-xs text-center">Images and Files Name</th>
+                        <th class="text-center">Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for caseImage in caseImage %}
+                    <tr>
+                        <td class="text-center">{{forloop.counter}}</td>
+                        <td class="text-center">
+                            {% if caseImage.is_pdf %}
+                                    <a href="{{ caseImage.case_image.url }}" target="_blank">
+                                        <i class="fas fa-file-pdf text-danger" style="font-size: 100px;"></i>
+                                    </a>
+                            {% elif caseImage.is_excel %}
+                                    <a href="{{ caseImage.case_image.url }}" target="_blank">
+                                        <i class="fas fa-file-excel text-success" style="font-size: 100px;"></i>
+                                    </a>
+                            {% else %}
+                                    <a href="{{ caseImage.case_image.url }}" data-fancybox="gallery">
+                                        <img src="{{ caseImage.case_image.url }}" alt="Case Image" style="width: 100px; height: 100px;">
+                                    </a>
+                            {% endif %}
+                        </td>
+                        <td class="text-center hidden-xs">{{caseImage.case_image|cut:'caseGallery/'}}</td>
+                        <td class="text-center hidden-xs">
+                            <div class="btn-group btn-group-sm">
+                                <a href="{% url 'deleteImage' caseImage.id %}" class="btn btn-danger delete-btn" data-id="{{ caseImage.id }}">
+                                    <i class="fa fa-times"></i>
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        
+        <script>
+            // ดักจับ event สำหรับปุ่ม delete
+            document.querySelectorAll(".delete-btn").forEach(btn => {
+                btn.addEventListener("click", function(e){
+                    e.preventDefault(); // ป้องกันลิงก์ redirect ปกติ
+                    const url = this.getAttribute("href");
+
                     Swal.fire({
-                        icon: "error",
-                        title: "เกิดข้อผิดพลาด",
-                        text: "ไม่สามารถบันทึกไฟล์ได้"
+                        title: 'คุณแน่ใจหรือไม่?',
+                        text: "คุณต้องการลบไฟล์นี้หรือไม่!",
+                        icon: 'warning',
+                        showCancelButton: true,
+                        buttonsStyling: false,
+                        customClass: {
+                            confirmButton: 'btn btn-danger mr-2',
+                            cancelButton: 'btn btn-secondary'
+                        },
+                        confirmButtonText: 'ลบ',
+                        cancelButtonText: 'ยกเลิก'
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            // ถ้า confirm → redirect ไปลิงก์ delete
+                            window.location.href = url;
+                        }
                     });
                 });
             });
         </script>
-
-        <div class="form-group">
-            <div class="col-md-12">
-                <button type="submit" class="btn btn-sm btn-primary">Save</button>
-                <a href="{% url 'case' %}">
-                    <button type="button" class="btn btn-sm btn-danger" style="margin-left: 1px;">
-                        Back
-                    </button>
-                </a>
-            </div>
-        </div>
-    </form>
-    <!--Content -->
-    <table id="ecom-products"
-        class="table table-bordered table-striped table-vcenter table-hover">
-        <thead>
-            <tr>
-                <th class="text-center" style="width: 70px;">No.</th>
-                <th class="hidden-xs text-center">Images and Files</th>
-                <th class="hidden-xs text-center">Images and Files Name</th>
-                <th class="text-center">Action</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for caseImage in caseImage %}
-            <tr>
-                <td class="text-center">{{forloop.counter}}</td>
-                <td class="text-center">
-                    {% if caseImage.is_pdf %}
-                            <a href="{{ caseImage.case_image.url }}" target="_blank">
-                                <img src="{% static 'backend/pdf.png' %}" alt="PDF Placeholder" style="width: 100px; height: 100px;">
-                            </a>
-                    {% elif caseImage.is_excel %}
-                            <a href="{{ caseImage.case_image.url }}" target="_blank">
-                                <img src="{% static 'backend/excel.png' %}" alt="PDF Placeholder" style="width: 100px; height: 100px;">
-                            </a>
-                    {% else %}
-                            <a href="{{ caseImage.case_image.url }}" data-fancybox="gallery">
-                                <img src="{{ caseImage.case_image.url }}" alt="Case Image" style="width: 100px; height: 100px;">
-                            </a>
-                    {% endif %}
-                </td>
-                <td class="text-center hidden-xs">{{caseImage.case_image|cut:'caseGallery/'}}</td>
-                <td class="text-center hidden-xs">
-                    <div class="btn-group btn-group-xs">
-                        <a href="{% url 'deleteImage' caseImage.id %}" class="btn btn-xs btn-danger delete-btn" data-id="{{ caseImage.id }}">
-                            <i class="fa fa-times"></i>
-                        </a>
-                        <script>
-                            // ดักจับ event สำหรับปุ่ม delete
-                            document.querySelectorAll(".delete-btn").forEach(btn => {
-                                btn.addEventListener("click", function(e){
-                                    e.preventDefault(); // ป้องกันลิงก์ redirect ปกติ
-                                    const url = this.getAttribute("href");
-
-                                    Swal.fire({
-                                        title: 'คุณแน่ใจหรือไม่?',
-                                        text: "คุณต้องการลบไฟล์นี้หรือไม่!",
-                                        icon: 'warning',
-                                        showCancelButton: true,
-                                        confirmButtonColor: '#d33',
-                                        cancelButtonColor: '#3085d6',
-                                        confirmButtonText: 'ลบ',
-                                        cancelButtonText: 'ยกเลิก'
-                                    }).then((result) => {
-                                        if (result.isConfirmed) {
-                                            // ถ้า confirm → redirect ไปลิงก์ delete
-                                            window.location.href = url;
-                                        }
-                                    });
-                                });
-                            });
-                        </script>
-                    </div>
-                </td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
-    <!-- END All Products Content -->
+        <!-- END All Products Content -->
+    </div>
 </div>
 {% endblock %}

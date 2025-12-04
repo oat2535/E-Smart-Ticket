@@ -4,46 +4,54 @@
 {% load static %}
 {% load custom_filters %}
 <!-- ตารางบทความ -->
-<div class="block full">
+<div class="card shadow mb-4">
     <!-- All Title -->
-    <div class="block-title">
-        <!-- <div class="block-options pull-right">
-            <a href="javascript:void(0)" class="btn btn-alt btn-sm btn-default"
-                data-toggle="tooltip" title="Settings"><i
-                    class="fa fa-cog"></i></a>
-        </div> -->
-        <h2><strong>Total service request</strong></h2>
-        {% if request.GET.department_id == 'IT'%}
-            <a href="{% url 'displayForm' %}?department_id=IT" class="btn btn-primary btn-sm btn-default" 
-            data-toggle="tooltip" title="Service request IT" style="margin-left: 1px;" >
-                <i class="fa fa-plus" aria-hidden="true" style="display: flex; align-items: center;"></i>
-            </a>
-        {%endif%}
-        {% if request.GET.department_id == 'PUR' %}
-            <a href="{% url 'displayForm' %}?department_id=PUR" class="btn btn-primary btn-sm btn-default" 
-            data-toggle="tooltip" title="Service request PUR" style="margin-left: 1px;" >
-                <i class="fa fa-plus" aria-hidden="true" style="display: flex; align-items: center;"></i>
-            </a>
-        {%endif%}
-        {% if request.GET.department_id == 'FIN' %}
-            <a href="{% url 'displayForm' %}?department_id=FIN" class="btn btn-primary btn-sm btn-default" 
-            data-toggle="tooltip" title="Service request FIN" style="margin-left: 1px;" >
-                <i class="fa fa-plus" aria-hidden="true" style="display: flex; align-items: center;"></i>
-            </a>
-        {%endif%}
+    <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+        <h6 class="m-0 font-weight-bold text-primary">Total service request</h6>
+        <div>
+            {% if request.GET.department_id == 'IT'%}
+                <a href="{% url 'displayForm' %}?department_id=IT" class="btn btn-primary btn-sm" 
+                data-toggle="tooltip" title="Service request IT">
+                    <i class="fa fa-plus"></i>
+                </a>
+            {%endif%}
+            {% if request.GET.department_id == 'PUR' %}
+                <a href="{% url 'displayForm' %}?department_id=PUR" class="btn btn-primary btn-sm" 
+                data-toggle="tooltip" title="Service request PUR">
+                    <i class="fa fa-plus"></i>
+                </a>
+            {%endif%}
+            {% if request.GET.department_id == 'FIN' %}
+                <a href="{% url 'displayForm' %}?department_id=FIN" class="btn btn-primary btn-sm" 
+                data-toggle="tooltip" title="Service request FIN">
+                    <i class="fa fa-plus"></i>
+                </a>
+            {%endif%}
+        </div>
     </div>
-    <!-- Title -->
-        <form method="get" class="form-inline" style="margin-bottom: 15px;">
+    
+    <div class="card-body">
+        <!-- Title -->
+        <form method="get" class="form-inline mb-3">
             {% if request.GET.department_id %}
                 <input type="hidden" name="department_id" value="{{ request.GET.department_id }}">
             {% endif %}
 
-            <label for="request_date">Request Date:</label>
-            <input type="date" id="request_date" name="request_date" 
-                value="{{ request.GET.request_date }}" class="form-control" style="margin: 5px;">
+            <div class="form-group mr-2 mb-2">
+                <label for="request_date" class="mr-2">Request Date:</label>
+                <div class="input-group">
+                    <input type="text" id="request_date" name="request_date" 
+                        value="{{ request.GET.request_date }}" class="form-control" placeholder="Select Date">
+                    <div class="input-group-append">
+                        <span class="input-group-text"><i class="fas fa-calendar-alt"></i></span>
+                    </div>
+                </div>
+            </div>
+
             {% if user.is_staff%}
-            <label for="branch_id">Company:</label>
-            <select style="margin-left: 5px;" id="branch-select" name="branch_id" class="form-control">
+            <div class="form-group mr-2 mb-2">
+                <label for="branch_id" class="mr-2">Company:</label>
+                <select id="branch-select" name="branch_id" class="form-control">
                     <option value="">-- Please select company --</option>
                     {% for branch in branches %}
                     <option value="{{ branch.branch_id }}" {% if request.GET.branch_id == branch.branch_id|stringformat:"s" %}selected{% endif %}>
@@ -51,9 +59,11 @@
                     </option>
                     {% endfor %}
                 </select>
+            </div>
   
-            <label style="margin-left: 5px;" for="mycase">Assign Name:</label>
-                <select style="margin-left: 5px;" id="mycase-select" name="mycase" class="form-control">
+            <div class="form-group mr-2 mb-2">
+                <label for="mycase" class="mr-2">Assign Name:</label>
+                <select id="mycase-select" name="mycase" class="form-control">
                     <option value="">-- Please select user --</option>
                     {% for assignName in members_qs %}
                         <option value="{{ assignName.username }}" 
@@ -62,10 +72,12 @@
                         </option>
                     {% endfor %}
                 </select>
+            </div>
             {% endif %}
 
-            <label for="status_id" style="margin-left: 5px;">Status:</label>
-            <select style="margin-left: 5px;" id="status-select" name="status_id" class="form-control">
+            <div class="form-group mr-2 mb-2">
+                <label for="status_id" class="mr-2">Status:</label>
+                <select id="status-select" name="status_id" class="form-control">
                     <option value="">-- Please select status --</option>
                     {% for status in status %}  
                     <option value="{{ status.id }}" {% if request.GET.status_id == status.id %}selected{% endif %}>
@@ -73,175 +85,159 @@
                     </option>
                     {% endfor %}
                 </select>
-<!-- 
-                <label for="sub_category_id" style="margin-left: 5px;">Status:</label>
-                <select style="margin-left: 5px;" id="sub_category_id-select" name="sub_category_id" class="form-control">
-                        <option value="">-- Please select category --</option>
-                        {% for sub_categories in sub_categories %}  
-                        <option value="{{ sub_categories.id }}" {% if request.GET.sub_category_id == sub_categories.id %}selected{% endif %}>
-                            {{ sub_categories.name }}
-                        </option>
-                        {% endfor %}
-                    </select> -->
+            </div>
 
-                <style>
-                    .btn-equal {
-                        min-width: 70px; /* กำหนดค่าตามความกว้างของปุ่ม Search */
-                    }
-                </style>
-            <button type="submit" class="btn btn-primary btn-equal" style="margin-left: 10px;">Search</button>
-            <a href="?" class="btn btn-default btn-equal" style="margin-left: 3px;">Clear</a>
+            <button type="submit" class="btn btn-primary mb-2 mr-1">Search</button>
+            <a href="?" class="btn btn-secondary mb-2">Clear</a>
         </form>
 
-    <!--Content -->
-    <div class="table-responsive"  style="overflow-x:auto;">
-    <table id="ecom-products"
-        class="table table-bordered table-striped table-vcenter table-hover">
-        <!-- Form เลือกวันที่ -->
-    <form method="get" style="display:inline-block; margin-left: 10px;">
-        <!-- ค่าที่ต้องการส่งต่อ เช่น department_id -->
-        {% if request.GET.department_id %}
-            <input type="hidden" name="department_id" value="{{ request.GET.department_id }}">
-        {% endif %}
-    
-        <thead>
-            <tr>
-                <th class="text-center" >No.</th>
-                <!-- <th class="hidden-xs text-center">ภาพปัญหา</th> --> 
-                <th class="hidden-xs text-center">Dept</th>            
-                <th class="hidden-xs text-center">Type</th>
-                <th class="hidden-xs text-center">Subject</th>
-                <th class="hidden-xs text-center">Description</th>
-                <th class="hidden-xs text-center">Request <br>Name</th>
-                <th class="hidden-xs text-center">Request <br> Date</th> 
-                {% if user.is_staff == 1 or user.is_staff == 0 %}             
-                <th class="hidden-xs text-center">Company</th>  
-                {%endif%}   
-                {% if user.is_staff == 1 %} 
-                <th class="hidden-xs text-center">Branch</th> 
-                {%endif%}
-                {% if user.is_staff %}   
-                <th class="hidden-xs text-center">Assign<br> Name</th>
-                {%endif%} 
-                <th class="hidden-xs text-center">Status</th>
-                <th class="hidden-xs text-center">Action</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for case in case %}
-            <tr>
-                <td class="text-center">{{forloop.counter }}</td>
-                <td class="text-center hidden-xs">{{case.department.department_name}}</td>
-                <td class="text-left hidden-xs">{{case.category.name}}</td>    
-            <td class="text-left hidden-xs">
-                <span title="{{ case.subject_detail }}">
-                    {{ case.subject_detail|slice:":20" }}{% if case.subject_detail|length > 20 %}...{% endif %}
-                </span>
-            </td>
-            
-            <td class="text-left hidden-xs">
-                <span title="{{ case.case_detail }}">
-                    {{ case.case_detail|slice:":20" }}{% if case.case_detail|length > 20 %}...{% endif %}
-                </span>
-            </td>
-                <td class="text-left hidden-center">{{case.name}}</td>
-                <td data-sort="{{ case.date_created|date:'Y-m-d H:i' }}">
-                    {{ case.date_created|date:"d-m-Y, h:i a"|linebreak_after:","|safe }}
-                </td>
-                {% if user.is_staff == 1 or user.is_staff == 0 %}   
-                <td class="text-left hidden-center">{{ case.branch.branch_name|linebreak_after:"โรงพยาบาลสัตว์"|safe }}</td>
-                {%endif%}
-                {% if user.is_staff == 1%}
-                <td class="text-left hidden-center">{{case.sub_branch.sub_branch_name}}</td>
-                {%endif%}
-                {% if user.is_staff %}
-                <td class="text-left hidden-center">{{case.assign_name.first_name}} <br> {{case.assign_name.last_name}}</td>
-                {%endif%}
-                <td class="text-center hidden-center">
-                    {% if case.status_id == 1 %}
-                        <button class="btn btn-primary btn-fixed-width">{{ case.status.name }}</button> 
-                    {% elif case.status_id == 2 %}
-                        <button class="btn btn-warning btn-fixed-width">{{ case.status.name }}</button> 
-                    {% elif case.status_id == 5 %}
-                        <button class="btn btn-success btn-fixed-width">{{ case.status.name }}</button> 
-                    {% elif case.status_id == 4 or case.status_id == 7 %}
-                        <button class="btn btn-info btn-fixed-width">{{ case.status.name }}</button> 
-                    {% elif case.status_id == 6 %}
-                        <button class="btn btn-danger btn-fixed-width">{{ case.status.name }}</button>    
-                    {% else %}
-                        <button class="btn btn-secondary btn-fixed-width">{{ case.status.name }}</button> 
-                    {% endif %}
-                    <style>
-                        .btn-fixed-width {
-                        min-width: 140px;
-                        text-align: center;
-                    }
-                    </style>
-                </td>
-                          
-                <td class="text-center hidden-xs">                 
-                    <div class="btn-group btn-group-xs">
-                        {% if request.user.is_staff == 1 %}
-                        <a href="{% url 'editData' case.id %}" data-toggle="tooltip" title="Manage job"
-                            class="btn btn-default"><i class="fa fa-pencil"></i>
-                        </a>
-                        {% if request.user.username == "admin" %}
-                       <a href="#" 
-                            class="btn btn-xs btn-danger btn-delete" 
-                            data-url="{% url 'deleteData' case.id %}" 
-                            data-toggle="tooltip" 
-                            title="Delete">
-                                <i class="fa fa-times"></i>
-                        </a>
-
+        <!--Content -->
+        <div class="table-responsive">
+            <table id="ecom-products" class="table table-bordered table-striped table-hover" width="100%" cellspacing="0">
+                <thead>
+                    <tr>
+                        <th class="text-center" >No.</th>
+                        <th class="hidden-xs text-center">Dept</th>            
+                        <th class="hidden-xs text-center">Type</th>
+                        <th class="hidden-xs text-center">Subject</th>
+                        <th class="hidden-xs text-center">Description</th>
+                        <th class="hidden-xs text-center">Request <br>Name</th>
+                        <th class="hidden-xs text-center">Request <br> Date</th> 
+                        {% if user.is_staff == 1 or user.is_staff == 0 %}             
+                        <th class="hidden-xs text-center">Company</th>  
+                        {%endif%}   
+                        {% if user.is_staff == 1 %} 
+                        <th class="hidden-xs text-center">Branch</th> 
                         {%endif%}
-                        <a href="{% url 'addImages' case.id %}" data-toggle="tooltip" title="Attach additional images or files"
-                            class="btn btn-default"><i class="fa fa-picture-o"></i>
-                        </a>
-                        {%else%}
-                        <a href="{% url 'editData' case.id %}" data-toggle="tooltip" title="View repair details"
-                            class="btn btn-default"><i class="fa fa-pencil"></i>
-                        </a>
-                        <a href="{% url 'addImages' case.id %}" data-toggle="tooltip" title="Attach additional images or files"class="btn btn-default">
-                            <i class="fa fa-picture-o" aria-hidden="true"></i>
-                        </a>
-                        {% endif %}       
-                    </div>                   
-                </td>               
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
-</div>
-    <!-- END All Products Content -->
+                        {% if user.is_staff %}   
+                        <th class="hidden-xs text-center">Assign<br> Name</th>
+                        {%endif%} 
+                        <th class="hidden-xs text-center">Status</th>
+                        <th class="hidden-xs text-center">Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for case in case %}
+                    <tr>
+                        <td class="text-center">{{forloop.counter }}</td>
+                        <td class="text-center hidden-xs">{{case.department.department_name}}</td>
+                        <td class="text-left hidden-xs">{{case.category.name}}</td>    
+                        <td class="text-left hidden-xs">
+                            <span title="{{ case.subject_detail }}">
+                                {{ case.subject_detail|slice:":20" }}{% if case.subject_detail|length > 20 %}...{% endif %}
+                            </span>
+                        </td>
+                        
+                        <td class="text-left hidden-xs">
+                            <span title="{{ case.case_detail }}">
+                                {{ case.case_detail|slice:":20" }}{% if case.case_detail|length > 20 %}...{% endif %}
+                            </span>
+                        </td>
+                        <td class="text-left hidden-center">{{case.name}}</td>
+                        <td data-sort="{{ case.date_created|date:'Y-m-d H:i' }}">
+                            {{ case.date_created|date:"d-m-Y, h:i a"|linebreak_after:","|safe }}
+                        </td>
+                        {% if user.is_staff == 1 or user.is_staff == 0 %}   
+                        <td class="text-left hidden-center">{{ case.branch.branch_name|linebreak_after:"โรงพยาบาลสัตว์"|safe }}</td>
+                        {%endif%}
+                        {% if user.is_staff == 1%}
+                        <td class="text-left hidden-center">{{case.sub_branch.sub_branch_name}}</td>
+                        {%endif%}
+                        {% if user.is_staff %}
+                        <td class="text-left hidden-center">{{case.assign_name.first_name}} <br> {{case.assign_name.last_name}}</td>
+                        {%endif%}
+                        <td class="text-center hidden-center">
+                            {% if case.status_id == 1 %}
+                                <span class="badge badge-primary" style="font-size: 100%;">{{ case.status.name }}</span> 
+                            {% elif case.status_id == 2 %}
+                                <span class="badge badge-warning" style="font-size: 100%;">{{ case.status.name }}</span> 
+                            {% elif case.status_id == 5 %}
+                                <span class="badge badge-success" style="font-size: 100%;">{{ case.status.name }}</span> 
+                            {% elif case.status_id == 4 or case.status_id == 7 %}
+                                <span class="badge badge-info" style="font-size: 100%;">{{ case.status.name }}</span> 
+                            {% elif case.status_id == 6 %}
+                                <span class="badge badge-danger" style="font-size: 100%;">{{ case.status.name }}</span>    
+                            {% else %}
+                                <span class="badge badge-secondary" style="font-size: 100%;">{{ case.status.name }}</span> 
+                            {% endif %}
+                        </td>
+                                
+                        <td class="text-center hidden-xs">                 
+                            <div class="btn-group btn-group-sm">
+                                {% if request.user.is_staff == 1 %}
+                                <a href="{% url 'editData' case.id %}" data-toggle="tooltip" title="Manage job"
+                                    class="btn btn-secondary"><i class="fa fa-pencil-alt"></i>
+                                </a>
+                                {% if request.user.username == "admin" %}
+                                <a href="#" 
+                                    class="btn btn-danger btn-delete" 
+                                    data-url="{% url 'deleteData' case.id %}" 
+                                    data-toggle="tooltip" 
+                                    title="Delete">
+                                        <i class="fa fa-times"></i>
+                                </a>
+
+                                {%endif%}
+                                <a href="{% url 'addImages' case.id %}" data-toggle="tooltip" title="Attach additional images or files"
+                                    class="btn btn-secondary"><i class="far fa-image"></i>
+                                </a>
+                                {%else%}
+                                <a href="{% url 'editData' case.id %}" data-toggle="tooltip" title="View repair details"
+                                    class="btn btn-secondary"><i class="fa fa-pencil-alt"></i>
+                                </a>
+                                <a href="{% url 'addImages' case.id %}" data-toggle="tooltip" title="Attach additional images or files"class="btn btn-secondary">
+                                    <i class="far fa-image" aria-hidden="true"></i>
+                                </a>
+                                {% endif %}       
+                            </div>                   
+                        </td>               
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
 </div>
 
-    <script>
+<script>
     document.addEventListener("DOMContentLoaded", function() {
         document.querySelectorAll(".btn-delete").forEach(btn => {
             btn.addEventListener("click", function(e) {
-                e.preventDefault(); // ❌ ไม่ให้ลิงก์ทำงานทันที
-
+                e.preventDefault();
                 const url = this.getAttribute("data-url");
 
                 Swal.fire({
                     title: "คุณแน่ใจหรือไม่?",
-                    text: "ข้อมูลนี้จะถูกลบและไม่สามารถกู้คืนได้!",
+                    text: "คุณต้องการลบรายการหรือไม่!",
                     icon: "warning",
                     showCancelButton: true,
-                    confirmButtonColor: "#d33",
-                    cancelButtonColor: "#3085d6",
-                    confirmButtonText: "ลบข้อมูล",
+                    customClass: {
+                            confirmButton: 'btn btn-danger mr-2',
+                            cancelButton: 'btn btn-secondary'
+                        },
+                    confirmButtonText: "ลบ",
                     cancelButtonText: "ยกเลิก"
                 }).then((result) => {
                     if (result.isConfirmed) {
-                        // ✅ redirect ไปยัง URL ลบ
                         window.location.href = url;
                     }
                 });
             });
         });
     });
-    </script>
+</script>
 
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        flatpickr("#request_date", {
+            dateFormat: "Y-m-d",
+            allowInput: true,
+            altInput: true,
+            altFormat: "d M Y",
+        });
+    });
+</script>
 {% endblock %}

@@ -1,191 +1,129 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-    <meta charset="UTF-8">
+
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="description" content="">
+    <meta name="author" content="">
+    <meta name="robots" content="noindex, nofollow">
+
+    <title>E-Smart Ticket JV - Login</title>
+
     {% load static %}
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>E-Smart Ticket JV</title>
-        <meta name="robots" content="noindex, nofollow">
-        <meta name="viewport" content="width=device-width,initial-scale=1.0,user-scalable=0">
 
-        <link rel="stylesheet" href="{%static 'backend/css/bootstrap.min.css' %}">
-        <link rel="stylesheet" href="{%static 'backend/css/plugins.css' %}">
-        <link rel="stylesheet" href="{%static 'backend/css/main.css' %}">
+    <!-- Custom fonts for this template-->
+    <link href="{% static 'backend/vendor/fontawesome-free/css/all.min.css' %}" rel="stylesheet" type="text/css">
+    <link
+        href="https://fonts.googleapis.com/css?family=Nunito:200,200i,300,300i,400,400i,600,600i,700,700i,800,800i,900,900i"
+        rel="stylesheet">
 
-        <!-- Include a specific file here from css/themes/ folder to alter the default theme of the template -->
+    <!-- Custom styles for this template-->
+    <link href="{% static 'backend/css/sb-admin-2.min.css' %}" rel="stylesheet">
+    <style>
+        body {
+            background-color: lightgrey;
+            background-image: url('{% static "backend/bg_login.png" %}');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+        }
+        .bg-login-image {
+            background: url('{% static "backend/bg_login_new.png" %}');
+            background-position: center;
+            background-size: contain;
+            background-repeat: no-repeat;
+        }
+    </style>
 
-        <!-- The themes stylesheet of this template (for using specific theme color in individual elements - must included last) -->
-        <link rel="stylesheet" href="{%static 'backend/css/themes.css' %}">
-        <!-- END Stylesheets -->
+</head>
 
-        <!-- Modernizr (browser feature detection library) -->
-        <script src="{%static 'backend/js/vendor/modernizr.min.js' %}"></script>
+<body class="bg-gradient-primary">
 
-        <style>
-            body {
-                background-color:lightgrey; /* กำหนดพื้นหลังเป็นสีขาว */
-                background-image: url('{% static "backend/bg_login.png" %}'); /* เพิ่มภาพพื้นหลัง */
-                background-size: 30%; /* ทำให้ภาพเต็มหน้าจอ */
-                background-position: center bottom; /* จัดตำแหน่งภาพให้ตรงกลาง */
-                background-repeat: no-repeat; /* หลีกเลี่ยงการซ้ำของภาพ */
-                height: 100vh;
-            }
-            .block.push-bit {
-                background-color: rgba(255, 255, 255, 0.8); /* สีขาวโปร่งแสง */
-                border-radius: 10px; /* เพื่อให้มุมกล่องมีความโค้ง */
-                padding: 20px; /* เพิ่มช่องว่างในกล่อง */
-            }
-            .login-title {
-                background-color: rgba(255, 255, 255, 0.8); /* สีขาวโปร่งแสง */
-                border-radius: 10px; /* เพื่อให้มุมกล่องมีความโค้ง */
-                padding: 20px; /* เพิ่มช่องว่างในกล่อง */
-            }
-        </style>
-    </head>
-    <body>
-        <!-- Login Alternative Row -->
-        <div class="container">
-            <div class="row">
-                <div class="col-md-5 col-md-offset-1">
-                    <div id="login-alt-container">
-                        <!-- Title -->
-                        <!-- <h1 class="push-top-center">
-                            <i class="gi gi-wrench"></i> <strong>Repair</strong>System<br>
-                            <small>มาแชร์บทความ โดยการสมัครนักเขียนกับเราได้ที่นี่!</small>
-                        </h1> -->
-                        <!-- END Title -->
+    <div class="container">
 
-                        <!-- Key Features -->
-                        <!-- <ul class="fa-ul text-muted">
-                            <li><i class="fa fa-check fa-li text-success"></i> </li>
-                            <li><i class="fa fa-check fa-li text-success"></i> เขียนบทความของคุณ</li>
-                            <li><i class="fa fa-check fa-li text-success"></i> แชร์บทความของคุณ</li>
-                        </ul> -->
-                        <!-- END Key Features -->
+        <!-- Outer Row -->
+        <div class="row justify-content-center">
 
-                        <!-- Footer -->
-                        <!-- <footer class="text-muted push-top-bottom">
-                            <small> &copy; <a href="#" target="_blank">Django Framework | KongRuksiam</Frame></a></small>
-                        </footer> -->
-                        <!-- END Footer -->
-                    </div>
-                </div>
-                <div class="col-md-12">
-                    <!-- Login Container -->
-                    <div id="login-container">
-                        <!-- Login Title -->
-                        <div class="login-title text-center ">
-                            <h1><strong><i class="fa fa-wrench"></i> E-Smart Ticket JV</strong></h1>
-                        </div>
-                        <!-- END Login Title -->
+            <div class="col-xl-10 col-lg-12 col-md-9">
 
-                        <!-- Login Block -->
-                        <div class="block push-bit">
-                            <!-- Login Form -->
-                            <form action="{% url 'login' %}" method="post" id="form-login" class="form-horizontal">
-                               {% csrf_token %}
-                                <div class="form-group">
-                                    <div class="col-xs-12">
-                                        <div class="input-group">
-                                            <span class="input-group-addon"><i class="gi gi-user"></i></span>
-                                            <input type="text" id="username" name="username" class="form-control input-lg" placeholder="Username">
-                                        </div>
+                <div class="card o-hidden border-0 shadow-lg my-5">
+                    <div class="card-body p-0">
+                        <!-- Nested Row within Card Body -->
+                        <div class="row">
+                            <div class="col-lg-6 d-none d-lg-block bg-login-image"></div>
+                            <div class="col-lg-6">
+                                <div class="p-5">
+                                    <div class="text-center">
+                                        <h1 class="h4 text-gray-900 mb-4">Welcome Back!</h1>
+                                        <h2 class="h5 text-gray-900 mb-4">E-Smart Ticket JV</h2>
                                     </div>
-                                </div>
-                                <div class="form-group">
-                                    <div class="col-xs-12">
-                                        <div class="input-group">
-                                            <span class="input-group-addon"><i class="gi gi-asterisk"></i></span>
-                                            <input type="password" id="login-password" name="password" class="form-control input-lg" placeholder="Password">
+                                    <form class="user" action="{% url 'login' %}" method="post">
+                                        {% csrf_token %}
+                                        <div class="form-group">
+                                            <input type="text" class="form-control form-control-user"
+                                                id="username" name="username" aria-describedby="emailHelp"
+                                                placeholder="Enter Username...">
                                         </div>
-                                    </div>
-                                </div>
-                                <div class="form-group form-actions">
-                                    <div class="col-xs-6">
+                                        <div class="form-group">
+                                            <input type="password" class="form-control form-control-user"
+                                                id="login-password" name="password" placeholder="Password">
+                                        </div>
+                                        <!-- <div class="form-group">
+                                            <div class="custom-control custom-checkbox small">
+                                                <input type="checkbox" class="custom-control-input" id="customCheck">
+                                                <label class="custom-control-label" for="customCheck">Remember
+                                                    Me</label>
+                                            </div>
+                                        </div> -->
                                         {% for message in messages%}
-                                            <p style="color: red;">{{message}}</p>
+                                            <p class="text-danger text-center">{{message}}</p>
                                         {% endfor %}
+                                        <button type="submit" class="btn btn-primary btn-user btn-block">
+                                            Login
+                                        </button>
+                                        <!-- <hr>
+                                        <a href="index.html" class="btn btn-google btn-user btn-block">
+                                            <i class="fab fa-google fa-fw"></i> Login with Google
+                                        </a>
+                                        <a href="index.html" class="btn btn-facebook btn-user btn-block">
+                                            <i class="fab fa-facebook-f fa-fw"></i> Login with Facebook
+                                        </a> -->
+                                    </form>
+                                    <hr>
+                                    <!-- <div class="text-center">
+                                        <a class="small" href="forgot-password.html">Forgot Password?</a>
                                     </div>
-                                    <div class="col-xs-6 text-right">
-                                        <button type="submit" class="btn btn btn-primary" >Login</button>
-                                    </div>
-                                </div>
-                                <!-- <div class="form-group">
-                                    <div class="col-xs-12 text-center">
-                                        <a href="javascript:void(0)" id="link-register-login"><small>Create a new account</small></a>
-                                    </div>
-                                </div> -->
-                            </form>
-                            <!-- END Login Form -->
-                            <!-- Register Form -->
-                            <form action="#" method="post" id="form-register" class="form-horizontal display-none">
-                                {% csrf_token %}
-                                <div class="form-group">
-                                    <div class="col-xs-12">
-                                        <div class="input-group">
-                                            <span class="input-group-addon"><i class="gi gi-user"></i></span>
-                                            <input type="text" id="register-firstname" name="username" class="form-control input-lg" placeholder="Username">
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="form-group">
-                                    <div class="col-xs-12">
-                                        <div class="input-group">
-                                            <span class="input-group-addon"><i class="gi gi-envelope"></i></span>
-                                            <input type="text" id="register-email" name="email" class="form-control input-lg" placeholder="Email">
-                                        </div>
+                                    <div class="text-center">
+                                        <a class="small" href="register.html">Create an Account!</a>
+                                    </div> -->
+                                    <div class="text-center small">
+                                        Version : 1.0
                                     </div>
                                 </div>
-                                <div class="form-group">
-                                    <div class="col-xs-12">
-                                        <div class="input-group">
-                                            <span class="input-group-addon"><i class="gi gi-asterisk"></i></span>
-                                            <input type="password" id="register-password" name="password" class="form-control input-lg" placeholder="Password">
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="form-group">
-                                    <div class="col-xs-12">
-                                        <div class="input-group">
-                                            <span class="input-group-addon"><i class="gi gi-asterisk"></i></span>
-                                            <input type="password" id="repassword" name="repassword" class="form-control input-lg" placeholder="Re-Password">
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="form-group form-actions">
-                                    <div class="col-xs-6">
-                                    </div>
-                                    <div class="col-xs-6 text-right">
-                                        <button type="submit" class="btn btn-sm btn-success"><i class="fa fa-plus"></i> Register Account</button>
-                                    </div>
-                                </div>
-                                <div class="form-group">
-                                    <div class="col-xs-12 text-center">
-                                        <small>Do you have an account?</small> <a href="javascript:void(0)" id="link-register"><small>Login</small></a>
-                                    </div>
-                                </div>
-                            </form>
-                            <!-- END Register Form -->
+                            </div>
                         </div>
-                        <!-- END Login Block -->
                     </div>
-                    <!-- END Login Container -->
                 </div>
+
             </div>
-        </div>
-        <!-- END Login Alternative Row -->
-        <div style="position: fixed; bottom: 10px; right: 10px; color: black; font-size: 14px;">
-            Version : UAT-1.0
-        </div>
-        <!-- jQuery, Bootstrap.js, jQuery plugins and Custom JS code -->
-        <script src="{% static 'backend/js/vendor/jquery.min.js' %}"></script>
-        <script src="{% static 'backend/js/vendor/bootstrap.min.js' %}"></script>
-        <script src="{% static 'backend/js/plugins.js' %}"></script>
-        <script src="{% static 'backend/js/app.js' %}"></script>
 
-        <!-- Load and execute javascript code used only in this page -->
-        <script src="{% static 'backend/js/pages/login.js' %}"></script>
-        <script>$(function(){ Login.init(); });</script>
+        </div>
 
-    </body>
+    </div>
+
+    <!-- Bootstrap core JavaScript-->
+    <script src="{% static 'backend/vendor/jquery/jquery.min.js' %}"></script>
+    <script src="{% static 'backend/vendor/bootstrap/js/bootstrap.bundle.min.js' %}"></script>
+
+    <!-- Core plugin JavaScript-->
+    <script src="{% static 'backend/vendor/jquery-easing/jquery.easing.min.js' %}"></script>
+
+    <!-- Custom scripts for all pages-->
+    <script src="{% static 'backend/js/sb-admin-2.min.js' %}"></script>
+
+</body>
+
 </html>

@@ -77,7 +77,7 @@ def case(request):
         caseCountDoing = Case.objects.filter(status_id=2, department_id="IT", assign_name=user).count()
         caseCountDone = Case.objects.filter(status_id=5, department_id="IT", assign_name=user).count()
         caseCountSatisfied = Case.objects.filter(status_id=4, department_id="IT", assign_name=user).count()
-        caseCountIT = Case.objects.filter(department_id="IT").count()
+        caseCountIT = Case.objects.filter(department_id="IT", assign_name=user).count()
         caseCountITAssignName = Case.objects.filter(department_id="IT", assign_name=user).count()
     elif user.department_id == "PUR"  and request.user.username == "nisarat":  # User nisrat ดูเฉพาะ PUR ทั้งหมด
         case = Case.objects.filter(department_id="PUR").order_by('-pk').select_related('status', 'category', 'branch', 'department', 'priority')
@@ -92,7 +92,7 @@ def case(request):
         caseCountDoing = Case.objects.filter(status_id=2, department_id="PUR", assign_name=user).count()
         caseCountDone = Case.objects.filter(status_id=5, department_id="PUR", assign_name=user).count()
         caseCountReceive = Case.objects.filter(status_id=7, department_id="PUR", assign_name=user).count()
-        caseCountPUR = Case.objects.filter(department_id="PUR").count()
+        caseCountPUR = Case.objects.filter(department_id="PUR", assign_name=user).count()
     # elif user.department_id == "FIN":  # ถ้าเป็นแอดมิน ให้ดูทั้งหมด
     #     case = Case.objects.filter(department_id="FIN").order_by('-pk').select_related('status', 'category', 'branch', 'department', 'priority')
     #     caseCountPeding = Case.objects.filter(status_id=1, department_id="FIN").count()

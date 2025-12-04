@@ -1,615 +1,706 @@
 <!DOCTYPE html>
 <html lang="en">
-    <head>
-        <meta charset="UTF-8">
-        {% load static %}
-        {% load humanize %}
 
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>E-Smart Ticket JV</title>
+<head>
 
-        <meta name="robots" content="noindex, nofollow">
-        <!-- <meta name="viewport"
-            content="width=device-width,initial-scale=1.0,user-scalable=0"> -->
-        <!-- Stylesheets -->
-        <!-- Bootstrap is included in its original form, unaltered -->
-        <link rel="stylesheet"
-            href="{% static 'backend/css/bootstrap.min.css' %}">
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="description" content="">
+    <meta name="author" content="">
+    <meta name="robots" content="noindex, nofollow">
 
-        <!-- Related styles of various icon packs and plugins -->
-        <link rel="stylesheet" href="{% static 'backend/css/plugins.css' %}">
+    <title>E-Smart Ticket JV</title>
 
-        <!-- The main stylesheet of this template. All Bootstrap overwrites are defined in here -->
-        <link rel="stylesheet" href="{% static 'backend/css/main.css' %}">
+    {% load static %}
+    {% load humanize %}
 
-        <!-- Include a specific file here from css/themes/ folder to alter the default theme of the template -->
+    <!-- Custom fonts for this template-->
+    <link href="{% static 'backend/vendor/fontawesome-free/css/all.min.css' %}" rel="stylesheet" type="text/css">
+    <link
+        href="https://fonts.googleapis.com/css?family=Nunito:200,200i,300,300i,400,400i,600,600i,700,700i,800,800i,900,900i"
+        rel="stylesheet">
 
-        <!-- The themes stylesheet of this template (for using specific theme color in individual elements - must included last) -->
-        <link rel="stylesheet" href="{% static 'backend/css/themes.css' %}">
-        <!-- END Stylesheets -->
+    <!-- Custom styles for this template-->
+    <link href="{% static 'backend/css/sb-admin-2.min.css' %}" rel="stylesheet">
 
-        <!-- Modernizr (browser feature detection library) -->
-        <script src="{% static 'backend/js/vendor/modernizr.min.js' %}"></script>
+    <!-- Custom styles for this page -->
+    <link href="{% static 'backend/vendor/datatables/dataTables.bootstrap4.min.css' %}" rel="stylesheet">
+
+    <!-- Select2 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@ttskch/select2-bootstrap4-theme@x.x.x/dist/select2-bootstrap4.min.css">
+
+    <!-- Include Fancybox CSS -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.5.7/jquery.fancybox.min.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox.css"/>
+    
+    <!-- flatpickr CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <style>
+        .flatpickr-input[readonly] {
+            background-color: white !important;
+            border: 1px solid #ced4da;
+        }
+        .flatpickr-input[disabled] {
+            background-color: #eaebeb !important;  /* สีเทาอ่อน */
+            cursor: not-allowed;
+        }
+    </style>
+    <style>
+        /* Dark Mode Styles */
+        body.dark-mode {
+            background-color: #1a1a1a;
+            color: #f8f9fa;
+        }
+        body.dark-mode #wrapper #content-wrapper {
+            background-color: #1a1a1a;
+        }
+        body.dark-mode .bg-white {
+            background-color: #2d2d2d !important;
+            color: #f8f9fa !important;
+        }
+        body.dark-mode .card {
+            background-color: #2d2d2d;
+            border: 1px solid #444;
+        }
+        body.dark-mode .card-header {
+            background-color: #333;
+            border-bottom: 1px solid #444;
+        }
+        body.dark-mode .text-gray-600, 
+        body.dark-mode .text-gray-800, 
+        body.dark-mode .text-gray-900,
+        body.dark-mode .text-primary {
+            color: #f8f9fa !important;
+        }
+        body.dark-mode .navbar-light .navbar-nav .nav-link {
+            color: #f8f9fa;
+        }
+        body.dark-mode .navbar-light .navbar-nav .nav-link:hover {
+            color: #fff;
+        }
+        body.dark-mode .dropdown-menu {
+            background-color: #2d2d2d;
+            border: 1px solid #444;
+        }
+        body.dark-mode .dropdown-item {
+            color: #f8f9fa;
+        }
+        body.dark-mode .dropdown-item:hover {
+            background-color: #3a3a3a;
+        }
+        body.dark-mode .form-control {
+            background-color: #3a3a3a;
+            border-color: #555;
+            color: #fff;
+        }
+        body.dark-mode .form-control:focus {
+            background-color: #444;
+            color: #fff;
+        }
+        body.dark-mode .form-control:disabled, body.dark-mode .form-control[readonly] {
+            background-color: #2a2a2a !important;
+        }
+        body.dark-mode .table {
+            color: #f8f9fa;
+        }
+        body.dark-mode .table-bordered td, 
+        body.dark-mode .table-bordered th {
+            border-color: #444;
+        }
+        body.dark-mode .page-item.disabled .page-link {
+            background-color: #3a3a3a;
+            border-color: #444;
+        }
+        body.dark-mode .page-link {
+            background-color: #2d2d2d;
+            border-color: #444;
+        }
+        body.dark-mode .sidebar-dark .nav-item .nav-link {
+            color: rgba(255,255,255,.8);
+        }
+        body.dark-mode .sidebar-dark .nav-item .nav-link i {
+            color: rgba(255,255,255,.8);
+        }
+        body.dark-mode .topbar .dropdown-list {
+            background-color: #2d2d2d;
+            border: 1px solid #444;
+        }
+        body.dark-mode .topbar .dropdown-list .dropdown-header {
+            background-color: #333;
+            border: 1px solid #444;
+        }
+    </style>
+    <style>
+        /* Card Hover Animation */
+        .card {
+            transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+        }
         
-        <!-- Include Fancybox CSS -->
-        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.5.7/jquery.fancybox.min.css" />
-        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
-        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox.css"/>
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 .5rem 1rem rgba(0,0,0,.15)!important;
+            z-index: 1;
+        }
         
-        <!-- flatpickr CSS -->
-        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
-            <style>
-                .flatpickr-input[readonly] {
-                    background-color: white !important;
-                    border: 1px solid #ced4da;
-                    /* font-size: 1rem;
-                    padding: 0.375rem 0.75rem;
-                    border-radius: 0.375rem; */
-                }
-                .flatpickr-input[disabled] {
-                    background-color: #eaebeb !important;  /* สีเทาอ่อน */
-                    cursor: not-allowed;
-                }
-            </style>
+        body.dark-mode .card:hover {
+            box-shadow: 0 .5rem 1rem rgba(255,255,255,.05)!important;
+        }
+    </style>
 
-        
-        {% block header %}
-        {% endblock %}
-    </head>
-    <body>
-        <div id="page-wrapper">
-            <div id="page-container"
-                class="sidebar-partial sidebar-visible-lg sidebar-no-animations">
-                <!-- Main Sidebar -->
-                <div id="sidebar">
-                    <!-- Wrapper for scrolling functionality -->
-                    <div id="sidebar-scroll">
-                        <!-- Sidebar Content -->
-                        <div class="sidebar-content">
-                            <!-- Brand -->
-                            <!-- <a href="#" class="sidebar-brand">
-                                <i class="gi gi-wrench"></i><span
-                                    class="sidebar-nav-mini-hide"><strong>E-smart office JV</strong></span>
-                            </a> -->
+    {% block header %}
+    {% endblock %}
 
-                            <span class="sidebar-brand">
-                                <i class="gi gi-wrench"></i><span class="sidebar-nav-mini-hide">
-                                    <strong>E-Smart Ticket JV</strong>
-                                </span>
-                            </span>                            
-                            <!-- END Brand -->
+</head>
 
-                            <!-- User Info -->
-                            <div
-                                class="sidebar-section sidebar-user clearfix sidebar-nav-mini-hide">
-                                <div class="sidebar-user-avatar">
-                                    <!-- <a href="{% url 'case' %}"> -->
-                                        <a href="#"></a>
-                                        <img
-                                            src="{% static 'backend/img/placeholders/avatars/avatar2.jpg' %}"
-                                            alt="avatar">
-                                    </a>
-                                </div>
-                                <div class="sidebar-user-name">{{create_username}} <br>
-                                    <h6>{{request.user.branch.branch_name}}</h6>
-                                </div>
-                                
-                            </div>
-                            <!-- END User Info -->
-                            <!-- Sidebar Navigation -->
-                            <ul class="sidebar-nav">
-                                <li>
-                                    <a href="{% url 'case' %}" class=" active"><i
-                                            class="gi gi-stopwatch sidebar-nav-icon"></i><span
-                                            class="sidebar-nav-mini-hide">Dashboard</span></a>
-                                </li>
-                                <li>
-                                    <a href="#" class="sidebar-nav-menu">
-                                        <i class="fa fa-angle-left sidebar-nav-indicator sidebar-nav-mini-hide"></i>
-                                        <i class="gi gi-wrench sidebar-nav-icon"></i>
-                                        <span class="sidebar-nav-mini-hide">Request group</span>
-                                    </a>
-                                    <ul>
-                                        <li>
-                                            <a class="fa fa-laptop" href="{% url 'displayForm' %}?department_id=IT"> IT </a>
-                                            <a class="fa fa-product-hunt" href="{% url 'displayForm' %}?department_id=PUR"> Purchasing </a>
-                                            <!-- <a class="fa fa-money" aria-hidden="true" href="{% url 'displayForm' %}?department_id=FIN"> Accounting </a> -->
-                                        </li>
-                                    </ul>
-                                </li>
-                                <!-- <li class="sidebar-header">
-                                    <span
-                                        class="sidebar-header-options clearfix"><a
-                                            href="javascript:void(0)"
-                                            data-toggle="tooltip"
-                                            title="Quick Settings"><i
-                                                class="gi gi-settings"></i></a></span>
-                                    <span
-                                        class="sidebar-header-title">จัดการข้อมูล</span>
-                                </li> -->
-                                {% if request.user.is_staff == 1 and request.user.department_id == "IT" or request.user.username == "admin" %}
-                                <li>
-                                    <a href="#" class="sidebar-nav-menu">
-                                        <i class="fa fa-angle-left sidebar-nav-indicator sidebar-nav-mini-hide"></i>
-                                        <i class="gi gi-user sidebar-nav-icon"></i>
-                                        <span class="sidebar-nav-mini-hide">Users</span>
-                                    </a>
-                                    <ul>
-                                        <li>
-                                            <a class="fa fa-users" href="{% url 'displayUser' %}"> Users Management </a>
-                                        </li>
-                                    </ul>
-                                </li>
-                                {%endif%}
-                                <li>
-                                    <a href="#" class="sidebar-nav-menu"><i
-                                            class="fa fa-angle-left sidebar-nav-indicator sidebar-nav-mini-hide"></i><i
-                                            class="gi gi-table sidebar-nav-icon"></i><span
-                                            class="sidebar-nav-mini-hide">Report</span></a>
-                                    <ul>
-                                        <li>
-                                            <a href="{% url 'reportCase' %}">Report service request</a>
-                                        </li>
-                                    </ul>
-                                </li>
-                            </ul>
-                            <!-- END Sidebar Navigation -->
-                        </div>
-                        <!-- END Sidebar Content -->
-                    </div>
-                    <!-- END Wrapper for scrolling functionality -->
+<body id="page-top">
+
+    <!-- Page Wrapper -->
+    <div id="wrapper">
+
+        <!-- Sidebar -->
+        <ul class="navbar-nav bg-gradient-primary sidebar sidebar-dark accordion" id="accordionSidebar">
+
+            <!-- Sidebar - Brand -->
+            <a class="sidebar-brand d-flex align-items-center justify-content-center" href="{% url 'case' %}">
+                <div class="sidebar-brand-icon rotate-n-15">
+                    <i class="fas fa-wrench"></i>
                 </div>
-                <!-- END Main Sidebar -->
+                <div class="sidebar-brand-text mx-3">E-Smart Ticket JV</div>
+            </a>
 
-                <!-- Main Container -->
-                <div id="main-container">
-                    <header class="navbar navbar-default">
-                        <!-- Left Header Navigation -->
-                        <ul class="nav navbar-nav-custom">
-                            {% if request.resolver_match.view_name == 'editData' or request.resolver_match.view_name == 'addImages' or request.resolver_match.view_name == 'displayForm' %}
-                            <!-- Main Sidebar Toggle Button -->
-                                <li>
-                                    <a href="javascript:void(0)"
-                                        onclick="App.sidebar('toggle-sidebar');this.blur();">
-                                        <i class="fa fa-bars fa-fw"></i>
-                                    </a>
-                                </li>
-                                <li>
-                                    <a href="{% url 'case' %}" onclick="this.blur();" style="margin-right: 10px;" title="Back to Dashboard">
-                                        <i class="fa fa-arrow-left fa-fw"></i>
-                                    </a>
-                                </li>
-                            {%else%}
-                                <!-- Main Sidebar Toggle Button -->
-                                <li>
-                                    <a href="javascript:void(0)"
-                                        onclick="App.sidebar('toggle-sidebar');this.blur();">
-                                        <i class="fa fa-bars fa-fw"></i>
-                                    </a>
-                                </li>
-                            {% endif %}          
-                            <!-- END Main Sidebar Toggle Button -->
-                        </ul>
-                        <!-- END Left Header Navigation -->
-                        <!-- Search Form -->
-                        <!-- <form action="#" method="post" 
-                            class="navbar-form-custom">
-                            {% csrf_token %}
-                            <div class="form-group">
-                                <input type="text" id="top-search"
-                                    name="top-search" class="form-control"
-                                    placeholder="Search..">
-                            </div>
-                        </form> -->
-                        <!-- END Search Form -->
+            <!-- Divider -->
+            <hr class="sidebar-divider my-0">
 
-                        <!-- Right Header Navigation -->
-                        <ul class="nav navbar-nav-custom pull-right">
-                            <!-- User Dropdown -->
-                            <li class="dropdown" style="margin-right: 10px;">
-                                <a href="javascript:void(0)"
-                                    class="dropdown-toggle"
-                                    data-toggle="dropdown">
-                                    <img
-                                        src="{% static 'backend/img/placeholders/avatars/avatar2.jpg' %}"
-                                        alt="avatar"> <i
-                                        class="fa fa-angle-down"></i>
+            <!-- User Info (Optional in Sidebar for SB Admin 2, but keeping for context if needed, or rely on Topbar) -->
+            <!-- Keeping it simple as per SB Admin 2 default, user info is in Topbar -->
+
+            <!-- Nav Item - Dashboard -->
+            <li class="nav-item active">
+                <a class="nav-link" href="{% url 'case' %}">
+                    <i class="fas fa-fw fa-tachometer-alt"></i>
+                    <span>Dashboard</span></a>
+            </li>
+
+            <!-- Divider -->
+            <hr class="sidebar-divider">
+
+            <!-- Heading -->
+            <div class="sidebar-heading">
+                Menu
+            </div>
+
+            <!-- Nav Item - Request Group -->
+            <li class="nav-item">
+                <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseRequest"
+                    aria-expanded="true" aria-controls="collapseRequest">
+                    <i class="fas fa-fw fa-wrench"></i>
+                    <span>Request group</span>
+                </a>
+                <div id="collapseRequest" class="collapse" aria-labelledby="headingTwo" data-parent="#accordionSidebar">
+                    <div class="bg-white py-2 collapse-inner rounded">
+                        <h6 class="collapse-header">Departments:</h6>
+                        <a class="collapse-item" href="{% url 'displayForm' %}?department_id=IT"><i class="fas fa-laptop mr-2"></i> IT</a>
+                        <a class="collapse-item" href="{% url 'displayForm' %}?department_id=PUR"><i class="fab fa-product-hunt mr-2"></i> Purchasing</a>
+                        <!-- <a class="collapse-item" href="{% url 'displayForm' %}?department_id=FIN"> Accounting </a> -->
+                    </div>
+                </div>
+            </li>
+
+            {% if request.user.is_staff == 1 and request.user.department_id == "IT" or request.user.username == "admin" %}
+            <!-- Nav Item - Users -->
+            <li class="nav-item">
+                <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseUsers"
+                    aria-expanded="true" aria-controls="collapseUsers">
+                    <i class="fas fa-fw fa-user"></i>
+                    <span>Users</span>
+                </a>
+                <div id="collapseUsers" class="collapse" aria-labelledby="headingUtilities"
+                    data-parent="#accordionSidebar">
+                    <div class="bg-white py-2 collapse-inner rounded">
+                        <h6 class="collapse-header">Management:</h6>
+                        <a class="collapse-item" href="{% url 'displayUser' %}"><i class="fas fa-users mr-2"></i> Users Management</a>
+                    </div>
+                </div>
+            </li>
+            {% endif %}
+
+            <!-- Nav Item - Report -->
+            <li class="nav-item">
+                <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseReport"
+                    aria-expanded="true" aria-controls="collapseReport">
+                    <i class="fas fa-fw fa-table"></i>
+                    <span>Report</span>
+                </a>
+                <div id="collapseReport" class="collapse" aria-labelledby="headingPages" data-parent="#accordionSidebar">
+                    <div class="bg-white py-2 collapse-inner rounded">
+                        <h6 class="collapse-header">Reports:</h6>
+                        <a class="collapse-item" href="{% url 'reportCase' %}">Report service request</a>
+                    </div>
+                </div>
+            </li>
+
+            <!-- Divider -->
+            <hr class="sidebar-divider d-none d-md-block">
+
+            <!-- Sidebar Toggler (Sidebar) -->
+            <div class="text-center d-none d-md-inline">
+                <button class="rounded-circle border-0" id="sidebarToggle"></button>
+            </div>
+
+        </ul>
+        <!-- End of Sidebar -->
+
+        <!-- Content Wrapper -->
+        <div id="content-wrapper" class="d-flex flex-column">
+
+            <!-- Main Content -->
+            <div id="content">
+
+                <!-- Topbar -->
+                <nav class="navbar navbar-expand navbar-light bg-white topbar mb-4 static-top shadow">
+
+                    <!-- Sidebar Toggle (Topbar) -->
+                    <button id="sidebarToggleTop" class="btn btn-link d-md-none rounded-circle mr-3">
+                        <i class="fa fa-bars"></i>
+                    </button>
+
+                    <!-- Topbar Navbar -->
+                    <ul class="navbar-nav ml-auto">
+
+                        <!-- Dark Mode Toggle -->
+                        <li class="nav-item dropdown no-arrow mx-1">
+                            <a class="nav-link dropdown-toggle" href="#" id="darkModeToggle" role="button" title="Toggle Dark Mode">
+                                <i class="fas fa-moon fa-fw"></i>
+                            </a>
+                        </li>
+
+                        <!-- Time Display -->
+                        <li class="nav-item d-flex align-items-center mx-1">
+                            <i class="far fa-clock mr-2"></i>
+                            <span id="current-time">--:--:--</span>
+                        </li>
+
+                        <div class="topbar-divider d-none d-sm-block"></div>
+
+                        <!-- Nav Item - User Information -->
+                        <li class="nav-item dropdown no-arrow">
+                            <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button"
+                                data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                <span class="mr-2 d-none d-lg-inline text-gray-600 small">
+                                    {{create_username}} <br>
+                                    <small>{{request.user.branch.branch_name}}</small>
+                                </span>
+                                <img class="img-profile rounded-circle"
+                                    src="{% static 'backend/img/undraw_profile.svg' %}">
+                            </a>
+                            <!-- Dropdown - User Information -->
+                            <div class="dropdown-menu dropdown-menu-right shadow animated--grow-in"
+                                aria-labelledby="userDropdown">
+                                <a class="dropdown-item btn-logout" href="#" data-url="{% url 'logout' %}">
+                                    <i class="fas fa-sign-out-alt fa-sm fa-fw mr-2 text-gray-400"></i>
+                                    Logout
                                 </a>
-                                <ul
-                                    class="dropdown-menu dropdown-custom dropdown-menu-right">
-                                    <li
-                                        class="dropdown-header text-center">Member</li>
-                                    <li class="divider"></li>
-                                    <li>
-                                        <a href="#" 
-                                        class="btn-logout" 
-                                        data-url="{% url 'logout' %}">
-                                            <i class="fa fa-ban fa-fw pull-right"></i>
-                                            Logout
-                                        </a>
-                                    </li>
-                                    <li class="divider"></li>
-                                </ul>
-                            </li>
-                            <script>
-                                document.addEventListener("DOMContentLoaded", function() {
-                                    const logoutBtn = document.querySelector(".btn-logout");
-                                    if (logoutBtn) {
-                                        logoutBtn.addEventListener("click", function(e) {
-                                            e.preventDefault(); // ❌ กันไม่ให้กดแล้ว redirect ทันที
+                            </div>
+                        </li>
 
-                                            const url = this.getAttribute("data-url");
+                    </ul>
 
-                                            Swal.fire({
-                                                title: "คุณต้องการออกจากระบบหรือไม่?",
-                                                icon: "warning",
-                                                showCancelButton: true,
-                                                confirmButtonColor: "#d33",
-                                                cancelButtonColor: "#3085d6",
-                                            confirmButtonText: "ออกจากระบบ",
-                                            cancelButtonText: "ยกเลิก"
-                                        }).then((result) => {
-                                            if (result.isConfirmed) {
-                                                window.location.href = url; // ✅ ไปหน้า logout
-                                            }
-                                        });
-                                    });
-                                }
-                            });
-                            </script>
+                </nav>
+                <!-- End of Topbar -->
 
-                            <!-- END User Dropdown -->
-                             <!-- Add Time Display -->
-                             <li style="display: flex; align-items: center; margin-right: 10px;">
-                                <i class="fa fa-clock-o" style="margin-right: 3px; margin-top: 2px; "></i> 
-                                <span id="current-time">--:--:--</span>
-                            </li>
-                        </ul>
-                        <!-- END Right Header Navigation -->
-                    </header>
-                    <!-- END Header -->
-                    <script>
-                        function updateTime() {
-                            const timeElement = document.getElementById('current-time');
-                            const now = new Date();
-                            const hours = String(now.getHours()).padStart(2, '0');
-                            const minutes = String(now.getMinutes()).padStart(2, '0');
-                            const seconds = String(now.getSeconds()).padStart(2, '0');
-                            timeElement.textContent = `${hours}:${minutes}:${seconds}`;
-                        }
-                    
-                        // อัปเดตเวลาใหม่ทุก 1 วินาที
-                        setInterval(updateTime, 1000);
-                        updateTime(); // อัปเดตครั้งแรกเมื่อโหลดหน้า
-                    </script>
-                    
-                    <!-- Page content -->
-                    <div id="page-content">
-                        {% if request.path == '/' %}
+                <!-- Begin Page Content -->
+                <div class="container-fluid">
+                    {% if request.path == '/' %}
                         <!-- Mini Top Stats Row -->
                         <div class="row">  
                             {% if request.user.username == "admin"  or request.user.department_id is None %}                                       
-                            <div class="col-sm-6 col-lg-6">
-                                <!-- Widget -->
-                                <a href="{% url 'case'%}?department_id=IT" class="widget widget-hover-effect1">
-                                    <div class="widget-simple">
-                                        <div
-                                            class="widget-icon pull-left themed-background-amethyst animation-fadeIn">
-                                            <i class="bi bi-laptop"></i>
+                            <div class="col-xl-3 col-md-6 mb-4">
+                                <div class="card border-left-primary shadow h-100 py-2">
+                                    <div class="card-body">
+                                        <div class="row no-gutters align-items-center">
+                                            <div class="col mr-2">
+                                                <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                                                    IT Cases</div>
+                                                <div class="h5 mb-0 font-weight-bold text-gray-800">{{caseCountIT | intcomma}}</div>
+                                            </div>
+                                            <div class="col-auto">
+                                                <i class="fas fa-laptop fa-2x text-gray-300"></i>
+                                            </div>
                                         </div>
-                                        <h3
-                                            class="widget-content text-right animation-pullDown">
-                                            <strong>{{caseCountIT | intcomma}}  Cases</strong><br>
-                                            <small>IT</small>
-                                        </h3>
+                                        <a href="{% url 'case'%}?department_id=IT" class="stretched-link"></a>
                                     </div>
-                                </a> 
-                                <!-- END Widget -->
+                                </div>
                             </div>
                             {% endif %}    
                             {%if request.user.department_id == "IT"%}
-                            <div class="col-sm-12 col-lg-12">
-                                <!-- Widget -->
-                                <a href="{% url 'case'%}?department_id=IT" class="widget widget-hover-effect1">
-                                    <div class="widget-simple">
-                                        <div
-                                            class="widget-icon pull-left themed-background-amethyst animation-fadeIn">
-                                            <i class="bi bi-laptop"></i>
+                            <div class="col-xl-12 col-md-12 mb-4">
+                                <div class="card border-left-primary shadow h-100 py-2">
+                                    <div class="card-body">
+                                        <div class="row no-gutters align-items-center">
+                                            <div class="col mr-2">
+                                                <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                                                    IT Cases</div>
+                                                <div class="h5 mb-0 font-weight-bold text-gray-800">{{caseCountIT | intcomma}}</div>
+                                            </div>
+                                            <div class="col-auto">
+                                                <i class="fas fa-laptop fa-2x text-gray-300"></i>
+                                            </div>
                                         </div>
-                                        <h3
-                                            class="widget-content text-right animation-pullDown">
-                                            <strong>{{caseCountIT | intcomma}}  Cases</strong><br>
-                                            <small>IT</small>
-                                        </h3>
+                                        <a href="{% url 'case'%}?department_id=IT" class="stretched-link"></a>
                                     </div>
-                                </a> 
-                                <!-- END Widget -->
+                                </div>
                             </div>
-                            <!-- <div class="col-sm-6 col-lg-6">                            
-                                <a href="{% url 'case'%}?department_id=IT&mycase=1" class="widget widget-hover-effect1">
-                                    <div class="widget-simple">
-                                        <div
-                                            class="widget-icon pull-left themed-background-waterlily animation-fadeIn">
-                                            <i class="bi bi-file-earmark-person"></i>
-                                        </div>
-                                        <h3
-                                            class="widget-content text-right animation-pullDown">
-                                            <strong>{{caseCountITAssignName | intcomma}}  Cases</strong><br>
-                                            <small>My Cases</small>
-                                        </h3>
-                                    </div>
-                                </a>                              
-                            </div> -->
                             {% endif %}
 
                             {% if request.user.username == "admin" or request.user.department_id is None %}
-                            <div class="col-sm-6 col-lg-6">
-                                <!-- Widget -->
-                                <a href="{% url 'case' %}?department_id=PUR" class="widget widget-hover-effect1">
-                                    <div class="widget-simple">
-                                        <div
-                                            class="widget-icon pull-left themed-background-blackberry animation-fadeIn">
-                                            <i class="bi bi-receipt"></i>
+                            <div class="col-xl-3 col-md-6 mb-4">
+                                <div class="card border-left-success shadow h-100 py-2">
+                                    <div class="card-body">
+                                        <div class="row no-gutters align-items-center">
+                                            <div class="col mr-2">
+                                                <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                                                    Purchasing Cases</div>
+                                                <div class="h5 mb-0 font-weight-bold text-gray-800">{{caseCountPUR | intcomma}}</div>
+                                            </div>
+                                            <div class="col-auto">
+                                                <i class="fas fa-receipt fa-2x text-gray-300"></i>
+                                            </div>
                                         </div>
-                                        <h3
-                                            class="widget-content text-right animation-pullDown">
-                                            <strong>{{caseCountPUR | intcomma}}  Cases</strong><br>
-                                            <small>Purchasing</small>
-                                        </h3>
+                                        <a href="{% url 'case' %}?department_id=PUR" class="stretched-link"></a>
                                     </div>
-                                </a>                               
-                                <!-- END Widget -->
+                                </div>
                             </div>
                             {% endif %}
                             {%if request.user.department_id == "PUR"%}
-                            <div class="col-sm-12 col-lg-12">
-                                <!-- Widget -->
-                                <a href="{% url 'case' %}?department_id=PUR" class="widget widget-hover-effect1">
-                                    <div class="widget-simple">
-                                        <div
-                                            class="widget-icon pull-left themed-background-blackberry animation-fadeIn">
-                                            <i class="bi bi-receipt"></i>
+                            <div class="col-xl-12 col-md-12 mb-4">
+                                <div class="card border-left-success shadow h-100 py-2">
+                                    <div class="card-body">
+                                        <div class="row no-gutters align-items-center">
+                                            <div class="col mr-2">
+                                                <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                                                    Purchasing Cases</div>
+                                                <div class="h5 mb-0 font-weight-bold text-gray-800">{{caseCountPUR | intcomma}}</div>
+                                            </div>
+                                            <div class="col-auto">
+                                                <i class="fas fa-receipt fa-2x text-gray-300"></i>
+                                            </div>
                                         </div>
-                                        <h3
-                                            class="widget-content text-right animation-pullDown">
-                                            <strong>{{caseCountPUR | intcomma}}  Cases</strong><br>
-                                            <small>Purchasing</small>
-                                        </h3>
+                                        <a href="{% url 'case' %}?department_id=PUR" class="stretched-link"></a>
                                     </div>
-                                </a>                               
-                                <!-- END Widget -->
+                                </div>
                             </div>
                             {% endif %}
 
                             {% if request.user.username == "admin" %}
-                            <div class="col-sm-4 col-lg-4">
-                                <a href="{% url 'case' %}?department_id=FIN" class="widget widget-hover-effect1">
-                                    <div class="widget-simple">
-                                        <div
-                                            class="widget-icon pull-left themed-background-fancy animation-fadeIn">
-                                            <i class="bi bi-cash-stack"></i>
+                            <div class="col-xl-3 col-md-6 mb-4">
+                                <div class="card border-left-info shadow h-100 py-2">
+                                    <div class="card-body">
+                                        <div class="row no-gutters align-items-center">
+                                            <div class="col mr-2">
+                                                <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
+                                                    Accounting Cases</div>
+                                                <div class="h5 mb-0 font-weight-bold text-gray-800">{{caseCountFIN | intcomma}}</div>
+                                            </div>
+                                            <div class="col-auto">
+                                                <i class="fas fa-coins fa-2x text-gray-300"></i>
+                                            </div>
                                         </div>
-                                        <h3
-                                            class="widget-content text-right animation-pullDown">
-                                            <strong>{{caseCountFIN | intcomma}}  Cases</strong><br>
-                                            <small>Accounting</small>
-                                        </h3>
+                                        <a href="{% url 'case' %}?department_id=FIN" class="stretched-link"></a>
                                     </div>
-                                </a>                                
-                            </div> 
-                             {% endif %} 
-                             {%if request.user.department_id == "FIN"%}
-                            <div class="col-sm-12 col-lg-12">
-                                <a href="{% url 'case' %}?department_id=FIN" class="widget widget-hover-effect1">
-                                    <div class="widget-simple">
-                                        <div
-                                            class="widget-icon pull-left themed-background-fancy animation-fadeIn">
-                                            <i class="bi bi-cash-stack"></i>
+                                </div>
+                            </div>
+                            {% endif %} 
+                            {%if request.user.department_id == "FIN"%}
+                            <div class="col-xl-12 col-md-12 mb-4">
+                                <div class="card border-left-info shadow h-100 py-2">
+                                    <div class="card-body">
+                                        <div class="row no-gutters align-items-center">
+                                            <div class="col mr-2">
+                                                <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
+                                                    Accounting Cases</div>
+                                                <div class="h5 mb-0 font-weight-bold text-gray-800">{{caseCountFIN | intcomma}}</div>
+                                            </div>
+                                            <div class="col-auto">
+                                                <i class="fas fa-coins fa-2x text-gray-300"></i>
+                                            </div>
                                         </div>
-                                        <h3
-                                            class="widget-content text-right animation-pullDown">
-                                            <strong>{{caseCountFIN | intcomma}}  Cases</strong><br>
-                                            <small>Accounting</small>
-                                        </h3>
+                                        <a href="{% url 'case' %}?department_id=FIN" class="stretched-link"></a>
                                     </div>
-                                </a>                               
+                                </div>
                             </div>
                             {% endif %}
 
-                            <div class="col-sm-3 col-lg-3">
-                                <!-- Widget -->
-                                <a href="{% url 'case' %}?status_id=1" class="widget widget-hover-effect1">
-                                    <div class="widget-simple">
-                                        <div
-                                            class="widget-icon pull-left themed-background-info animation-fadeIn">
-                                            <i class="fa fa-clock-o"></i>
+                            <div class="col-xl-3 col-md-6 mb-4">
+                                <div class="card border-left-warning shadow h-100 py-2">
+                                    <div class="card-body">
+                                        <div class="row no-gutters align-items-center">
+                                            <div class="col mr-2">
+                                                <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
+                                                    Pending Cases</div>
+                                                <div class="h5 mb-0 font-weight-bold text-gray-800">{{caseCountPeding | intcomma}}</div>
+                                            </div>
+                                            <div class="col-auto">
+                                                <i class="fas fa-clock fa-2x text-gray-300"></i>
+                                            </div>
                                         </div>
-                                        <h3
-                                            class="widget-content text-right animation-pullDown">
-                                            {{caseCountPeding | intcomma}} <strong>Cases</strong>
-                                            <small>Pending</small>
-                                        </h3>
+                                        <a href="{% url 'case' %}?status_id=1" class="stretched-link"></a>
                                     </div>
-                                </a>
-                                <!-- END Widget -->
+                                </div>
                             </div>
 
-                            <div class="col-sm-3 col-lg-3">
-                                <!-- Widget -->
-                                <a href="{% url 'case' %}?status_id=2" class="widget widget-hover-effect1">
-                                    <div class="widget-simple">
-                                        <div
-                                            class="widget-icon pull-left themed-background-warning animation-fadeIn">
-                                            <i class="fa fa-wrench"></i>
+                            <div class="col-xl-3 col-md-6 mb-4">
+                                <div class="card border-left-secondary shadow h-100 py-2">
+                                    <div class="card-body">
+                                        <div class="row no-gutters align-items-center">
+                                            <div class="col mr-2">
+                                                <div class="text-xs font-weight-bold text-secondary text-uppercase mb-1">
+                                                    In Progress Cases</div>
+                                                <div class="h5 mb-0 font-weight-bold text-gray-800">{{caseCountDoing | intcomma}}</div>
+                                            </div>
+                                            <div class="col-auto">
+                                                <i class="fas fa-tools fa-2x text-gray-300"></i>
+                                            </div>
                                         </div>
-                                        <h3
-                                            class="widget-content text-right animation-pullDown">
-                                            {{caseCountDoing | intcomma}} <strong>Cases</strong>
-                                            <small>In progress</small>
-                                        </h3>
+                                        <a href="{% url 'case' %}?status_id=2" class="stretched-link"></a>
                                     </div>
-                                </a>
-                                <!-- END Widget -->
+                                </div>
                             </div>
 
-                            {%if request.user.is_staff == 0 %}
-                            <div class="col-sm-2 col-lg-2">
-                                <!-- Widget -->
-                                <a href="{% url 'case' %}?status_id=5" class="widget widget-hover-effect1">
-                                    <div class="widget-simple">
-                                        <div
-                                            class="widget-icon pull-left themed-background-success animation-fadeIn">
-                                            <i class="fa fa-check-square"></i>
+                            <div class="col-xl-3 col-md-6 mb-4">
+                                <div class="card border-left-success shadow h-100 py-2">
+                                    <div class="card-body">
+                                        <div class="row no-gutters align-items-center">
+                                            <div class="col mr-2">
+                                                <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                                                    Completed Cases</div>
+                                                <div class="h5 mb-0 font-weight-bold text-gray-800">{{caseCountDone | intcomma}}</div>
+                                            </div>
+                                            <div class="col-auto">
+                                                <i class="fas fa-check-circle fa-2x text-gray-300"></i>
+                                            </div>
                                         </div>
-                                        <h3
-                                            class="widget-content text-right animation-pullDown">
-                                            {{caseCountDone | intcomma}} <strong>Cases</strong>
-                                            <small>Completed</small>
-                                        </h3>
+                                        <a href="{% url 'case' %}?status_id=5" class="stretched-link"></a>
                                     </div>
-                                </a>
-                                <!-- END Widget -->
+                                </div>
                             </div>
-                            {%else%}
-                            <div class="col-sm-3 col-lg-3">
-                                <!-- Widget -->
-                                <a href="{% url 'case' %}?status_id=5" class="widget widget-hover-effect1">
-                                    <div class="widget-simple">
-                                        <div
-                                            class="widget-icon pull-left themed-background-success animation-fadeIn">
-                                            <i class="fa fa-check-square"></i>
-                                        </div>
-                                        <h3
-                                            class="widget-content text-right animation-pullDown">
-                                            {{caseCountDone | intcomma}} <strong>Cases</strong>
-                                            <small>Completed</small>
-                                        </h3>
-                                    </div>
-                                </a>
-                                <!-- END Widget -->
-                            </div>
-                            {%endif%}
 
                             {%if request.user.department_id == "PUR"%}
-                            <div class="col-sm-3 col-lg-3">
-                                <!-- Widget -->
-                                <a href="{% url 'case' %}?status_id=7" class="widget widget-hover-effect1">
-                                    <div class="widget-simple">
-                                        <div
-                                            class="widget-icon pull-left themed-background-flatie animation-fadeIn">
-                                            <i class="fa fa-sign-language"></i>
+                            <div class="col-xl-3 col-md-6 mb-4">
+                                <div class="card border-left-info shadow h-100 py-2">
+                                    <div class="card-body">
+                                        <div class="row no-gutters align-items-center">
+                                            <div class="col mr-2">
+                                                <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
+                                                    Waiting Receive</div>
+                                                <div class="h5 mb-0 font-weight-bold text-gray-800">{{caseCountReceive | intcomma}}</div>
+                                            </div>
+                                            <div class="col-auto">
+                                                <i class="fas fa-hand-holding fa-2x text-gray-300"></i>
+                                            </div>
                                         </div>
-                                        <h3
-                                            class="widget-content text-right animation-pullDown">
-                                            {{caseCountReceive | intcomma}} <strong>Cases</strong>
-                                            <small>Waiting Receive</small>
-                                        </h3>
+                                        <a href="{% url 'case' %}?status_id=7" class="stretched-link"></a>
                                     </div>
-                                </a>
-                                <!-- END Widget -->
+                                </div>
                             </div>
                             {% endif %}
 
-                            {%if request.user.department_id == "IT"%}
-                            <div class="col-sm-3 col-lg-3">
-                                <!-- Widget -->
-                                <a href="{% url 'case' %}?status_id=4" class="widget widget-hover-effect1">
-                                    <div class="widget-simple">
-                                        <div
-                                            class="widget-icon pull-left themed-background-coral animation-fadeIn">
-                                            <i class="fa fa-smile-o"></i>
+                            {%if request.user.department_id == "IT" or request.user.is_staff == 0 %}
+                            <div class="col-xl-3 col-md-6 mb-4">
+                                <div class="card border-left-danger shadow h-100 py-2">
+                                    <div class="card-body">
+                                        <div class="row no-gutters align-items-center">
+                                            <div class="col mr-2">
+                                                <div class="text-xs font-weight-bold text-danger text-uppercase mb-1">
+                                                    Waiting Satisfied</div>
+                                                <div class="h5 mb-0 font-weight-bold text-gray-800">{{caseCountSatisfied | intcomma}}</div>
+                                            </div>
+                                            <div class="col-auto">
+                                                <i class="fas fa-smile fa-2x text-gray-300"></i>
+                                            </div>
                                         </div>
-                                        <h3
-                                            class="widget-content text-right animation-pullDown">
-                                            {{caseCountSatisfied | intcomma}} <strong>Cases</strong>
-                                            <small>Waiting Satisfied</small>
-                                        </h3>
+                                        <a href="{% url 'case' %}?status_id=4" class="stretched-link"></a>
                                     </div>
-                                </a>
-                                <!-- END Widget -->
+                                </div>
                             </div>                         
                             {% endif %}
 
                             {%if request.user.is_staff == 0 %}
-                            <div class="col-sm-2 col-lg-2">
-                                <!-- Widget -->
-                                <a href="{% url 'case' %}?status_id=4" class="widget widget-hover-effect1">
-                                    <div class="widget-simple">
-                                        <div
-                                            class="widget-icon pull-left themed-background-coral animation-fadeIn">
-                                            <i class="fa fa-smile-o"></i> 
+                            <div class="col-xl-3 col-md-6 mb-4">
+                                <div class="card border-left-info shadow h-100 py-2">
+                                    <div class="card-body">
+                                        <div class="row no-gutters align-items-center">
+                                            <div class="col mr-2">
+                                                <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
+                                                    Waiting Receive</div>
+                                                <div class="h5 mb-0 font-weight-bold text-gray-800">{{caseCountReceive | intcomma}}</div>
+                                            </div>
+                                            <div class="col-auto">
+                                                <i class="fas fa-hand-holding fa-2x text-gray-300"></i>
+                                            </div>
                                         </div>
-                                        <h3
-                                            class="widget-content text-right animation-pullDown">
-                                            {{caseCountSatisfied | intcomma}} <strong>Cases</strong>
-                                            <small>Waiting Satisfied</small>
-                                        </h3>
+                                        <a href="{% url 'case' %}?status_id=7" class="stretched-link"></a>
                                     </div>
-                                </a>
-                                <!-- END Widget -->
-                            </div>
-                            
-                            <div class="col-sm-2 col-lg-2">
-                                <!-- Widget -->
-                                <a href="{% url 'case' %}?status_id=7" class="widget widget-hover-effect1">
-                                    <div class="widget-simple">
-                                        <div
-                                            class="widget-icon pull-left themed-background-flatie animation-fadeIn">
-                                            <i class="fa fa-sign-language"></i>
-                                        </div>
-                                        <h3
-                                            class="widget-content text-right animation-pullDown">
-                                            {{caseCountReceive | intcomma}} <strong>Cases</strong>
-                                            <small>Waiting Receive</small>
-                                        </h3>
-                                    </div>
-                                </a>
-                                <!-- END Widget -->
+                                </div>
                             </div>
                             {% endif %}
 
-
                         </div>
-                        {% endif %}
-                        <!-- END Mini Top Stats Row -->
-                            {% block content %}
-                            {% endblock %}
-                    </div>
-                    <!-- END Page Content -->
+                    {% endif %}
+                    
+                    {% block content %}
+                    {% endblock %}
+
                 </div>
-                <!-- END Main Container -->
+                <!-- /.container-fluid -->
+
             </div>
-            <!-- END Page Container -->
+            <!-- End of Main Content -->
+
+            <!-- Footer -->
+            <footer class="sticky-footer bg-white">
+                <div class="container my-auto">
+                    <div class="copyright text-center my-auto">
+                        <span>Copyright &copy; E-Smart Ticket JV 2025</span>
+                    </div>
+                </div>
+            </footer>
+            <!-- End of Footer -->
+
         </div>
-        <!-- END Page Wrapper -->
-        <!-- Scroll to top link, initialized in js/app.js - scrollToTop() -->
+        <!-- End of Content Wrapper -->
 
-        <a href="#" id="to-top"><i class="fa fa-angle-double-up"></i></a>
-        <!-- jQuery, Bootstrap.js, jQuery plugins and Custom JS code -->
-        <script src="{% static 'backend/js/vendor/jquery.min.js' %}"></script>
-        <script
-            src="{% static 'backend/js/vendor/bootstrap.min.js' %}"></script>
-        <script src="{% static 'backend/js/plugins.js' %}"></script>
-        <script src="{% static 'backend/js/app.js' %}"></script>
+    </div>
+    <!-- End of Page Wrapper -->
 
-        <script src="{% static 'backend/js/pages/ecomProducts.js' %}"></script>
-        <script>$(function(){ EcomProducts.init(); });</script>
+    <!-- Scroll to Top Button-->
+    <a class="scroll-to-top rounded" href="#page-top">
+        <i class="fas fa-angle-up"></i>
+    </a>
 
-        <!-- Include Fancybox JS -->
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.5.7/jquery.fancybox.min.js"></script>  
-        <script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox.umd.js"></script>
+    <!-- Bootstrap core JavaScript-->
+    <script src="{% static 'backend/vendor/jquery/jquery.min.js' %}"></script>
+    <script src="{% static 'backend/vendor/bootstrap/js/bootstrap.bundle.min.js' %}"></script>
 
-        <!-- flatpickr JS -->
-        <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
-        <script>
-            flatpickr("#product_receive_date", {
-                enableTime: true,
-                dateFormat: "d M Y, h:i K",  // เช่น 11 Jun 2025, 04:16 PM
-                altInput: false,
-                altFormat: "d M Y, h:i K",   // รูปแบบแสดงผลที่คุณต้องการ
-                time_24hr: false,
+    <!-- Core plugin JavaScript-->
+    <script src="{% static 'backend/vendor/jquery-easing/jquery.easing.min.js' %}"></script>
+
+    <!-- Custom scripts for all pages-->
+    <script src="{% static 'backend/js/sb-admin-2.min.js' %}"></script>
+
+    <!-- Page level plugins -->
+    <script src="{% static 'backend/vendor/datatables/jquery.dataTables.min.js' %}"></script>
+    <script src="{% static 'backend/vendor/datatables/dataTables.bootstrap4.min.js' %}"></script>
+
+    <!-- Select2 JS -->
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+
+    <!-- Include Fancybox JS -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.5.7/jquery.fancybox.min.js"></script>  
+    <script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox.umd.js"></script>
+    
+    <!-- flatpickr JS -->
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <script>
+        flatpickr("#product_receive_date", {
+            enableTime: true,
+            dateFormat: "d M Y, h:i K",
+            altInput: false,
+            altFormat: "d M Y, h:i K",
+            time_24hr: false,
+        });
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <script>
+        function updateTime() {
+            const timeElement = document.getElementById('current-time');
+            if (timeElement) {
+                const now = new Date();
+                const hours = String(now.getHours()).padStart(2, '0');
+                const minutes = String(now.getMinutes()).padStart(2, '0');
+                const seconds = String(now.getSeconds()).padStart(2, '0');
+                timeElement.textContent = `${hours}:${minutes}:${seconds}`;
+            }
+        }
+    
+        // อัปเดตเวลาใหม่ทุก 1 วินาที
+        setInterval(updateTime, 1000);
+        updateTime(); // อัปเดตครั้งแรกเมื่อโหลดหน้า
+
+        document.addEventListener("DOMContentLoaded", function() {
+            const logoutBtn = document.querySelector(".btn-logout");
+            if (logoutBtn) {
+                logoutBtn.addEventListener("click", function(e) {
+                    e.preventDefault();
+
+                    const url = this.getAttribute("data-url");
+
+                    Swal.fire({
+                        title: "คุณต้องการออกจากระบบหรือไม่?",
+                        icon: "warning",
+                        showCancelButton: true,
+                        buttonsStyling: false,
+                        customClass: {
+                            confirmButton: 'btn btn-danger mr-2',
+                            cancelButton: 'btn btn-secondary'
+                        },
+                        confirmButtonText: "ออกจากระบบ",
+                        cancelButtonText: "ยกเลิก"
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            window.location.href = url;
+                        }
+                    });
+                });
+            }
+
+            // Initialize Datatables
+            $('.table-bordered').each(function() {
+                if (!$.fn.DataTable.isDataTable(this)) {
+                    $(this).DataTable();
+                }
             });
-        </script>
-        <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    </body>
+
+            // Initialize Select2
+            $('.select-chosen').select2({
+                theme: 'bootstrap4',
+                width: '100%'
+            });
+        });
+
+        document.addEventListener("DOMContentLoaded", function() {
+            const toggle = document.getElementById('darkModeToggle');
+            const body = document.body;
+            const icon = toggle.querySelector('i');
+
+            // Check local storage
+            if (localStorage.getItem('darkMode') === 'enabled') {
+                body.classList.add('dark-mode');
+                icon.classList.remove('fa-moon');
+                icon.classList.add('fa-sun');
+            }
+
+            toggle.addEventListener('click', (e) => {
+                e.preventDefault();
+                body.classList.toggle('dark-mode');
+                
+                if (body.classList.contains('dark-mode')) {
+                    localStorage.setItem('darkMode', 'enabled');
+                    icon.classList.remove('fa-moon');
+                    icon.classList.add('fa-sun');
+                } else {
+                    localStorage.setItem('darkMode', 'disabled');
+                    icon.classList.remove('fa-sun');
+                    icon.classList.add('fa-moon');
+                }
+            });
+        });
+    </script>
+    {% block extra_js %}
+    {% endblock %}
+</body>
+
 </html>
