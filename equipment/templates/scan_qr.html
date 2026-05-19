@@ -1,0 +1,51 @@
+{% extends 'backend/layout.html' %}
+{% load static %}
+
+{% block title %}Scan QR - Asset Management System{% endblock %}
+
+{% block content %}
+<div class="d-sm-flex align-items-center justify-content-between mb-4">
+    <h1 class="h3 mb-0 text-gray-800">Scan QR Code</h1>
+</div>
+
+<div class="card shadow mb-4">
+    <div class="card-header py-3">
+        <h6 class="m-0 font-weight-bold text-primary">Scanner</h6>
+    </div>
+    <div class="card-body">
+        <div id="reader" width="600px"></div>
+        <div class="mt-3 text-center">
+            <p>Point your camera at the QR code to manage equipment.</p>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
+<script>
+    function onScanSuccess(decodedText, decodedResult) {
+        // Handle the scanned code as you like, for example:
+        console.log(`Code matched = ${decodedText}`, decodedResult);
+        
+        // Stop scanning
+        html5QrcodeScanner.clear();
+        
+        // Redirect to decoded URL
+        window.location.href = decodedText;
+    }
+
+    function onScanFailure(error) {
+        // handle scan failure, usually better to ignore and keep scanning.
+        // for example:
+        console.warn(`Code scan error = ${error}`);
+    }
+
+    // Initialize HTML5QRCodeScanner
+    let html5QrcodeScanner = new Html5QrcodeScanner(
+        "reader",
+        { fps: 10, qrbox: {width: 250, height: 250} },
+        /* verbose= */ false);
+    html5QrcodeScanner.render(onScanSuccess, onScanFailure);
+</script>
+{% endblock %}

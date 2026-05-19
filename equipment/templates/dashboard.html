@@ -1,0 +1,281 @@
+{% extends 'backend/layout.html' %}
+
+{% block title %}Dashboard - Asset Management System{% endblock %}
+
+{% block content %}
+<div class="d-sm-flex align-items-center justify-content-between mb-4">
+    <h1 class="h3 mb-0 text-gray-800">Dashboard</h1>
+</div>
+
+<div class="row">
+
+    <!-- Equipment Count -->
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card border-left-primary shadow h-100 py-2">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                            Total Equipment</div>
+                        <div class="h5 mb-0 font-weight-bold text-gray-800">{{ equipment_count }}</div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="fas fa-tools fa-2x text-gray-300"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- My Pending Requests -->
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card border-left-warning shadow h-100 py-2">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
+                            My Pending Requests</div>
+                        <div class="h5 mb-0 font-weight-bold text-gray-800">{{ my_pending_count }}</div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="fas fa-clock fa-2x text-gray-300"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% if user.is_staff %}
+    <!-- All Pending Requests -->
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card border-left-danger shadow h-100 py-2">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-danger text-uppercase mb-1">
+                            All Pending Requests</div>
+                        <div class="h5 mb-0 font-weight-bold text-gray-800">{{ pending_count }}</div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="fas fa-exclamation-triangle fa-2x text-gray-300"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+</div>
+
+<!-- Search Section -->
+<div class="row mb-4">
+    <div class="col-lg-12">
+        <div class="card shadow">
+            <div class="card-header py-3">
+                <h6 class="m-0 font-weight-bold text-primary">Search Equipment</h6>
+            </div>
+            <div class="card-body">
+                <div class="input-group">
+                    <input type="text" id="equipmentSearch" class="form-control" placeholder="Search by name, serial number, or category...">
+                    <div class="input-group-append">
+                        <button class="btn btn-primary" type="button">
+                            <i class="fas fa-search"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Equipment Results -->
+<div class="row" id="equipmentResults">
+    <!-- Results will be loaded here via AJAX -->
+</div>
+
+<!-- Pagination Controls -->
+<div class="row" id="paginationControls">
+    <!-- Pagination buttons will be loaded here via AJAX -->
+</div>
+{% endblock %}
+
+{% block extra_js %}
+
+<style>
+    .btn-purple {
+        color: #fff;
+        background-color: #6f42c1;
+        border-color: #6f42c1;
+    }
+    .btn-purple:hover {
+        color: #fff;
+        background-color: #59359a;
+        border-color: #52308f;
+    }
+    .btn-purple.disabled, .btn-purple:disabled {
+        color: #fff;
+        background-color: #6f42c1;
+        border-color: #6f42c1;
+        opacity: 0.65;
+    }
+    .badge-purple {
+        color: #fff;
+        background-color: #6f42c1;
+    }
+</style>
+<script>
+    $(document).ready(function() {
+        // ฟังก์ชันโหลดข้อมูลอุปกรณ์ผ่าน AJAX พร้อมรองรับการค้นหาและแบ่งหน้า
+        function loadEquipment(query, page=1) {
+            $.ajax({
+                url: "{% url 'search_equipment' %}",
+                data: {
+                    'q': query,
+                    'page': page
+                },
+                dataType: 'json',
+                success: function(data) {
+                    var resultsHtml = '';
+                    var equipmentList = data.results;
+                    
+                    if (equipmentList.length > 0) {
+                        $.each(equipmentList, function(index, item) {
+                            var statusBadge = '';
+                            var actionButton = '';
+
+                            if (item.available_quantity === 0) {
+                                statusBadge = '<span class="badge badge-secondary">Not Available</span>';
+                                actionButton = `
+                                    <button class="btn btn-secondary btn-block disabled" disabled>
+                                        <i class="fas fa-times-circle"></i> Not Available
+                                    </button>
+                                `;
+                            } else if (item.status === 'AVAILABLE') {
+                                statusBadge = '<span class="badge badge-success">Available</span>';
+                                actionButton = `
+                                    <a href="/equipment/request/${item.id}/" class="btn btn-primary btn-block">
+                                        Request
+                                    </a>
+                                `;
+                            } else if (item.status === 'MAINTENANCE') {
+                                statusBadge = '<span class="badge badge-warning">Maintenance</span>';
+                                actionButton = `
+                                    <button class="btn btn-secondary btn-block disabled" disabled>
+                                        Maintenance
+                                    </button>
+                                `;
+                            } else if (item.status === 'LOST') {
+                                statusBadge = '<span class="badge badge-purple">Lost</span>';
+                                actionButton = `
+                                    <button class="btn btn-secondary btn-block disabled" disabled>
+                                        Lost
+                                    </button>
+                                `;
+                            } else if (item.status === 'DAMAGED') {
+                                statusBadge = '<span class="badge badge-danger">Damaged</span>';
+                                actionButton = `
+                                    <button class="btn btn-secondary btn-block disabled" disabled>
+                                        Damaged
+                                    </button>
+                                `;
+                            } else {
+                                statusBadge = '<span class="badge badge-secondary">' + item.status + '</span>';
+                                actionButton = `
+                                    <button class="btn btn-secondary btn-block disabled" disabled>
+                                        ${item.status}
+                                    </button>
+                                `;
+                            }
+
+                            var imageUrl = item.image ? '/media/' + item.image : '/static/img/undraw_posting_photo.svg'; // Fallback image
+
+                            resultsHtml += `
+                                <div class="col-xl-3 col-md-4 col-sm-6 mb-4">
+                                    <div class="card shadow h-100">
+                                        <div class="text-center p-3">
+                                            <img src="${imageUrl}" class="img-fluid" style="max-height: 150px;" alt="${item.name}">
+                                        </div>
+                                        <div class="card-body">
+                                            <h5 class="card-title font-weight-bold ml-2">${item.name}</h5>
+                                            <p class="card-text ml-2">
+                                                <small class="text-muted">Serial: ${item.serial_number || '-'}</small><br>
+                                                Quantity: ${item.available_quantity}<br>
+                                                Status: ${statusBadge}
+                                            </p>
+                                        </div>
+                                        <div class="card-footer bg-transparent border-top-0">
+                                            ${actionButton}
+                                        </div>
+                                    </div>
+                                </div>
+                            `;
+                        });
+                    } else {
+                        resultsHtml = '<div class="col-12 text-center text-muted">No equipment found.</div>';
+                    }
+                    $('#equipmentResults').html(resultsHtml);
+                    
+                    // Render Pagination
+                    var paginationHtml = '';
+                    if (data.num_pages > 1) {
+                        paginationHtml += '<div class="col-12"><nav aria-label="Page navigation"><ul class="pagination justify-content-center">';
+                        
+                        if (data.has_previous) {
+                            paginationHtml += `<li class="page-item"><a class="page-link" href="#" data-page="${data.current_page - 1}">Previous</a></li>`;
+                        } else {
+                            paginationHtml += `<li class="page-item disabled"><span class="page-link">Previous</span></li>`;
+                        }
+                        
+                        for (var i = 1; i <= data.num_pages; i++) {
+                            if (i === data.current_page) {
+                                paginationHtml += `<li class="page-item active"><span class="page-link">${i}</span></li>`;
+                            } else {
+                                paginationHtml += `<li class="page-item"><a class="page-link" href="#" data-page="${i}">${i}</a></li>`;
+                            }
+                        }
+                        
+                        if (data.has_next) {
+                            paginationHtml += `<li class="page-item"><a class="page-link" href="#" data-page="${data.current_page + 1}">Next</a></li>`;
+                        } else {
+                            paginationHtml += `<li class="page-item disabled"><span class="page-link">Next</span></li>`;
+                        }
+                        
+                        paginationHtml += '</ul></nav></div>';
+                    }
+                    $('#paginationControls').html(paginationHtml);
+                },
+                error: function(xhr, status, error) {
+                     console.error("Error fetching equipment:", error);
+                }
+            });
+        }
+
+        // Initial Load
+        loadEquipment('');
+
+        // Search Input Listener
+        var searchTimer;
+        $('#equipmentSearch').on('input', function() {
+            var query = $(this).val();
+            clearTimeout(searchTimer);
+            searchTimer = setTimeout(function() {
+                loadEquipment(query);
+            }, 300); // Debounce for 300ms
+        });
+
+        // Pagination Click Listener
+        $('#paginationControls').on('click', '.page-link', function(e) {
+            e.preventDefault();
+            var page = $(this).data('page');
+            if (page) {
+                var query = $('#equipmentSearch').val();
+                loadEquipment(query, page);
+                // Optional: Scroll to results
+                $('html, body').animate({
+                    scrollTop: $("#equipmentResults").offset().top - 100
+                }, 500);
+            }
+        });
+    });
+</script>
+{% endblock %}

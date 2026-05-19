@@ -16,7 +16,7 @@ from case_image.models import CaseImage
 from datetime import datetime
 import os
 from django.http import HttpResponse, JsonResponse
-from django.db.models import Count, Q, Max, OuterRef, Subquery
+from django.db.models import Count, Max, OuterRef, Subquery
 from datetime import datetime
 from django.utils import timezone
 from django.urls import reverse
@@ -63,7 +63,7 @@ def case(request):
         caseCountIT = Case.objects.filter(department_id="IT").count()
         caseCountPUR = Case.objects.filter(department_id="PUR").count()
         caseCountFIN = Case.objects.filter(department_id="FIN").count()
-    elif user.department_id == "IT" and request.user.username == "kanchana":  # User kanchana ดูเฉพาะ IT ทั้งหมด
+    elif request.user.username == "kanchana":  # User kanchana ดูทุกเคสของแผนก IT
         case = Case.objects.filter(department_id="IT").order_by('-pk').select_related('status', 'category', 'branch', 'department', 'priority', 'assign_name')
         caseCountPeding = Case.objects.filter(status_id=1, department_id="IT").count()
         caseCountDoing = Case.objects.filter(status_id=2, department_id="IT").count()
@@ -71,36 +71,7 @@ def case(request):
         caseCountSatisfied = Case.objects.filter(status_id=4, department_id="IT").count()
         caseCountIT = Case.objects.filter(department_id="IT").count()
         caseCountITAssignName = Case.objects.filter(department_id="IT", assign_name=user).count()
-    elif user.department_id == "IT":  # User IT ดูเฉพาะเคสที่เกี่ยวข้องกับตัวเอง
-        case = Case.objects.filter(department_id="IT").filter(Q(assign_name=user) | Q(assign_name__isnull=True)).order_by('-pk').select_related('status', 'category', 'branch', 'department', 'priority', 'assign_name')
-        caseCountPeding = Case.objects.filter(status_id=1, department_id="IT").count()
-        caseCountDoing = Case.objects.filter(status_id=2, department_id="IT", assign_name=user).count()
-        caseCountDone = Case.objects.filter(status_id=5, department_id="IT", assign_name=user).count()
-        caseCountSatisfied = Case.objects.filter(status_id=4, department_id="IT", assign_name=user).count()
-        caseCountIT = Case.objects.filter(department_id="IT", assign_name=user).count()
-        caseCountITAssignName = Case.objects.filter(department_id="IT", assign_name=user).count()
-    elif user.department_id == "PUR"  and request.user.username == "nisarat":  # User nisrat ดูเฉพาะ PUR ทั้งหมด
-        case = Case.objects.filter(department_id="PUR").order_by('-pk').select_related('status', 'category', 'branch', 'department', 'priority')
-        caseCountPeding = Case.objects.filter(status_id=1, department_id="PUR").count()
-        caseCountDoing = Case.objects.filter(status_id=2, department_id="PUR").count()
-        caseCountDone = Case.objects.filter(status_id=5, department_id="PUR").count()
-        caseCountReceive = Case.objects.filter(status_id=7, department_id="PUR").count()
-        caseCountPUR = Case.objects.filter(department_id="PUR").count()
-    elif user.department_id == "PUR":  # User nisrat ดูเฉพาะ PUR ทั้งหมด
-        case = Case.objects.filter(department_id="PUR").filter(Q(assign_name=user) | Q(assign_name__isnull=True)).order_by('-pk').select_related('status', 'category', 'branch', 'department', 'priority')
-        caseCountPeding = Case.objects.filter(status_id=1, department_id="PUR", assign_name=user).count()
-        caseCountDoing = Case.objects.filter(status_id=2, department_id="PUR", assign_name=user).count()
-        caseCountDone = Case.objects.filter(status_id=5, department_id="PUR", assign_name=user).count()
-        caseCountReceive = Case.objects.filter(status_id=7, department_id="PUR", assign_name=user).count()
-        caseCountPUR = Case.objects.filter(department_id="PUR", assign_name=user).count()
-    # elif user.department_id == "FIN":  # ถ้าเป็นแอดมิน ให้ดูทั้งหมด
-    #     case = Case.objects.filter(department_id="FIN").order_by('-pk').select_related('status', 'category', 'branch', 'department', 'priority')
-    #     caseCountPeding = Case.objects.filter(status_id=1, department_id="FIN").count()
-    #     caseCountDoing = Case.objects.filter(status_id=2, department_id="FIN").count()
-    #     caseCountDone = Case.objects.filter(status_id=5, department_id="FIN").count()
-    #     caseCountSatisfied = Case.objects.filter(status_id=4, department_id="FIN").count()
-    #     caseCountFIN = Case.objects.filter(department_id="FIN").count()
-    elif not request.user.is_staff:
+    else:  # ผู้ใช้อื่น ๆ ดูเฉพาะเคสที่ตัวเองเป็นผู้สร้าง
         case = Case.objects.filter(create_username=create_username).order_by('-pk').select_related('status', 'category', 'branch', 'department', 'priority')
         caseCountPeding = Case.objects.filter(status_id=1, create_username=create_username).count()
         caseCountDoing = Case.objects.filter(status_id=2, create_username=create_username).count()
@@ -114,7 +85,8 @@ def case(request):
     status_id = request.GET.get('status_id')
     department_id = request.GET.get('department_id')
     mycase = request.GET.get('mycase')
-    request_date = request.GET.get('request_date')
+    start_date = request.GET.get('start_date')
+    end_date = request.GET.get('end_date')
     branch_id = request.GET.get('branch_id')
     
     if status_id:
@@ -129,9 +101,21 @@ def case(request):
     if mycase:
         case = case.filter(assign_name=mycase)
     
-    if request_date:
-        request_date = datetime.strptime(request_date, "%Y-%m-%d").date()
-        case = case.filter(date_created__date=request_date)
+    if start_date and end_date:
+        start_date_parsed = datetime.strptime(start_date, "%Y-%m-%d").date()
+        end_date_parsed = datetime.strptime(end_date, "%Y-%m-%d").date()
+        case = case.filter(date_created__date__gte=start_date_parsed, date_created__date__lte=end_date_parsed)
+    elif start_date:
+        start_date_parsed = datetime.strptime(start_date, "%Y-%m-%d").date()
+        case = case.filter(date_created__date__gte=start_date_parsed)
+    elif end_date:
+        end_date_parsed = datetime.strptime(end_date, "%Y-%m-%d").date()
+        case = case.filter(date_created__date__lte=end_date_parsed)
+    else:
+        # Default to current month if no date filter is provided
+        current_year = timezone.now().year
+        current_month = timezone.now().month
+        case = case.filter(date_created__year=current_year, date_created__month=current_month)
 
     context = {
         'case': case,

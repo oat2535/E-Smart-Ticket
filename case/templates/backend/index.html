@@ -38,10 +38,21 @@
             {% endif %}
 
             <div class="form-group mr-2 mb-2">
-                <label for="request_date" class="mr-2">Request Date:</label>
+                <label for="start_date" class="mr-2">Start Date:</label>
                 <div class="input-group">
-                    <input type="text" id="request_date" name="request_date" 
-                        value="{{ request.GET.request_date }}" class="form-control" placeholder="Select Date">
+                    <input type="text" id="start_date" name="start_date" 
+                        value="{{ request.GET.start_date }}" class="form-control" placeholder="Start Date">
+                    <div class="input-group-append">
+                        <span class="input-group-text"><i class="fas fa-calendar-alt"></i></span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-group mr-2 mb-2">
+                <label for="end_date" class="mr-2">End Date:</label>
+                <div class="input-group">
+                    <input type="text" id="end_date" name="end_date" 
+                        value="{{ request.GET.end_date }}" class="form-control" placeholder="End Date">
                     <div class="input-group-append">
                         <span class="input-group-text"><i class="fas fa-calendar-alt"></i></span>
                     </div>
@@ -232,7 +243,13 @@
 {% block extra_js %}
 <script>
     document.addEventListener("DOMContentLoaded", function() {
-        flatpickr("#request_date", {
+        flatpickr("#start_date", {
+            dateFormat: "Y-m-d",
+            allowInput: true,
+            altInput: true,
+            altFormat: "d M Y",
+        });
+        flatpickr("#end_date", {
             dateFormat: "Y-m-d",
             allowInput: true,
             altInput: true,

@@ -50,7 +50,8 @@ INSTALLED_APPS = [
     'department',
     'sub_category',
     'sub_branch',
-    'second_sub_category'
+    'second_sub_category',
+    'equipment',
 ]
 
 MIDDLEWARE = [
@@ -220,6 +221,8 @@ SESSION_ENGINE = 'django.contrib.sessions.backends.db'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 AUTH_USER_MODEL = 'members.Members'
+
+LOGIN_URL = 'member'
 
 
 

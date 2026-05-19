@@ -24,7 +24,8 @@ urlpatterns = [
     path('', include("case.urls")),
     path('user/',include("loginsystem.urls")),
     path('usermanage/',include("usermanage.urls")),
-    path('report/',include("report.urls"))
+    path('report/',include("report.urls")),
+    path('equipment/', include("equipment.urls")),
 ]
 
 if settings.DEBUG:

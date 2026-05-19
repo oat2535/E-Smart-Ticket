@@ -153,6 +153,9 @@
     {% block header %}
     {% endblock %}
 
+    {% block extra_css %}
+    {% endblock %}
+
 </head>
 
 <body id="page-top">
@@ -178,7 +181,7 @@
             <!-- Keeping it simple as per SB Admin 2 default, user info is in Topbar -->
 
             <!-- Nav Item - Dashboard -->
-            <li class="nav-item active">
+            <li class="nav-item {% if request.path == '/' %}active{% endif %}">
                 <a class="nav-link" href="{% url 'case' %}">
                     <i class="fas fa-fw fa-tachometer-alt"></i>
                     <span>Dashboard</span></a>
@@ -193,17 +196,17 @@
             </div>
 
             <!-- Nav Item - Request Group -->
-            <li class="nav-item">
-                <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseRequest"
-                    aria-expanded="true" aria-controls="collapseRequest">
+            <li class="nav-item {% if '/displayForm' in request.path %}active{% endif %}">
+                <a class="nav-link {% if '/displayForm' not in request.path %}collapsed{% endif %}" href="#" data-toggle="collapse" data-target="#collapseRequest"
+                    aria-expanded="{% if '/displayForm' in request.path %}true{% else %}false{% endif %}" aria-controls="collapseRequest">
                     <i class="fas fa-fw fa-wrench"></i>
                     <span>Request group</span>
                 </a>
-                <div id="collapseRequest" class="collapse" aria-labelledby="headingTwo" data-parent="#accordionSidebar">
+                <div id="collapseRequest" class="collapse {% if '/displayForm' in request.path %}show{% endif %}" aria-labelledby="headingTwo" data-parent="#accordionSidebar">
                     <div class="bg-white py-2 collapse-inner rounded">
                         <h6 class="collapse-header">Departments:</h6>
-                        <a class="collapse-item" href="{% url 'displayForm' %}?department_id=IT"><i class="fas fa-laptop mr-2"></i> IT</a>
-                        <a class="collapse-item" href="{% url 'displayForm' %}?department_id=PUR"><i class="fab fa-product-hunt mr-2"></i> Purchasing</a>
+                        <a class="collapse-item {% if 'department_id=IT' in request.get_full_path %}active{% endif %}" href="{% url 'displayForm' %}?department_id=IT"><i class="fas fa-laptop mr-2"></i> IT</a>
+                        <a class="collapse-item {% if 'department_id=PUR' in request.get_full_path %}active{% endif %}" href="{% url 'displayForm' %}?department_id=PUR"><i class="fab fa-product-hunt mr-2"></i> Purchasing</a>
                         <!-- <a class="collapse-item" href="{% url 'displayForm' %}?department_id=FIN"> Accounting </a> -->
                     </div>
                 </div>
@@ -211,33 +214,54 @@
 
             {% if request.user.is_staff == 1 and request.user.department_id == "IT" or request.user.username == "admin" %}
             <!-- Nav Item - Users -->
-            <li class="nav-item">
-                <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseUsers"
-                    aria-expanded="true" aria-controls="collapseUsers">
+            <li class="nav-item {% if '/user' in request.path %}active{% endif %}">
+                <a class="nav-link {% if '/user' not in request.path %}collapsed{% endif %}" href="#" data-toggle="collapse" data-target="#collapseUsers"
+                    aria-expanded="{% if '/user' in request.path %}true{% else %}false{% endif %}" aria-controls="collapseUsers">
                     <i class="fas fa-fw fa-user"></i>
                     <span>Users</span>
                 </a>
-                <div id="collapseUsers" class="collapse" aria-labelledby="headingUtilities"
+                <div id="collapseUsers" class="collapse {% if '/user' in request.path %}show{% endif %}" aria-labelledby="headingUtilities"
                     data-parent="#accordionSidebar">
                     <div class="bg-white py-2 collapse-inner rounded">
                         <h6 class="collapse-header">Management:</h6>
-                        <a class="collapse-item" href="{% url 'displayUser' %}"><i class="fas fa-users mr-2"></i> Users Management</a>
+                        <a class="collapse-item {% if '/displayUser' in request.path %}active{% endif %}" href="{% url 'displayUser' %}"><i class="fas fa-users mr-2"></i> Users Management</a>
                     </div>
                 </div>
             </li>
             {% endif %}
 
             <!-- Nav Item - Report -->
-            <li class="nav-item">
-                <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseReport"
-                    aria-expanded="true" aria-controls="collapseReport">
+            <li class="nav-item {% if '/report' in request.path and '/equipment' not in request.path %}active{% endif %}">
+                <a class="nav-link {% if '/report' not in request.path or '/equipment' in request.path %}collapsed{% endif %}" href="#" data-toggle="collapse" data-target="#collapseReport"
+                    aria-expanded="{% if '/report' in request.path and '/equipment' not in request.path %}true{% else %}false{% endif %}" aria-controls="collapseReport">
                     <i class="fas fa-fw fa-table"></i>
                     <span>Report</span>
                 </a>
-                <div id="collapseReport" class="collapse" aria-labelledby="headingPages" data-parent="#accordionSidebar">
+                <div id="collapseReport" class="collapse {% if '/report' in request.path and '/equipment' not in request.path %}show{% endif %}" aria-labelledby="headingPages" data-parent="#accordionSidebar">
                     <div class="bg-white py-2 collapse-inner rounded">
                         <h6 class="collapse-header">Reports:</h6>
-                        <a class="collapse-item" href="{% url 'reportCase' %}">Report service request</a>
+                        <a class="collapse-item {% if '/report' in request.path %}active{% endif %}" href="{% url 'reportCase' %}">Report service request</a>
+                    </div>
+                </div>
+            </li>
+
+            <!-- Nav Item - Equipment -->
+            <li class="nav-item {% if '/equipment' in request.path %}active{% endif %}">
+                <a class="nav-link {% if '/equipment' not in request.path %}collapsed{% endif %}" href="#" data-toggle="collapse" data-target="#collapseEquipment"
+                    aria-expanded="{% if '/equipment' in request.path %}true{% else %}false{% endif %}" aria-controls="collapseEquipment">
+                    <i class="fas fa-fw fa-tools"></i>
+                    <span>Equipment System</span>
+                </a>
+                <div id="collapseEquipment" class="collapse {% if '/equipment' in request.path %}show{% endif %}" aria-labelledby="headingEquipment" data-parent="#accordionSidebar">
+                    <div class="bg-white py-2 collapse-inner rounded">
+                        <h6 class="collapse-header">Equipment:</h6>
+                        <a class="collapse-item {% if request.path == '/equipment/' %}active{% endif %}" href="{% url 'dashboard' %}"><i class="fas fa-tachometer-alt mr-2"></i> Dashboard</a>
+                        <a class="collapse-item {% if '/equipment/equipment' in request.path %}active{% endif %}" href="{% url 'equipment_list' %}"><i class="fas fa-boxes mr-2"></i> Equipment List</a>
+                        <a class="collapse-item {% if '/equipment/my-requests' in request.path %}active{% endif %}" href="{% url 'my_requests' %}"><i class="fas fa-clipboard-list mr-2"></i> My Requests</a>
+                        {% if request.user.is_staff == 1 or request.user.is_superuser == 1 or request.user.username == "admin" %}
+                        <a class="collapse-item {% if '/equipment/manage-requests' in request.path %}active{% endif %}" href="{% url 'manage_requests' %}"><i class="fas fa-tasks mr-2"></i> Manage Requests</a>
+                        <a class="collapse-item {% if '/equipment/report' in request.path %}active{% endif %}" href="{% url 'request_report' %}"><i class="fas fa-chart-bar mr-2"></i> Equipment Report</a>
+                        {% endif %}
                     </div>
                 </div>
             </li>
@@ -290,7 +314,7 @@
                             <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button"
                                 data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                                 <span class="mr-2 d-none d-lg-inline text-gray-600 small">
-                                    {{create_username}} <br>
+                                    {{request.user.username}} <br>
                                     <small>{{request.user.branch.branch_name}}</small>
                                 </span>
                                 <img class="img-profile rounded-circle"
@@ -525,26 +549,6 @@
                                     </div>
                                 </div>
                             </div>                         
-                            {% endif %}
-
-                            {%if request.user.is_staff == 0 %}
-                            <div class="col-xl-3 col-md-6 mb-4">
-                                <div class="card border-left-info shadow h-100 py-2">
-                                    <div class="card-body">
-                                        <div class="row no-gutters align-items-center">
-                                            <div class="col mr-2">
-                                                <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
-                                                    Waiting Receive</div>
-                                                <div class="h5 mb-0 font-weight-bold text-gray-800">{{caseCountReceive | intcomma}}</div>
-                                            </div>
-                                            <div class="col-auto">
-                                                <i class="fas fa-hand-holding fa-2x text-gray-300"></i>
-                                            </div>
-                                        </div>
-                                        <a href="{% url 'case' %}?status_id=7" class="stretched-link"></a>
-                                    </div>
-                                </div>
-                            </div>
                             {% endif %}
 
                         </div>
