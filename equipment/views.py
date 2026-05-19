@@ -12,7 +12,10 @@ from .forms import RequisitionForm, EquipmentForm, RequisitionFilterForm
 # Create your views here.
 @login_required
 def dashboard(request):
-    equipment_count = Equipment.objects.count()
+    equipment_count = Equipment.objects.exclude(
+        category__name__in=['Consumable Parts', 'Consumble Parts'],
+        available_quantity=0
+    ).count()
     requisition_count = Requisition.objects.count()
     pending_count = Requisition.objects.filter(status='PENDING').count()
     my_pending_count = Requisition.objects.filter(user=request.user, status='PENDING').count()
@@ -27,7 +30,10 @@ def dashboard(request):
 
 @login_required
 def equipment_list(request):
-    equipment_list = Equipment.objects.all().order_by('-pk')
+    equipment_list = Equipment.objects.exclude(
+        category__name__in=['Consumable Parts', 'Consumble Parts'],
+        available_quantity=0
+    ).order_by('-pk')
     return render(request, 'equipment_list.html', {'equipment_list': equipment_list})
 
 @login_required
@@ -43,6 +49,12 @@ def search_equipment(request):
         ).order_by('-pk')
     else:
         equipment_list = Equipment.objects.all().order_by('-pk')
+        
+    # Exclude Consumable Parts that are fully borrowed
+    equipment_list = equipment_list.exclude(
+        category__name__in=['Consumable Parts', 'Consumble Parts'],
+        available_quantity=0
+    )
         
     paginator = Paginator(equipment_list, 8) # 8 items per page
     page_obj = paginator.get_page(page_number)
