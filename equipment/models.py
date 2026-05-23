@@ -28,13 +28,21 @@ class Equipment(models.Model):
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='AVAILABLE')
 
     def save(self, *args, **kwargs):
+        is_consumable = False
+        if hasattr(self, 'category') and self.category:
+            is_consumable = self.category.name in ['Consumable Parts', 'Consumble Parts']
+
         if self.pk:
-            borrowed = self.requisition_set.filter(
-                status__in=['PENDING', 'APPROVED']
-            ).aggregate(total=Sum('quantity'))['total'] or 0
-            self.available_quantity = max(self.total_quantity - borrowed, 0)
+            if not is_consumable:
+                borrowed = self.requisition_set.filter(
+                    status__in=['PENDING', 'APPROVED']
+                ).aggregate(total=Sum('quantity'))['total'] or 0
+                self.available_quantity = max(self.total_quantity - borrowed, 0)
         else:
-            self.available_quantity = self.total_quantity
+            if not is_consumable:
+                self.available_quantity = self.total_quantity
+            elif self.available_quantity == 0 and self.total_quantity > 0:
+                self.available_quantity = self.total_quantity
         super().save(*args, **kwargs)
 
     def __str__(self):
@@ -68,7 +76,41 @@ class Requisition(models.Model):
     received_by = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='received_requisitions', on_delete=models.SET_NULL, null=True, blank=True)
 
     def __str__(self):
-        return f"{self.user.username} - {self.equipment.name} ({self.status})"
+        return f"{self.user.username if self.user else self.borrower_name} - {self.equipment.name} ({self.status})"
+
+    def save(self, *args, **kwargs):
+        is_new = self.pk is None
+        old_status = None
+        old_quantity = 0
+        
+        if not is_new:
+            try:
+                old_req = Requisition.objects.get(pk=self.pk)
+                old_status = old_req.status
+                old_quantity = old_req.quantity
+            except Requisition.DoesNotExist:
+                is_new = True
+
+        super().save(*args, **kwargs)
+
+        eq = self.equipment
+        if eq and eq.category and eq.category.name in ['Consumable Parts', 'Consumble Parts']:
+            if is_new:
+                if self.status in ['PENDING', 'APPROVED']:
+                    eq.available_quantity = max(eq.available_quantity - self.quantity, 0)
+                    eq.save()
+            else:
+                if old_status in ['PENDING', 'APPROVED'] and self.status in ['PENDING', 'APPROVED']:
+                    if old_quantity != self.quantity:
+                        diff = self.quantity - old_quantity
+                        eq.available_quantity = max(eq.available_quantity - diff, 0)
+                        eq.save()
+                elif old_status in ['PENDING', 'APPROVED'] and self.status in ['REJECTED', 'RETURNED']:
+                    eq.available_quantity += old_quantity
+                    eq.save()
+                elif old_status in ['REJECTED', 'RETURNED'] and self.status in ['PENDING', 'APPROVED']:
+                    eq.available_quantity = max(eq.available_quantity - self.quantity, 0)
+                    eq.save()
 
 
 
@@ -114,6 +156,13 @@ def recompute_equipment_available(sender, instance, **kwargs):
     eq = instance.equipment
     if not eq:
         return
+    if eq.category and eq.category.name in ['Consumable Parts', 'Consumble Parts']:
+        from django.db.models.signals import post_delete
+        if kwargs.get('signal') == post_delete and instance.status in ['PENDING', 'APPROVED']:
+            eq.available_quantity += instance.quantity
+            eq.save()
+        return
+        
     borrowed = Requisition.objects.filter(
         equipment=eq,
         status__in=['PENDING', 'APPROVED'],

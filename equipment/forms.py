@@ -38,13 +38,16 @@ class EquipmentForm(forms.ModelForm):
         
         if self.instance and self.instance.pk:
             if 'available_quantity' in self.changed_data and 'total_quantity' not in self.changed_data:
-                from django.db.models import Sum
-                borrowed = self.instance.requisition_set.filter(
-                    status__in=['PENDING', 'APPROVED']
-                ).aggregate(total=Sum('quantity'))['total'] or 0
-                
-                cleaned_data['total_quantity'] = new_avail + borrowed
-                self.instance.total_quantity = cleaned_data['total_quantity']
+                category = cleaned_data.get('category')
+                is_consumable = category and category.name in ['Consumable Parts', 'Consumble Parts']
+                if not is_consumable:
+                    from django.db.models import Sum
+                    borrowed = self.instance.requisition_set.filter(
+                        status__in=['PENDING', 'APPROVED']
+                    ).aggregate(total=Sum('quantity'))['total'] or 0
+                    
+                    cleaned_data['total_quantity'] = new_avail + borrowed
+                    self.instance.total_quantity = cleaned_data['total_quantity']
         else:
             # If it's a new instance, and user fills available but not total
             if 'available_quantity' in self.changed_data and 'total_quantity' not in self.changed_data:
