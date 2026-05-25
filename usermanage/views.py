@@ -235,27 +235,33 @@ def editPassword(request,id):
     passwordEdit = Members.objects.get(id=id)
     create_username = auth.get_user(request) #get user ตามที่ login 
 
+    from django.utils import timezone
+    current_year = timezone.now().year
+    current_month = timezone.now().month
+
     # ตรวจสอบว่า user ที่ login เป็น staff หรือไม่
     if request.user.is_staff:  # ตรวจสอบว่าเป็น staff
         case = Case.objects.all()  # ถ้าเป็นแอดมิน ให้ดูทั้งหมด
-        caseCountAll = case.count() #นับจำนวนบทความ
-        caseCountPeding = Case.objects.filter(status_id=1).count()
-        caseCountDoing = Case.objects.filter(status_id=2).count()
-        caseCountDone = Case.objects.filter(status_id=3).count()
-        caseCountCancel = Case.objects.filter(status_id=4).count()
-        caseCountIT = Case.objects.filter(department_id="IT").count()
-        caseCountPUR = Case.objects.filter(department_id="PUR").count()
-        caseCountFIN = Case.objects.filter(department_id="FIN").count()
+        base_qs = Case.objects.filter(date_created__year=current_year, date_created__month=current_month)
+        caseCountAll = base_qs.count() #นับจำนวนบทความ
+        caseCountPeding = base_qs.filter(status_id=1).count()
+        caseCountDoing = base_qs.filter(status_id=2).count()
+        caseCountDone = base_qs.filter(status_id=3).count()
+        caseCountCancel = base_qs.filter(status_id=4).count()
+        caseCountIT = base_qs.filter(department_id="IT").count()
+        caseCountPUR = base_qs.filter(department_id="PUR").count()
+        caseCountFIN = base_qs.filter(department_id="FIN").count()
     else:
         case = Case.objects.filter(create_username=create_username).select_related('status','category','branch')  # แสดงกรณีที่เกี่ยวข้องกับ user นั้น
-        caseCountAll = case.count() #นับจำนวนบทความ
-        caseCountPeding = Case.objects.filter(status_id=1,create_username=create_username).count()
-        caseCountDoing = Case.objects.filter(status_id=2,create_username=create_username).count()
-        caseCountDone = Case.objects.filter(status_id=3,create_username=create_username).count()
-        caseCountCancel = Case.objects.filter(status_id=4,create_username=create_username).count()
-        caseCountIT = Case.objects.filter(department_id="IT",create_username=create_username).count()
-        caseCountPUR = Case.objects.filter(department_id="PUR",create_username=create_username).count()
-        caseCountFIN = Case.objects.filter(department_id="FIN",create_username=create_username).count()
+        base_qs = Case.objects.filter(date_created__year=current_year, date_created__month=current_month, create_username=create_username)
+        caseCountAll = base_qs.count() #นับจำนวนบทความ
+        caseCountPeding = base_qs.filter(status_id=1).count()
+        caseCountDoing = base_qs.filter(status_id=2).count()
+        caseCountDone = base_qs.filter(status_id=3).count()
+        caseCountCancel = base_qs.filter(status_id=4).count()
+        caseCountIT = base_qs.filter(department_id="IT").count()
+        caseCountPUR = base_qs.filter(department_id="PUR").count()
+        caseCountFIN = base_qs.filter(department_id="FIN").count()
 
     return render(request,"backend/editPassword.html",{
         "passwordEdit":passwordEdit,
