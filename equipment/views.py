@@ -33,7 +33,7 @@ def equipment_list(request):
     equipment_list = Equipment.objects.exclude(
         category__name__in=['Consumable Parts', 'Consumble Parts'],
         available_quantity=0
-    ).order_by('-pk')
+    ).select_related('category').order_by('-pk')
     return render(request, 'equipment_list.html', {'equipment_list': equipment_list})
 
 @login_required
@@ -46,9 +46,9 @@ def search_equipment(request):
             Q(name__icontains=query) | 
             Q(serial_number__icontains=query) |
             Q(category__name__icontains=query)
-        ).order_by('-pk')
+        ).select_related('category').order_by('-pk')
     else:
-        equipment_list = Equipment.objects.all().order_by('-pk')
+        equipment_list = Equipment.objects.select_related('category').all().order_by('-pk')
         
     # Exclude Consumable Parts that are fully borrowed
     equipment_list = equipment_list.exclude(
@@ -171,14 +171,14 @@ def equipment_request(request, equipment_id):
 
 @login_required
 def my_requests(request):
-    requisitions = Requisition.objects.filter(user=request.user).order_by('-date')
+    requisitions = Requisition.objects.filter(user=request.user).select_related('equipment', 'equipment__category', 'user', 'approved_by', 'rejected_by', 'received_by').order_by('-date')
     return render(request, 'my_requests.html', {'requisitions': requisitions, 'now': timezone.now()})
 
 @login_required
 def manage_requests(request):
     if not (request.user.is_staff == 1 or request.user.is_superuser == 1 or request.user.username == 'admin'):
         return redirect('dashboard')
-    requisitions = Requisition.objects.all().order_by('-id')
+    requisitions = Requisition.objects.select_related('equipment', 'equipment__category', 'user', 'approved_by', 'rejected_by', 'received_by').all().order_by('-id')
     return render(request, 'manage_requests.html', {'requisitions': requisitions})
 
 @login_required
@@ -250,7 +250,7 @@ def request_report(request):
     # This implies the user clicked "Filter"
     if request.GET:
         if form.is_valid():
-            requisitions = Requisition.objects.all().order_by('-date')
+            requisitions = Requisition.objects.select_related('equipment', 'equipment__category', 'user', 'approved_by', 'rejected_by', 'received_by').all().order_by('-date')
             
             start_date = form.cleaned_data.get('start_date')
             end_date = form.cleaned_data.get('end_date')

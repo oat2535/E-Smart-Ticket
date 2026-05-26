@@ -76,6 +76,10 @@ def reportCase(request):
 
     if sub_branch_id:
         cases = cases.filter(sub_branch_id=sub_branch_id)
+
+    # Add select_related to optimize query performance
+    cases = cases.select_related('status', 'category', 'branch', 'sub_branch', 'department', 'priority', 'assign_name')
+
     
     for case in cases:
         # ดึงข้อมูลจาก model Members โดยใช้ assign_name (username) เทียบกับ Members.username
@@ -157,7 +161,7 @@ def export_csv(request):
         end_date = None
 
     # เริ่มสร้าง queryset
-    cases = Case.objects.select_related('status','branch','category','sub_branch').all().order_by('-pk')
+    cases = Case.objects.select_related('status','branch','category','sub_branch','second_sub_category','assign_name').all().order_by('-pk')
 
     if start_date and end_date:
         cases = cases.filter(date_created__gte=start_date, date_created__lt=end_date)

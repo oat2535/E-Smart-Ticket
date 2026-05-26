@@ -14,7 +14,7 @@ from django.http import JsonResponse
 @login_required(login_url="member")
 # Create your views here.
 def displayUser(request):
-    user = Members.objects.all().order_by('-pk').select_related('branch','sub_branch') #ดึงข้อมูลทั้งหมดจากฐานข้อมูล
+    user = Members.objects.all().order_by('-pk').select_related('branch','sub_branch','department') #ดึงข้อมูลทั้งหมดจากฐานข้อมูล
     create_username = auth.get_user(request) #get user ตามที่ login
 
     return render(request,"backend/user.html",{
@@ -23,7 +23,7 @@ def displayUser(request):
 
 @login_required(login_url="member")
 def addUser(request):
-    user = Members.objects.all()
+    user = Members.objects.all().order_by('-pk').select_related('branch','sub_branch','department')
     create_username = request.user #get user ตามที่ login
     form = UserStaffStatusForm() 
     branches = Branch.objects.all()
@@ -40,7 +40,7 @@ def addUser(request):
 def register(request):
     #เช็คข้อมูลรับค่าจาก form
     if request.method == "POST":
-        user = Members.objects.all()
+        user = Members.objects.all().order_by('-pk').select_related('branch','sub_branch','department')
         form = UserStaffStatusForm(request.POST)
         branches = Branch.objects.all()
         sub_branches = SubBranch.objects.all()
@@ -178,7 +178,7 @@ def deleteUser(request,id):
 
 @login_required(login_url="member")
 def editUser(request,id):
-    userEdit = Members.objects.get(id=id)
+    userEdit = Members.objects.select_related('branch','sub_branch','department').get(id=id)
     create_username = auth.get_user(request) #get user ตามที่ login 
     form = UserStaffStatusForm(instance=userEdit) 
     branches = Branch.objects.all()
@@ -241,7 +241,7 @@ def editPassword(request,id):
 
     # ตรวจสอบว่า user ที่ login เป็น staff หรือไม่
     if request.user.is_staff:  # ตรวจสอบว่าเป็น staff
-        case = Case.objects.all()  # ถ้าเป็นแอดมิน ให้ดูทั้งหมด
+        case = Case.objects.select_related('status', 'category', 'branch', 'department', 'priority').all()  # ถ้าเป็นแอดมิน ให้ดูทั้งหมด
         base_qs = Case.objects.filter(date_created__year=current_year, date_created__month=current_month)
         caseCountAll = base_qs.count() #นับจำนวนบทความ
         caseCountPeding = base_qs.filter(status_id=1).count()
@@ -252,7 +252,7 @@ def editPassword(request,id):
         caseCountPUR = base_qs.filter(department_id="PUR").count()
         caseCountFIN = base_qs.filter(department_id="FIN").count()
     else:
-        case = Case.objects.filter(create_username=create_username).select_related('status','category','branch')  # แสดงกรณีที่เกี่ยวข้องกับ user นั้น
+        case = Case.objects.filter(create_username=create_username).select_related('status','category','branch','department','priority')  # แสดงกรณีที่เกี่ยวข้องกับ user นั้น
         base_qs = Case.objects.filter(date_created__year=current_year, date_created__month=current_month, create_username=create_username)
         caseCountAll = base_qs.count() #นับจำนวนบทความ
         caseCountPeding = base_qs.filter(status_id=1).count()

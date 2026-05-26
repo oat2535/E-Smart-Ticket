@@ -128,82 +128,7 @@
                     </tr>
                 </thead>
                 <tbody>
-                    {% for case in case %}
-                    <tr>
-                        <td class="text-center">{{forloop.counter }}</td>
-                        <td class="text-center hidden-xs">{{case.department.department_name}}</td>
-                        <td class="text-left hidden-xs">{{case.category.name}}</td>    
-                        <td class="text-left hidden-xs">
-                            <span title="{{ case.subject_detail }}">
-                                {{ case.subject_detail|slice:":20" }}{% if case.subject_detail|length > 20 %}...{% endif %}
-                            </span>
-                        </td>
-                        
-                        <td class="text-left hidden-xs">
-                            <span title="{{ case.case_detail }}">
-                                {{ case.case_detail|slice:":20" }}{% if case.case_detail|length > 20 %}...{% endif %}
-                            </span>
-                        </td>
-                        <td class="text-left hidden-center">{{case.name}}</td>
-                        <td data-sort="{{ case.date_created|date:'Y-m-d H:i' }}">
-                            {{ case.date_created|date:"d-m-Y, h:i a"|linebreak_after:","|safe }}
-                        </td>
-                        {% if user.is_staff == 1 or user.is_staff == 0 %}   
-                        <td class="text-left hidden-center">{{ case.branch.branch_name|linebreak_after:"โรงพยาบาลสัตว์"|safe }}</td>
-                        {%endif%}
-                        {% if user.is_staff == 1%}
-                        <td class="text-left hidden-center">{{case.sub_branch.sub_branch_name}}</td>
-                        {%endif%}
-                        {% if user.is_staff %}
-                        <td class="text-left hidden-center">{{case.assign_name.first_name}} <br> {{case.assign_name.last_name}}</td>
-                        {%endif%}
-                        <td class="text-center hidden-center">
-                            {% if case.status_id == 1 %}
-                                <span class="badge badge-primary" style="font-size: 100%;">{{ case.status.name }}</span> 
-                            {% elif case.status_id == 2 %}
-                                <span class="badge badge-warning" style="font-size: 100%;">{{ case.status.name }}</span> 
-                            {% elif case.status_id == 5 %}
-                                <span class="badge badge-success" style="font-size: 100%;">{{ case.status.name }}</span> 
-                            {% elif case.status_id == 4 or case.status_id == 7 %}
-                                <span class="badge badge-info" style="font-size: 100%;">{{ case.status.name }}</span> 
-                            {% elif case.status_id == 6 %}
-                                <span class="badge badge-danger" style="font-size: 100%;">{{ case.status.name }}</span>    
-                            {% else %}
-                                <span class="badge badge-secondary" style="font-size: 100%;">{{ case.status.name }}</span> 
-                            {% endif %}
-                        </td>
-                                
-                        <td class="text-center hidden-xs">                 
-                            <div class="btn-group btn-group-sm">
-                                {% if request.user.is_staff == 1 %}
-                                <a href="{% url 'editData' case.id %}" data-toggle="tooltip" title="Manage job"
-                                    class="btn btn-secondary"><i class="fa fa-pencil-alt"></i>
-                                </a>
-                                {% if request.user.username == "admin" %}
-                                <a href="#" 
-                                    class="btn btn-danger btn-delete" 
-                                    data-url="{% url 'deleteData' case.id %}" 
-                                    data-toggle="tooltip" 
-                                    title="Delete">
-                                        <i class="fa fa-times"></i>
-                                </a>
-
-                                {%endif%}
-                                <a href="{% url 'addImages' case.id %}" data-toggle="tooltip" title="Attach additional images or files"
-                                    class="btn btn-secondary"><i class="far fa-image"></i>
-                                </a>
-                                {%else%}
-                                <a href="{% url 'editData' case.id %}" data-toggle="tooltip" title="View repair details"
-                                    class="btn btn-secondary"><i class="fa fa-pencil-alt"></i>
-                                </a>
-                                <a href="{% url 'addImages' case.id %}" data-toggle="tooltip" title="Attach additional images or files"class="btn btn-secondary">
-                                    <i class="far fa-image" aria-hidden="true"></i>
-                                </a>
-                                {% endif %}       
-                            </div>                   
-                        </td>               
-                    </tr>
-                    {% endfor %}
+                    <!-- Data will be populated by DataTables via AJAX -->
                 </tbody>
             </table>
         </div>
@@ -212,27 +137,26 @@
 
 <script>
     document.addEventListener("DOMContentLoaded", function() {
-        document.querySelectorAll(".btn-delete").forEach(btn => {
-            btn.addEventListener("click", function(e) {
-                e.preventDefault();
-                const url = this.getAttribute("data-url");
+        // Event delegation for dynamic delete buttons in Server-Side DataTables
+        $('#ecom-products').on('click', '.btn-delete', function(e) {
+            e.preventDefault();
+            const url = $(this).data("url");
 
-                Swal.fire({
-                    title: "คุณแน่ใจหรือไม่?",
-                    text: "คุณต้องการลบรายการหรือไม่!",
-                    icon: "warning",
-                    showCancelButton: true,
-                    customClass: {
-                            confirmButton: 'btn btn-danger mr-2',
-                            cancelButton: 'btn btn-secondary'
-                        },
-                    confirmButtonText: "ลบ",
-                    cancelButtonText: "ยกเลิก"
-                }).then((result) => {
-                    if (result.isConfirmed) {
-                        window.location.href = url;
-                    }
-                });
+            Swal.fire({
+                title: "คุณแน่ใจหรือไม่?",
+                text: "คุณต้องการลบรายการหรือไม่!",
+                icon: "warning",
+                showCancelButton: true,
+                customClass: {
+                        confirmButton: 'btn btn-danger mr-2',
+                        cancelButton: 'btn btn-secondary'
+                    },
+                confirmButtonText: "ลบ",
+                cancelButtonText: "ยกเลิก"
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    window.location.href = url;
+                }
             });
         });
     });
@@ -254,6 +178,112 @@
             allowInput: true,
             altInput: true,
             altFormat: "d M Y",
+        });
+
+        var isStaff = parseInt('{{ user.is_staff|default:0 }}', 10);
+
+        var dtColumns = [
+            { "data": "no", "className": "text-center", "orderable": false },
+            { "data": "department", "className": "text-center hidden-xs" },
+            { "data": "category", "className": "text-left hidden-xs" },
+            { 
+                "data": "subject", 
+                "className": "text-left hidden-xs",
+                "render": function(data, type, row) {
+                    if (data && data.length > 20) {
+                        return '<span title="'+data+'">'+data.substring(0, 20)+'...</span>';
+                    }
+                    return '<span title="'+data+'">'+data+'</span>';
+                }
+            },
+            { 
+                "data": "description", 
+                "className": "text-left hidden-xs",
+                "render": function(data, type, row) {
+                    if (data && data.length > 20) {
+                        return '<span title="'+data+'">'+data.substring(0, 20)+'...</span>';
+                    }
+                    return '<span title="'+data+'">'+data+'</span>';
+                }
+            },
+            { "data": "request_name", "className": "text-left hidden-center" },
+            { 
+                "data": "date_created", 
+                "className": "text-left hidden-center",
+                "render": function(data, type, row) {
+                    return data ? data.replace(", ", ",<br>") : "";
+                }
+            }
+        ];
+
+        if (isStaff === 1 || isStaff === 0) {
+            dtColumns.push({ "data": "company", "className": "text-left hidden-center" });
+        }
+        
+        if (isStaff === 1) {
+            dtColumns.push({ "data": "branch", "className": "text-left hidden-center" });
+        }
+        
+        if (isStaff === 1) {
+            dtColumns.push({ "data": "assign_name", "className": "text-left hidden-center" });
+        }
+
+        dtColumns.push({ 
+            "data": "status_id", 
+            "className": "text-center hidden-center",
+            "render": function(data, type, row) {
+                var status_name = row.status_name || "";
+                if(data == 1) return '<span class="badge badge-primary" style="font-size: 100%;">'+status_name+'</span>';
+                if(data == 2) return '<span class="badge badge-warning" style="font-size: 100%;">'+status_name+'</span>';
+                if(data == 5) return '<span class="badge badge-success" style="font-size: 100%;">'+status_name+'</span>';
+                if(data == 4 || data == 7) return '<span class="badge badge-info" style="font-size: 100%;">'+status_name+'</span>';
+                if(data == 6) return '<span class="badge badge-danger" style="font-size: 100%;">'+status_name+'</span>';
+                return '<span class="badge badge-secondary" style="font-size: 100%;">'+status_name+'</span>';
+            }
+        });
+
+        dtColumns.push({ 
+            "data": null,
+            "className": "text-center hidden-xs",
+            "orderable": false,
+            "render": function(data, type, row) {
+                var buttons = '<div class="btn-group btn-group-sm">';
+                if (row.is_staff) {
+                    buttons += '<a href="'+row.edit_url+'" data-toggle="tooltip" title="Manage job" class="btn btn-secondary"><i class="fa fa-pencil-alt"></i></a>';
+                    if (row.is_admin) {
+                        buttons += '<a href="#" class="btn btn-danger btn-delete" data-url="'+row.delete_url+'" data-toggle="tooltip" title="Delete"><i class="fa fa-times"></i></a>';
+                    }
+                    buttons += '<a href="'+row.image_url+'" data-toggle="tooltip" title="Attach additional images or files" class="btn btn-secondary"><i class="far fa-image"></i></a>';
+                } else {
+                    buttons += '<a href="'+row.edit_url+'" data-toggle="tooltip" title="View repair details" class="btn btn-secondary"><i class="fa fa-pencil-alt"></i></a>';
+                    buttons += '<a href="'+row.image_url+'" data-toggle="tooltip" title="Attach additional images or files" class="btn btn-secondary"><i class="far fa-image" aria-hidden="true"></i></a>';
+                }
+                buttons += '</div>';
+                return buttons;
+            }
+        });
+
+        // Initialize Server-Side DataTables
+        if ($.fn.DataTable.isDataTable('#ecom-products')) {
+            $('#ecom-products').DataTable().destroy();
+        }
+        $('#ecom-products').DataTable({
+            "processing": true,
+            "serverSide": true,
+            "ajax": {
+                "url": "{% url 'case_list_ajax' %}",
+                "type": "GET",
+                "data": function (d) {
+                    d.status_id = $('#status-select').val() || '{{ request.GET.status_id|default_if_none:"" }}';
+                    d.department_id = '{{ request.GET.department_id|default_if_none:"" }}';
+                    d.branch_id = $('#branch-select').val() || '{{ request.GET.branch_id|default_if_none:"" }}';
+                    d.mycase = $('#mycase-select').val() || '{{ request.GET.mycase|default_if_none:"" }}';
+                    d.start_date = $('#start_date').val();
+                    d.end_date = $('#end_date').val();
+                }
+            },
+            "columns": dtColumns,
+            "order": [[6, "desc"]] // Sort by request date by default
         });
     });
 </script>

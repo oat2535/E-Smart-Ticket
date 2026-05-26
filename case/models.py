@@ -24,8 +24,8 @@ class Case(models.Model):
     email = models.CharField(max_length=255,blank=True)
     computer_name = models.CharField(max_length=255)
     image = models.ImageField(upload_to="blogImages",blank=True,null=True)
-    create_username = models.CharField(max_length=255)
-    date_created = models.DateTimeField()
+    create_username = models.CharField(max_length=255, db_index=True)
+    date_created = models.DateTimeField(db_index=True)
     assign_name = models.ForeignKey(Members,
         to_field='username',  # อ้างอิงด้วย username
         on_delete=models.SET_NULL,

@@ -113,10 +113,18 @@ DATABASES = {
         'PASSWORD':'Tlp@2023',
         'HOST': '173.16.200.35', 
         'PORT': '5435',
+        'CONN_MAX_AGE': 60,  # Keep database connections open for 60 seconds
         'OPTIONS': {
             'options': '-c search_path=intra_tl'
         },
     }   
+}
+
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+        'LOCATION': 'esmart-ticket-cache',
+    }
 }
 
 

@@ -1,7 +1,7 @@
 from django.urls import path
 from django.conf import settings
 from django.conf.urls.static import static
-from .views import case,displayForm,insertData,deleteData,editData,updateData,addImages,uloadImages,deleteImage,load_subbranches,load_second_subcategories
+from .views import case,displayForm,insertData,deleteData,editData,updateData,addImages,uloadImages,deleteImage,load_subbranches,load_second_subcategories,case_list_ajax
 
 urlpatterns = [
     path('',case,name="case"),
@@ -16,4 +16,5 @@ urlpatterns = [
     path('deleteImage/<int:id>',deleteImage,name="deleteImage"),
     path('ajax/load-subbranches/', load_subbranches, name='ajax_load_subbranches'),
     path('ajax/load-second-subcategories/', load_second_subcategories, name='ajax_load_second_subcategories'),
+    path('case_list_ajax/', case_list_ajax, name='case_list_ajax'),
 ]  + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

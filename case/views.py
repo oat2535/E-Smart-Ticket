@@ -16,7 +16,7 @@ from case_image.models import CaseImage
 from datetime import datetime
 import os
 from django.http import HttpResponse, JsonResponse
-from django.db.models import Count, Max, OuterRef, Subquery
+from django.db.models import Count, Max, OuterRef, Subquery, Q
 from datetime import datetime
 from django.utils import timezone
 from django.urls import reverse
@@ -58,7 +58,7 @@ def case(request):
     current_month = timezone.now().month
 
     if request.user.username == "admin" :  # ถ้าเป็นแอดมิน ให้ดูทั้งหมด
-        case = Case.objects.all().order_by('-pk').select_related('status', 'category', 'branch', 'department', 'priority')
+        case = Case.objects.all().order_by('-pk').select_related('status', 'category', 'sub_category', 'second_sub_category', 'branch', 'sub_branch', 'department', 'priority', 'assign_name')
         base_qs = Case.objects.filter(date_created__year=current_year, date_created__month=current_month)
         caseCountPeding = base_qs.filter(status_id=1).count()
         caseCountDoing = base_qs.filter(status_id=2).count()
@@ -68,7 +68,7 @@ def case(request):
         caseCountPUR = base_qs.filter(department_id="PUR").count()
         caseCountFIN = base_qs.filter(department_id="FIN").count()
     elif request.user.username == "kanchana":  # User kanchana ดูทุกเคสของแผนก IT
-        case = Case.objects.filter(department_id="IT").order_by('-pk').select_related('status', 'category', 'branch', 'department', 'priority', 'assign_name')
+        case = Case.objects.filter(department_id="IT").order_by('-pk').select_related('status', 'category', 'sub_category', 'second_sub_category', 'branch', 'sub_branch', 'department', 'priority', 'assign_name')
         base_qs = Case.objects.filter(date_created__year=current_year, date_created__month=current_month, department_id="IT")
         caseCountPeding = base_qs.filter(status_id=1).count()
         caseCountDoing = base_qs.filter(status_id=2).count()
@@ -77,7 +77,7 @@ def case(request):
         caseCountIT = base_qs.count()
         caseCountITAssignName = base_qs.filter(assign_name=user).count()
     else:  # ผู้ใช้อื่น ๆ ดูเฉพาะเคสที่ตัวเองเป็นผู้สร้าง
-        case = Case.objects.filter(create_username=create_username).order_by('-pk').select_related('status', 'category', 'branch', 'department', 'priority')
+        case = Case.objects.filter(create_username=create_username).order_by('-pk').select_related('status', 'category', 'sub_category', 'second_sub_category', 'branch', 'sub_branch', 'department', 'priority', 'assign_name')
         base_qs = Case.objects.filter(date_created__year=current_year, date_created__month=current_month, create_username=create_username)
         caseCountPeding = base_qs.filter(status_id=1).count()
         caseCountDoing = base_qs.filter(status_id=2).count()
@@ -279,7 +279,7 @@ def deleteData(request,id):
 
 @login_required(login_url="member")
 def editData(request,id):
-    caseEdit = Case.objects.select_related('sub_category__category').get(id=id)
+    caseEdit = Case.objects.select_related('category', 'sub_category', 'second_sub_category', 'branch', 'sub_branch', 'department', 'status', 'priority', 'assign_name').get(id=id)
     caseImg = CaseImage.objects.filter(case_id=id)
     create_username = auth.get_user(request) #get user ตามที่ login 
     modify_username = auth.get_user(request).username
@@ -563,4 +563,160 @@ def load_second_subcategories(request):
     sub_category_id = request.GET.get('sub_category_id')
     second_subcategories = SecondSubCategory.objects.filter(sub_category_id=sub_category_id).values('id', 'name')
     return JsonResponse(list(second_subcategories), safe=False)
+
+@login_required(login_url="member")
+def case_list_ajax(request):
+    user = request.user
+    create_username = user.username
+
+    # Initial Queryset
+    current_year = timezone.now().year
+    current_month = timezone.now().month
+
+    if user.username == "admin":
+        cases = Case.objects.all()
+    elif user.username == "kanchana":
+        cases = Case.objects.filter(department_id="IT")
+    else:
+        cases = Case.objects.filter(create_username=create_username)
+
+    # 1. Base Filters (same as dashboard logic)
+    status_id = request.GET.get('status_id')
+    department_id = request.GET.get('department_id')
+    mycase = request.GET.get('mycase')
+    start_date = request.GET.get('start_date')
+    end_date = request.GET.get('end_date')
+    branch_id = request.GET.get('branch_id')
+
+    if status_id:
+        cases = cases.filter(status_id=status_id)
+    if department_id:
+        cases = cases.filter(department_id=department_id)
+    if branch_id:
+        cases = cases.filter(branch_id=branch_id)
+    if mycase:
+        cases = cases.filter(assign_name=mycase)
+
+    if start_date and end_date:
+        start_date_parsed = parse_date(start_date)
+        end_date_parsed = parse_date(end_date)
+        if start_date_parsed and end_date_parsed:
+            cases = cases.filter(date_created__date__gte=start_date_parsed, date_created__date__lte=end_date_parsed)
+    elif start_date:
+        start_date_parsed = parse_date(start_date)
+        if start_date_parsed:
+            cases = cases.filter(date_created__date__gte=start_date_parsed)
+    elif end_date:
+        end_date_parsed = parse_date(end_date)
+        if end_date_parsed:
+            cases = cases.filter(date_created__date__lte=end_date_parsed)
+    else:
+        cases = cases.filter(date_created__year=current_year, date_created__month=current_month)
+
+    recordsTotal = cases.count()
+
+    # 2. DataTable Global Search
+    search_value = request.GET.get('search[value]', '')
+    if search_value:
+        cases = cases.filter(
+            Q(ticket_number__icontains=search_value) |
+            Q(subject_detail__icontains=search_value) |
+            Q(case_detail__icontains=search_value) |
+            Q(name__icontains=search_value) |
+            Q(category__name__icontains=search_value)
+        )
+
+    recordsFiltered = cases.count()
+
+    # 3. DataTable Sorting
+    order_column_index = request.GET.get('order[0][column]')
+    order_dir = request.GET.get('order[0][dir]', 'asc')
+
+    columns_map = {
+        0: 'id', # No.
+        1: 'department__department_name',
+        2: 'category__name',
+        3: 'subject_detail',
+        4: 'case_detail',
+        5: 'name',
+        6: 'date_created',
+        7: 'branch__branch_name',
+        8: 'sub_branch__sub_branch_name',
+        9: 'assign_name__first_name',
+        10: 'status_id'
+    }
+
+    if order_column_index and int(order_column_index) in columns_map:
+        order_col_name = columns_map[int(order_column_index)]
+        if order_dir == 'desc':
+            order_col_name = '-' + order_col_name
+        cases = cases.order_by(order_col_name)
+    else:
+        cases = cases.order_by('-pk')
+
+    # Optimize query
+    cases = cases.select_related('status', 'category', 'sub_category', 'second_sub_category', 'branch', 'sub_branch', 'department', 'priority', 'assign_name')
+
+    # 4. DataTable Pagination
+    start = int(request.GET.get('start', 0))
+    length = int(request.GET.get('length', 10))
+    
+    if length > 0:
+        cases = cases[start:start+length]
+
+    # 5. Format Data
+    data = []
+    for i, case in enumerate(cases):
+        
+        # Prepare action URLs
+        edit_url = reverse('editData', args=[case.id])
+        delete_url = reverse('deleteData', args=[case.id])
+        image_url = reverse('addImages', args=[case.id])
+        
+        is_admin = (user.username == "admin")
+        is_staff = user.is_staff
+        
+        date_created_formatted = case.date_created.strftime("%d-%m-%Y, %I:%M %p").lower() if case.date_created else ""
+        date_created_sort = case.date_created.strftime("%Y-%m-%d %H:%M") if case.date_created else ""
+        
+        assign_name = ""
+        if is_staff and case.assign_name:
+            assign_name = f"{case.assign_name.first_name} <br> {case.assign_name.last_name}"
+            
+        branch_name = ""
+        if is_staff == 1 or is_staff == 0:
+            branch_name = case.branch.branch_name.replace("โรงพยาบาลสัตว์", "โรงพยาบาลสัตว์<br>") if case.branch else ""
+            
+        sub_branch_name = ""
+        if is_staff == 1:
+            sub_branch_name = case.sub_branch.sub_branch_name if case.sub_branch else ""
+
+        data.append({
+            "no": start + i + 1,
+            "department": case.department.department_name if case.department else "",
+            "category": case.category.name if case.category else "",
+            "subject": case.subject_detail,
+            "description": case.case_detail,
+            "request_name": case.name,
+            "date_created": date_created_formatted,
+            "date_created_sort": date_created_sort,
+            "company": branch_name,
+            "branch": sub_branch_name,
+            "assign_name": assign_name,
+            "status_id": case.status_id,
+            "status_name": case.status.name if case.status else "",
+            "is_admin": is_admin,
+            "is_staff": is_staff,
+            "edit_url": edit_url,
+            "delete_url": delete_url,
+            "image_url": image_url
+        })
+
+    return JsonResponse({
+        "draw": int(request.GET.get('draw', 1)),
+        "recordsTotal": recordsTotal,
+        "recordsFiltered": recordsFiltered,
+        "data": data
+    })
+
 
