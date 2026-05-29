@@ -22,14 +22,14 @@
                     Attach files or images <span class="text-danger">*</span>
                 </label>
                 <div class="custom-file">
-                    <input type="file" name="case_image" class="custom-file-input" id="uploadFile" accept="image/*,application/pdf,.xls,.xlsx,.csv" multiple>
+                    <input type="file" name="case_image" class="custom-file-input" id="uploadFile" accept="image/*,application/pdf,.xls,.xlsx,.csv,.rar,.zip" multiple>
                     <label class="custom-file-label" for="uploadFile">Choose files...</label>
                 </div>
-                <small class="text-danger d-block mt-2">** You can only attach files with the extension .jpg, .jpeg, .png, .pdf, .xls, .xlsx, .csv, Limit file size 10MB only !</small>
+                <small class="text-danger d-block mt-2">** You can only attach files with the extension .jpg, .jpeg, .png, .pdf, .xls, .xlsx, .csv, .rar, .zip, Limit file size 10MB only !</small>
             </div>
 
             <script>
-                const allowedExtensions = ["jpg","jpeg","png","pdf","xls","xlsx","csv"];
+                const allowedExtensions = ["jpg","jpeg","png","pdf","xls","xlsx","csv","rar","zip"];
                 const maxFileSize = 10 * 1024 * 1024; // 10MB
 
                 // ตรวจสอบไฟล์ทันทีเมื่อเลือก
@@ -54,7 +54,7 @@
                             Swal.fire({
                                 icon: "error",
                                 title: "ไฟล์ไม่ถูกต้อง",
-                                text: "อนุญาตเฉพาะไฟล์ .jpg, .jpeg, .png, .pdf, .xls, .xlsx, .csv เท่านั้น!",
+                                text: "อนุญาตเฉพาะไฟล์ .jpg, .jpeg, .png, .pdf, .xls, .xlsx, .csv, .rar, .zip เท่านั้น!",
                                 buttonsStyling: false,
                                 customClass: {
                                     confirmButton: 'btn btn-primary'
@@ -161,6 +161,10 @@
                             {% elif caseImage.is_excel %}
                                     <a href="{{ caseImage.case_image.url }}" target="_blank">
                                         <i class="fas fa-file-excel text-success" style="font-size: 100px;"></i>
+                                    </a>
+                            {% elif caseImage.is_archive %}
+                                    <a href="{{ caseImage.case_image.url }}" target="_blank">
+                                        <i class="fas fa-file-archive text-warning" style="font-size: 100px;"></i>
                                     </a>
                             {% else %}
                                     <a href="{{ caseImage.case_image.url }}" data-fancybox="gallery">

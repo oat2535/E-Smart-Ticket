@@ -136,10 +136,10 @@
                     Attach File 
                 </label>
                 <div class="custom-file">
-                    <input type="file" name="image" class="custom-file-input" id="uploadFile" accept="image/*,application/pdf,.xls,.xlsx,.csv">
+                    <input type="file" name="image" class="custom-file-input" id="uploadFile" accept="image/*,application/pdf,.xls,.xlsx,.csv,.rar,.zip">
                     <label class="custom-file-label" for="uploadFile">Choose file...</label>
                 </div>
-                <small class="text-danger d-block mt-2">** You can only attach files with the extension .jpg, .jpeg, .png, .pdf, .xls, .xlsx, .csv, Limit file size 10MB only !</small>
+                <small class="text-danger d-block mt-2">** You can only attach files with the extension .jpg, .jpeg, .png, .pdf, .xls, .xlsx, .csv, .rar, .zip, Limit file size 10MB only !</small>
             </div>
 
             <script>
@@ -162,11 +162,13 @@
                     if (!file) return;
 
                     // ตรวจสอบประเภทไฟล์
-                    if (!allowedTypes.includes(file.type)) {
+                    const ext = file.name.split('.').pop().toLowerCase();
+                    const extraAllowedExts = ['rar', 'zip'];
+                    if (!allowedTypes.includes(file.type) && !extraAllowedExts.includes(ext)) {
                         Swal.fire({
                             icon: "error",
                             title: "ไฟล์ไม่ถูกต้อง",
-                            text: "อนุญาตเฉพาะไฟล์ .jpg, .jpeg, .png, .pdf, .xls, .xlsx, .csv เท่านั้น!",
+                            text: "อนุญาตเฉพาะไฟล์ .jpg, .jpeg, .png, .pdf, .xls, .xlsx, .csv, .rar, .zip เท่านั้น!",
                             buttonsStyling: false,
                             customClass: {
                                 confirmButton: 'btn btn-primary'

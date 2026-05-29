@@ -23,7 +23,7 @@ class Case(models.Model):
     ip_address = models.CharField(max_length=255)
     email = models.CharField(max_length=255,blank=True)
     computer_name = models.CharField(max_length=255)
-    image = models.ImageField(upload_to="blogImages",blank=True,null=True)
+    image = models.FileField(upload_to="blogImages",blank=True,null=True)
     create_username = models.CharField(max_length=255, db_index=True)
     date_created = models.DateTimeField(db_index=True)
     assign_name = models.ForeignKey(Members,

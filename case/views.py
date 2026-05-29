@@ -289,10 +289,12 @@ def editData(request,id):
      # ตรวจสอบไฟล์ PDF
     is_case_edit_pdf = caseEdit.image.name.endswith('.pdf') if caseEdit.image else False
     is_case_edit_excel = caseEdit.image.name.lower().endswith(('.xls', '.xlsx', '.csv')) if caseEdit.image else False
+    is_case_edit_archive = caseEdit.image.name.lower().endswith(('.rar', '.zip')) if caseEdit.image else False
     for img in caseImg:
         # filename = img.case_image.name.lower() if img.case_image else ''
         img.is_pdf = img.case_image.name.endswith('.pdf')
         img.is_excel = img.case_image.name.endswith(('.xls', '.xlsx', '.csv'))
+        img.is_archive = img.case_image.name.endswith(('.rar', '.zip'))
     categories = Category.objects.all()
     sub_categories = SubCategory.objects.filter(category=caseEdit.category).order_by('name')
     sub_category_names = sub_categories.values_list('name', flat=True)
@@ -334,6 +336,7 @@ def editData(request,id):
         "score_range": list(range(1, 11)),
         "is_case_edit_excel": is_case_edit_excel,
         "is_case_edit_pdf": is_case_edit_pdf,
+        "is_case_edit_archive": is_case_edit_archive,
         "second_sub_categories": second_sub_categories,
         "second_sub_category_names": second_sub_category_names,
     })
@@ -502,6 +505,7 @@ def addImages(request,id):
     for img in caseImage:
         img.is_pdf = img.case_image.name.endswith('.pdf') if img.case_image else False
         img.is_excel = img.case_image.name.endswith(('.xls', '.xlsx', '.csv'))
+        img.is_archive = img.case_image.name.endswith(('.rar', '.zip'))
     return render(request,"backend/addImages.html",{
         "addImage":addImage,
         'create_username':create_username,

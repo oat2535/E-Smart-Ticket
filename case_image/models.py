@@ -3,7 +3,7 @@ from case.models import Case
 
 # Create your models here.
 class CaseImage(models.Model):
-    case_image = models.ImageField(upload_to="caseGallery",blank=True)
+    case_image = models.FileField(upload_to="caseGallery",blank=True)
     case = models.ForeignKey(Case,on_delete=models.CASCADE,related_name="images")
     
     class Meta:

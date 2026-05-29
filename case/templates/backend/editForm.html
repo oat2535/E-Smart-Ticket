@@ -239,6 +239,10 @@
                         <a href="{{ caseEdit.image.url }}" target="_blank" class="mr-2 mb-2" title="{{ caseEdit.image|cut:'blogImages/' }}">
                             <i class="fas fa-file-excel text-success" style="font-size: 100px;"></i>
                         </a>
+                        {% elif is_case_edit_archive %}
+                        <a href="{{ caseEdit.image.url }}" target="_blank" class="mr-2 mb-2" title="{{ caseEdit.image|cut:'blogImages/' }}">
+                            <i class="fas fa-file-archive text-warning" style="font-size: 100px;"></i>
+                        </a>
                         {% else %}
                         <a href="{{ caseEdit.image.url }}" data-fancybox="gallery" class="mr-2 mb-2"
                             title="{{ caseEdit.image|cut:'blogImages/' }}">
@@ -255,6 +259,10 @@
                         {% elif img.is_excel %}
                         <a href="{{ img.case_image.url }}" target="_blank" class="mr-2 mb-2" title="{{ img.case_image|cut:'caseGallery/' }}">
                             <i class="fas fa-file-excel text-success" style="font-size: 100px;"></i>
+                        </a>
+                        {% elif img.is_archive %}
+                        <a href="{{ img.case_image.url }}" target="_blank" class="mr-2 mb-2" title="{{ img.case_image|cut:'caseGallery/' }}">
+                            <i class="fas fa-file-archive text-warning" style="font-size: 100px;"></i>
                         </a>
                         {% else %}
                         <a href="{{ img.case_image.url }}" data-fancybox="gallery" class="mr-2 mb-2"
