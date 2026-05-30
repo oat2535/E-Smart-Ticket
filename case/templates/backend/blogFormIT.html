@@ -171,7 +171,9 @@
                     <label class="font-weight-bold">
                         Computer Name 
                         <!-- ปุ่มช่วยเหลือ -->
-                        <i class="bi bi-book fa fa-align-center" data-toggle="modal" data-target="#helpModal" style="margin-left: 5px; cursor: pointer;" title="How to find your computer name"></i>
+                        <a data-fancybox data-type="pdf" href="{% static 'backend/findcomputername.pdf' %}" title="How to find your computer name">
+                            <i class="bi bi-book fa fa-align-center" style="margin-left: 5px; cursor: pointer;"></i>
+                        </a>
                     </label>
                     <input type="text" id="name" name="computer_name" class="form-control" value="{{computer_name}}" placeholder="Please enter your computer name" maxlength="50">
                 </div>
@@ -185,23 +187,7 @@
                 </div>
             </div>
               
-            <!-- Modal -->
-            <div class="modal fade" id="helpModal" tabindex="-1" aria-labelledby="helpModalLabel" aria-hidden="true">
-                <div class="modal-dialog modal-lg">
-                <div class="modal-content">
-                    <div class="modal-header">
-                    <h5 class="modal-title" id="helpModalLabel">How to Find Computer Name</h5>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
-                    </button>
-                    </div>
-                    <div class="modal-body">
-                    <!-- แสดง PDF -->
-                    <iframe src="{% static 'backend/findcomputername.pdf' %}" width="100%" height="500px" style="border: none;"></iframe>
-                    </div>
-                </div>
-                </div>
-            </div>
+
 
             <div class="form-group">
                 <label class="font-weight-bold">
