@@ -26,6 +26,7 @@ urlpatterns = [
     path('usermanage/',include("usermanage.urls")),
     path('report/',include("report.urls")),
     path('equipment/', include("equipment.urls")),
+    path('access-requests/', include("access_requests.urls")),
 ]
 
 if settings.DEBUG:

@@ -52,6 +52,7 @@ INSTALLED_APPS = [
     'sub_branch',
     'second_sub_category',
     'equipment',
+    'access_requests',
 ]
 
 MIDDLEWARE = [
@@ -78,6 +79,7 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'access_requests.context_processors.pending_approvals_count',
             ],
         },
     },
@@ -232,6 +234,11 @@ AUTH_USER_MODEL = 'members.Members'
 
 LOGIN_URL = 'member'
 
-
-
-
+# Email Backend Configuration (SMTP)
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = 'evepednaruk@gmail.com'
+EMAIL_HOST_PASSWORD = 'hzwg qwrz zozx xdkl'
+DEFAULT_FROM_EMAIL = EMAIL_HOST_USER

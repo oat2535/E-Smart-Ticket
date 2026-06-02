@@ -266,6 +266,30 @@
                 </div>
             </li>
 
+            <!-- Nav Item - Access Requests -->
+            <li class="nav-item {% if '/access-requests' in request.path %}active{% endif %}">
+                <a class="nav-link {% if '/access-requests' not in request.path %}collapsed{% endif %}" href="#" data-toggle="collapse" data-target="#collapseAccessRequests"
+                    aria-expanded="{% if '/access-requests' in request.path %}true{% else %}false{% endif %}" aria-controls="collapseAccessRequests">
+                    <i class="fas fa-fw fa-key"></i>
+                    <span>User Access System</span>
+                </a>
+                <div id="collapseAccessRequests" class="collapse {% if '/access-requests' in request.path %}show{% endif %}" aria-labelledby="headingAccessRequests" data-parent="#accordionSidebar">
+                    <div class="bg-white py-2 collapse-inner rounded">
+                        <h6 class="collapse-header">Access:</h6>
+                        <a class="collapse-item {% if request.path == '/access-requests/' %}active{% endif %}" href="{% url 'access_dashboard' %}"><i class="fas fa-tachometer-alt mr-2"></i> Dashboard</a>
+                        <a class="collapse-item {% if '/access-requests/requests/new/' in request.path %}active{% endif %}" href="{% url 'access_create_request' %}"><i class="fas fa-plus mr-2"></i> New Request</a>
+                        {% if request.user.is_staff == 1 or request.user.is_superuser == 1 or request.user.username == "admin" %}
+                        <a class="collapse-item {% if '/access-requests/approvals/' in request.path %}active{% endif %}" href="{% url 'access_approval_list' %}">
+                            <i class="fas fa-check-circle mr-2"></i> Approvals
+                            {% if pending_approval_count and pending_approval_count > 0 %}
+                            <span class="badge badge-danger ml-2">{{ pending_approval_count }}</span>
+                            {% endif %}
+                        </a>
+                        {% endif %}
+                    </div>
+                </div>
+            </li>
+
             <!-- Divider -->
             <hr class="sidebar-divider d-none d-md-block">
 

@@ -1,0 +1,185 @@
+{% extends 'backend/layout.html' %}
+
+{% block title %}New Request - User Access System{% endblock %}
+{% load static %}
+{% block content %}
+<div class="d-sm-flex align-items-center justify-content-between mb-4">
+    <h1 class="h3 mb-0 text-gray-800">สร้างคำขอใหม่ (New Request)</h1>
+</div>
+
+<div class="card shadow mb-4">
+    <div class="card-header py-3">
+        <h6 class="m-0 font-weight-bold text-primary">แบบฟอร์มขอสิทธิ์ (Access Request Form)</h6>
+    </div>
+    <div class="card-body">
+        <form method="post">
+            {% csrf_token %}
+            
+            <h6 class="font-weight-bold text-secondary mb-3">ข้อมูลส่วนตัว (Personal Information)</h6>
+
+            <!-- Row 1: Employee ID & Email -->
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label for="{{ form.employee_id.id_for_label }}" class="font-weight-bold">2. รหัสพนักงาน <span class="text-danger">*</span></label>
+                        {{ form.employee_id }}
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label for="{{ form.email.id_for_label }}" class="font-weight-bold">3. E-mail ของผู้ที่ขอสิทธิ์ <span class="text-danger">*</span></label>
+                        {{ form.email }}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Row 2: Prefix -->
+            <div class="form-group">
+                <label class="font-weight-bold">4. คำนำหน้าชื่อ <span class="text-danger">*</span></label>
+                <div class="d-flex flex-wrap align-items-center">
+                    {% for radio in form.prefix %}
+                    <div class="custom-control custom-radio mr-4 mb-2">
+                        {{ radio.tag }}
+                        <label class="custom-control-label" for="{{ radio.id_for_label }}">{{ radio.choice_label }}</label>
+                    </div>
+                    {% if forloop.last %}
+                    <!-- Hidden input for 'Other', moved inline -->
+                    <div id="prefix_other_container" class="mb-2" style="display: none; width: 200px;">
+                         {{ form.prefix_other }}
+                    </div>
+                    {% endif %}
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Row 3: Name (TH) -->
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label for="{{ form.firstname_th.id_for_label }}" class="font-weight-bold">5. ชื่อ (ภาษาไทย) <span class="text-danger">*</span></label>
+                        {{ form.firstname_th }}
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label for="{{ form.lastname_th.id_for_label }}" class="font-weight-bold">นามสกุล (ภาษาไทย) <span class="text-danger">*</span></label>
+                        {{ form.lastname_th }}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Row 4: Name (EN) -->
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label for="{{ form.firstname_en.id_for_label }}" class="font-weight-bold">6. ชื่อ (ภาษาอังกฤษ) <span class="text-danger">*</span></label>
+                        {{ form.firstname_en }}
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label for="{{ form.lastname_en.id_for_label }}" class="font-weight-bold">นามสกุล (ภาษาอังกฤษ) <span class="text-danger">*</span></label>
+                        {{ form.lastname_en }}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Row 4: Dept & Position -->
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label for="{{ form.department.id_for_label }}" class="font-weight-bold">7. เลือกแผนก <span class="text-danger">*</span></label>
+                        {{ form.department }}
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label for="{{ form.position.id_for_label }}" class="font-weight-bold">8. เลือกตำแหน่ง <span class="text-danger">*</span></label>
+                        {{ form.position }}
+                    </div>
+                </div>
+            </div>
+            
+            <hr class="my-4">
+            <h6 class="font-weight-bold text-secondary mb-3">รายละเอียดการขอสิทธิ์ (Request Details)</h6>
+
+            <!-- Row 5: Systems -->
+            <div class="form-group">
+                <label class="font-weight-bold text-primary">9. รายการระบบที่ต้องการขอสิทธิ์ (เลือกได้มากกว่า 1) <span class="text-danger">*</span></label>
+                <div class="card border-left-primary shadow-sm h-100 py-2">
+                    <div class="card-body">
+                        <div class="row">
+                            {% for checkbox in form.systems %}
+                            <div class="col-md-6 mb-2">
+                                <div class="custom-control custom-checkbox">
+                                    {{ checkbox.tag }}
+                                    <label class="custom-control-label" for="{{ checkbox.id_for_label }}">{{ checkbox.choice_label }}</label>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Row 6: Reason -->
+            <div class="form-group mt-3">
+                <label for="{{ form.reason.id_for_label }}" class="font-weight-bold">10. เหตุผลในการขอสิทธิ์ (Business Justification) <span class="text-danger">*</span></label>
+                {{ form.reason }}
+            </div>
+
+            <hr>
+            <div class="d-flex justify-content-end">
+                <a href="{% if is_public %}{% url 'login' %}{% else %}{% url 'access_dashboard' %}{% endif %}" class="btn btn-secondary mr-2">ยกเลิก</a>
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-paper-plane"></i> ส่งคำขอสิทธิ์
+                </button>
+            </div>
+
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        // Get all prefix radio buttons
+        const prefixRadios = document.querySelectorAll('input[name="prefix"]');
+        const otherContainer = document.getElementById('prefix_other_container');
+        const otherInput = document.getElementById('id_prefix_other');
+
+        function toggleOther() {
+            // Find the checked radio
+            let selectedValue = null;
+            for (const radio of prefixRadios) {
+                if (radio.checked) {
+                    selectedValue = radio.value;
+                    break;
+                }
+            }
+
+            // Show/Hide container based on value 'other'
+            if (selectedValue === 'other') {
+                otherContainer.style.display = 'inline-block';
+                if (otherInput) otherInput.required = true;
+                if (otherInput) otherInput.focus();
+            } else {
+                otherContainer.style.display = 'none';
+                if (otherInput) {
+                    otherInput.required = false;
+                    otherInput.value = '';
+                } 
+            }
+        }
+
+        // Attach event listeners
+        prefixRadios.forEach(radio => {
+            radio.addEventListener('change', toggleOther);
+        });
+
+        // Run once on load to set initial state
+        toggleOther();
+    });
+</script>
+{% endblock %}

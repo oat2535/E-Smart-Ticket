@@ -1,0 +1,175 @@
+{% extends 'backend/layout.html' %}
+
+{% block title %}Pending Approvals - IT ACCESS{% endblock %}
+
+{% block content %}
+<div class="d-sm-flex align-items-center justify-content-between mb-4">
+    <h1 class="h3 mb-0 text-gray-800">รายการรออนุมัติ (Pending Approval)</h1>
+</div>
+
+<div class="alert alert-warning" role="alert">
+    <i class="fas fa-exclamation-triangle"></i> คุณมีรายการที่ต้องดำเนินการในระบบนี้ <strong>{{ requests.paginator.count }}</strong> รายการ (จากทั้งหมด {{ total_pending }} รายการ)
+</div>
+
+<!-- System Tabs -->
+<ul class="nav nav-tabs mb-4">
+    {% for sd in system_data %}
+    <li class="nav-item">
+        <a class="nav-link {% if sd.is_active %}active font-weight-bold text-primary{% else %}text-secondary{% endif %}" href="?system_id={{ sd.system.id }}">
+            {% if 'vpn' in sd.system.name|lower %}
+                <i class="fas fa-network-wired mr-1"></i>
+            {% elif 'usb' in sd.system.name|lower %}
+                <i class="fab fa-usb mr-1"></i>
+            {% else %}
+                <i class="fas fa-desktop mr-1"></i>
+            {% endif %}
+            {{ sd.system.name }}
+            {% if sd.count > 0 %}
+            <span class="badge badge-danger ml-1">{{ sd.count }}</span>
+            {% endif %}
+        </a>
+    </li>
+    {% endfor %}
+</ul>
+
+<div class="row">
+    <div class="col-lg-12">
+        {% for req in requests %}
+        <div class="card shadow mb-4">
+            <div class="card-body">
+                <div class="row align-items-center">
+                    <div class="col-md-9">
+                        <div class="row mb-2">
+                            <div class="col-sm-3 font-weight-bold text-gray-800">Employee ID:</div>
+                            <div class="col-sm-9">{{ req.employee_id }}</div>
+                        </div>
+                        <div class="row mb-2">
+                            <div class="col-sm-3 font-weight-bold text-gray-800">Fullname (TH):</div>
+                            <div class="col-sm-9">{{ req.prefix_th|default:"" }} {{ req.firstname_th }} {{ req.lastname_th }}</div>
+                        </div>
+                        <div class="row mb-2">
+                            <div class="col-sm-3 font-weight-bold text-gray-800">Fullname (EN):</div>
+                            <div class="col-sm-9">{{ req.prefix_en|default:"" }} {{ req.firstname_en }} {{ req.lastname_en }}</div>
+                        </div>
+                        <div class="row mb-2">
+                            <div class="col-sm-3 font-weight-bold text-gray-800">Email:</div>
+                            <div class="col-sm-9">{{ req.email }}</div>
+                        </div>
+                        <div class="row mb-2">
+                            <div class="col-sm-3 font-weight-bold text-gray-800">Department/Pos:</div>
+                            <div class="col-sm-9">{{ req.department.name }} / {{ req.position.name }}</div>
+                        </div>
+                        <div class="row mb-2">
+                            <div class="col-sm-3 font-weight-bold text-gray-800">Systems:</div>
+                            <div class="col-sm-9">
+                                {% for sys in req.systems.all %}
+                                    {% if sys.id|stringformat:"s" == selected_system_id %}
+                                        <span class="badge badge-primary">{{ sys.name }}</span>
+                                    {% endif %}
+                                {% endfor %}
+                            </div>
+                        </div>
+                        <div class="row mb-2">
+                            <div class="col-sm-3 font-weight-bold text-gray-800">Reason:</div>
+                            <div class="col-sm-9">{{ req.reason }}</div>
+                        </div>
+                        <div class="row mb-2">
+                            <div class="col-sm-3 font-weight-bold text-gray-800">Requested On:</div>
+                            <div class="col-sm-9">{{ req.created_at|date:"M. d, Y, P" }}</div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-3 text-right">
+                         <div class="mb-3">
+                             <span class="badge badge-warning">{{ req.get_status_display }}</span>
+                         </div>
+                         <div class="d-flex flex-column align-items-end">
+                             <form action="{% url 'access_approve_request' req.pk %}" method="post" class="mb-2 w-100">
+                                 {% csrf_token %}
+                                 <button type="submit" class="btn btn-success btn-block">
+                                     <i class="fas fa-check"></i> Approve
+                                 </button>
+                             </form>
+                             <button type="button" class="btn btn-danger btn-block" data-toggle="modal" data-target="#rejectModal-{{ req.pk }}">
+                                 <i class="fas fa-times"></i> Reject
+                             </button>
+                         </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Reject Modal -->
+        <div class="modal fade" id="rejectModal-{{ req.pk }}" tabindex="-1" role="dialog" aria-labelledby="rejectModalLabel-{{ req.pk }}" aria-hidden="true">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="rejectModalLabel-{{ req.pk }}">ระบุเหตุผลที่ปฏิเสธ (Reject Reason)</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <form action="{% url 'access_reject_request' req.pk %}" method="post">
+                        {% csrf_token %}
+                        <div class="modal-body text-left">
+                            <div class="form-group">
+                                <label for="reason-{{ req.pk }}" class="col-form-label">เหตุผล:</label>
+                                <textarea class="form-control" id="reason-{{ req.pk }}" name="reason" required></textarea>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-dismiss="modal">ยกเลิก</button>
+                            <button type="submit" class="btn btn-danger">ยืนยันการปฏิเสธ</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        
+        {% empty %}
+        <div class="text-center py-5">
+            <h5 class="text-gray-500">ไม่มีรายการรออนุมัติ</h5>
+        </div>
+        {% endfor %}
+
+        <!-- Pagination -->
+        {% if requests.has_other_pages %}
+        <nav aria-label="Page navigation">
+            <ul class="pagination justify-content-center">
+                {% if requests.has_previous %}
+                    <li class="page-item">
+                        <a class="page-link" href="?system_id={{ selected_system_id }}&page={{ requests.previous_page_number }}" aria-label="Previous">
+                            <span aria-hidden="true">&laquo;</span>
+                        </a>
+                    </li>
+                {% else %}
+                    <li class="page-item disabled">
+                        <span class="page-link">&laquo;</span>
+                    </li>
+                {% endif %}
+
+                {% for i in requests.paginator.page_range %}
+                    {% if requests.number == i %}
+                        <li class="page-item active"><span class="page-link">{{ i }}</span></li>
+                    {% else %}
+                        <li class="page-item"><a class="page-link" href="?system_id={{ selected_system_id }}&page={{ i }}">{{ i }}</a></li>
+                    {% endif %}
+                {% endfor %}
+
+                {% if requests.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="?system_id={{ selected_system_id }}&page={{ requests.next_page_number }}" aria-label="Next">
+                            <span aria-hidden="true">&raquo;</span>
+                        </a>
+                    </li>
+                {% else %}
+                    <li class="page-item disabled">
+                        <span class="page-link">&raquo;</span>
+                    </li>
+                {% endif %}
+            </ul>
+        </nav>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

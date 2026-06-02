@@ -1,0 +1,108 @@
+{% extends 'backend/layout.html' %}
+
+{% block title %}Request Details - User Access System{% endblock %}
+
+{% block content %}
+<div class="d-sm-flex align-items-center justify-content-between mb-4">
+    <h1 class="h3 mb-0 text-gray-800">Request #{{ request_obj.pk }}</h1>
+    <a href="{% url 'access_dashboard' %}" class="btn btn-secondary shadow-sm">
+        <i class="fas fa-arrow-left fa-sm text-white-50"></i> Back to Dashboard
+    </a>
+</div>
+
+<div class="row">
+    <div class="col-lg-8">
+        <div class="card shadow mb-4">
+            <div class="card-header py-3">
+                <h6 class="m-0 font-weight-bold text-primary">Details</h6>
+            </div>
+            <div class="card-body">
+                <div class="row mb-3">
+                    <div class="col-md-3 font-weight-bold">Employee ID:</div>
+                    <div class="col-md-9">{{ request_obj.employee_id }}</div>
+                </div>
+
+                <div class="row mb-3">
+                    <div class="col-md-3 font-weight-bold">Fullname (TH):</div>
+                    <div class="col-md-9">{{ request_obj.prefix_th }} {{ request_obj.firstname_th }} {{ request_obj.lastname_th }}</div>
+                </div>
+
+                <div class="row mb-3">
+                    <div class="col-md-3 font-weight-bold">Fullname (EN):</div>
+                    <div class="col-md-9">{{ request_obj.prefix_en }} {{ request_obj.firstname_en }} {{ request_obj.lastname_en }}</div>
+                </div>
+
+                <div class="row mb-3">
+                    <div class="col-md-3 font-weight-bold">Email:</div>
+                    <div class="col-md-9">{{ request_obj.email }}</div>
+                </div>
+
+                <div class="row mb-3">
+                    <div class="col-md-3 font-weight-bold">Department/Pos:</div>
+                    <div class="col-md-9">{{ request_obj.department }} / {{ request_obj.position }}</div>
+                </div>
+
+                <div class="row mb-3">
+                    <div class="col-md-3 font-weight-bold">Systems:</div>
+                    <div class="col-md-9">
+                        {% for req in grouped_reqs %}
+                            {% for sys in req.systems.all %}
+                                {% if req.status == 'approved' %}
+                                    <span class="badge badge-success px-2 py-1 mr-1 mb-1" data-toggle="tooltip" data-placement="top" title="อนุมัติแล้วโดย {{ req.it_approver.get_full_name|default:req.it_approver.username|default:'IT' }}">{{ sys.name }}</span>
+                                {% elif req.status == 'rejected' %}
+                                    <span class="badge badge-danger px-2 py-1 mr-1 mb-1" data-toggle="tooltip" data-placement="top" title="ถูกปฏิเสธโดย {{ req.rejected_by.get_full_name|default:req.rejected_by.username|default:'ผู้พิจารณา' }}">{{ sys.name }}</span>
+                                {% elif req.status == 'pending_manager' %}
+                                    <span class="badge badge-warning px-2 py-1 text-white mr-1 mb-1" data-toggle="tooltip" data-placement="top" title="รอหัวหน้าอนุมัติ (Wait for Manager)">{{ sys.name }}</span>
+                                {% elif req.status == 'pending_it' %}
+                                    <span class="badge badge-warning px-2 py-1 text-white mr-1 mb-1" data-toggle="tooltip" data-placement="top" title="รอฝ่าย IT อนุมัติ (Wait for IT)">{{ sys.name }}</span>
+                                {% else %}
+                                    <span class="badge badge-warning px-2 py-1 text-white mr-1 mb-1" data-toggle="tooltip" data-placement="top" title="{{ req.get_status_display }}">{{ sys.name }}</span>
+                                {% endif %}
+                            {% endfor %}
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <div class="row mb-3">
+                    <div class="col-md-3 font-weight-bold">Reason:</div>
+                    <div class="col-md-9">{{ request_obj.reason }}</div>
+                </div>
+
+                <div class="row mb-3">
+                    <div class="col-md-3 font-weight-bold">Requested On:</div>
+                    <div class="col-md-9">{{ request_obj.created_at }}</div>
+                </div>
+
+                {% if request_obj.manager_comment %}
+                <hr>
+                <div class="row mb-3">
+                    <div class="col-md-3 font-weight-bold">Manager Comment:</div>
+                    <div class="col-md-9">{{ request_obj.manager_comment }}</div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-4">
+        {% if request_obj.system.description %}
+        <div class="card shadow mb-4">
+            <div class="card-header py-3">
+                <h6 class="m-0 font-weight-bold text-primary">System Information</h6>
+            </div>
+            <div class="card-body">
+                {{ request_obj.system.description|linebreaks }}
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    $(function () {
+        $('[data-toggle="tooltip"]').tooltip()
+    })
+</script>
+{% endblock %}
