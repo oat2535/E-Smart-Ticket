@@ -46,4 +46,4 @@ COPY . /app/
 EXPOSE 8000
 
 # คำสั่งสำหรับรัน Project โดยใช้คำสั่ง python manage.py runserver รับทุก IP Address ที่เชื่อมต่อเข้ามาที่พอร์ต 8000 
-CMD ["python", "manage.py", "runserver", "0.0.0.0:8000"]
+CMD ["python", "manage.py", "runserver", "0.0.0.0:8000", "--insecure"]
