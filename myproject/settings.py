@@ -12,6 +12,10 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 
 from pathlib import Path
 import os
+from dotenv import load_dotenv
+
+# Load environment variables from .env file
+load_dotenv()
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -21,10 +25,11 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-ukr!$@r8+widv(k9g(ud-r*%ojtj+fy_=od3^jb6=-3lt4##2p'
+SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-ukr!$@r8+widv(k9g(ud-r*%ojtj+fy_=od3^jb6=-3lt4##2p')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+# e.g., DEBUG=False in .env
+DEBUG = os.environ.get('DEBUG', 'True') == 'True'
 
 # Application definition
 
@@ -110,11 +115,11 @@ WSGI_APPLICATION = 'myproject.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'tlph',
-        'USER':'eservices',
-        'PASSWORD':'Tlp@2023',
-        'HOST': '173.16.200.35', 
-        'PORT': '5435',
+        'NAME': os.environ.get('DB_NAME', 'tlph'),
+        'USER': os.environ.get('DB_USER', 'eservices'),
+        'PASSWORD': os.environ.get('DB_PASSWORD', 'Tlp@2023'),
+        'HOST': os.environ.get('DB_HOST', '173.16.200.35'), 
+        'PORT': os.environ.get('DB_PORT', '5435'),
         'CONN_MAX_AGE': 60,  # Keep database connections open for 60 seconds
         'OPTIONS': {
             'options': '-c search_path=intra_tl'
@@ -130,7 +135,8 @@ CACHES = {
 }
 
 
-ALLOWED_HOSTS = ['*']
+ALLOWED_HOSTS_ENV = os.environ.get('ALLOWED_HOSTS', 'e-smartticket-jv.thonglorpet.com,localhost,127.0.0.1')
+ALLOWED_HOSTS = [host.strip() for host in ALLOWED_HOSTS_ENV.split(',')]
 
 # Password validation
 # https://docs.djangoproject.com/en/5.1/ref/settings/#auth-password-validators
@@ -206,7 +212,7 @@ SESSION_COOKIE_NAME = "sessionid"
 # SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
 # # บังคับให้เชื่อมต่อ HTTPS
-# SECURE_SSL_REDIRECT = True
+SECURE_SSL_REDIRECT = os.environ.get('SECURE_SSL_REDIRECT', 'False') == 'True'
 
 # # เปิดใช้งาน Strict Transport Security (HSTS)
 # SECURE_HSTS_SECONDS = 31536000  # 1 ปี
@@ -214,8 +220,8 @@ SESSION_COOKIE_NAME = "sessionid"
 # SECURE_HSTS_PRELOAD = True
 
 # # ใช้ Secure Cookies
-SESSION_COOKIE_SECURE = False
-# CSRF_COOKIE_SECURE = True
+SESSION_COOKIE_SECURE = os.environ.get('SESSION_COOKIE_SECURE', 'False') == 'True'
+CSRF_COOKIE_SECURE = os.environ.get('CSRF_COOKIE_SECURE', 'False') == 'True'
 
 CSRF_TRUSTED_ORIGINS = [
     'https://uat-ticket-jv.thonglorpet.com',
@@ -239,6 +245,6 @@ EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
-EMAIL_HOST_USER = 'evepednaruk@gmail.com'
-EMAIL_HOST_PASSWORD = 'hzwg qwrz zozx xdkl'
+EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER', 'evepednaruk@gmail.com')
+EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD', '')
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
