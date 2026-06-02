@@ -58,5 +58,6 @@ visitor==0.1.3
 webencodings==0.5.1
 Werkzeug==3.1.3
 WTForms==3.2.1
-python-dateutil==2.9.0.post0python-dotenv==1.2.2
+python-dateutil==2.9.0.post0
+python-dotenv==1.2.2
 
