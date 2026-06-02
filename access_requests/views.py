@@ -1,6 +1,7 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.utils import timezone
+from .utils import get_user_role
 from django.contrib.auth import login
 from django.contrib.admin.views.decorators import staff_member_required
 from .models import AccessRequest, System, AccessRequestLog
@@ -40,11 +41,11 @@ def send_notification_email(access_request, subject, message):
 
 @login_required
 def dashboard(request):
-    # If superuser or staff, show all requests? Or just show my requests?
-    # Logic: Dashboard shows *my* requests. Admin panel shows *all*.
-    # Image suggests singular user view.
-    
-    all_requests_qs = AccessRequest.objects.filter(user=request.user)
+    user_role = get_user_role(request.user)
+    if user_role in ['manager', 'it', 'admin']:
+        all_requests_qs = AccessRequest.objects.all()
+    else:
+        all_requests_qs = AccessRequest.objects.filter(user=request.user)
     
     pending_manager_count = all_requests_qs.filter(status='pending_manager').count()
     pending_it_count = all_requests_qs.filter(status='pending_it').count()
@@ -182,8 +183,9 @@ def create_request(request):
 @login_required
 def request_detail(request, pk):
     access_request = get_object_or_404(AccessRequest, pk=pk)
-    if access_request.user != request.user and not request.user.is_superuser:
-        return redirect('dashboard')
+    user_role = get_user_role(request.user)
+    if access_request.user != request.user and user_role not in ['manager', 'it', 'admin']:
+        return redirect('access_dashboard')
         
     start_time = access_request.created_at.replace(second=0, microsecond=0)
     end_time = start_time + timezone.timedelta(minutes=1)
@@ -201,14 +203,23 @@ def request_detail(request, pk):
 
 # Manager / Admin Views
 
-@staff_member_required
+@login_required
 def approval_list(request):
     from django.core.paginator import Paginator
 
+    user_role = get_user_role(request.user)
+    if user_role not in ['manager', 'it', 'admin']:
+        return redirect('access_dashboard')
+
     systems = System.objects.all()
-    pending_requests = AccessRequest.objects.filter(status__in=['pending_manager', 'pending_it']).order_by('-created_at')
     
-    total_pending = AccessRequest.systems.through.objects.filter(accessrequest__status__in=['pending_manager', 'pending_it']).count()
+    if user_role == 'manager':
+        pending_requests = AccessRequest.objects.filter(status='pending_manager').order_by('-created_at')
+        total_pending = AccessRequest.systems.through.objects.filter(accessrequest__status='pending_manager').count()
+    else: # IT or admin
+        pending_requests = AccessRequest.objects.filter(status__in=['pending_manager', 'pending_it']).order_by('-created_at')
+        total_pending = AccessRequest.systems.through.objects.filter(accessrequest__status__in=['pending_manager', 'pending_it']).count()
+    
     selected_system_id = request.GET.get('system_id')
     
     if not selected_system_id and systems.exists():
@@ -236,17 +247,19 @@ def approval_list(request):
         'system_data': system_data,
         'requests': requests_page,
         'total_pending': total_pending,
-        'selected_system_id': selected_system_id
+        'selected_system_id': selected_system_id,
+        'user_role': user_role
     }
     
     return render(request, 'access_requests/approval_list.html', context)
 
-@staff_member_required
+@login_required
 def approve_request(request, pk):
     if request.method == 'POST':
+        user_role = get_user_role(request.user)
         access_request = get_object_or_404(AccessRequest, pk=pk)
         
-        if access_request.status == 'pending_manager':
+        if access_request.status == 'pending_manager' and user_role in ['manager', 'admin']:
             # Manager Approval -> Send to IT
             access_request.status = 'pending_it'
             access_request.manager_approver = request.user
@@ -257,7 +270,7 @@ def approve_request(request, pk):
             log_action(request, access_request, 'Manager Approved', f"Comment: {access_request.manager_comment}")
             send_notification_email(access_request, "Manager Approved", f"Your request {access_request.request_code} has been approved by Manager. Waiting for IT approval.")
             
-        elif access_request.status == 'pending_it':
+        elif access_request.status == 'pending_it' and user_role in ['it', 'admin']:
             # IT Approval -> Final Approved
             access_request.status = 'approved'
             access_request.it_approver = request.user
@@ -270,10 +283,16 @@ def approve_request(request, pk):
             
     return redirect('access_approval_list')
 
-@staff_member_required
+@login_required
 def reject_request(request, pk):
     if request.method == 'POST':
+        user_role = get_user_role(request.user)
         access_request = get_object_or_404(AccessRequest, pk=pk)
+        
+        if (access_request.status == 'pending_manager' and user_role not in ['manager', 'admin']) or \
+           (access_request.status == 'pending_it' and user_role not in ['it', 'admin']):
+            return redirect('access_approval_list')
+
         previous_status = access_request.status
         access_request.status = 'rejected'
         access_request.reject_reason = request.POST.get('reason', '')

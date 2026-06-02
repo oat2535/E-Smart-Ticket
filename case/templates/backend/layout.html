@@ -278,7 +278,7 @@
                         <h6 class="collapse-header">Access:</h6>
                         <a class="collapse-item {% if request.path == '/access-requests/' %}active{% endif %}" href="{% url 'access_dashboard' %}"><i class="fas fa-tachometer-alt mr-2"></i> Dashboard</a>
                         <a class="collapse-item {% if '/access-requests/requests/new/' in request.path %}active{% endif %}" href="{% url 'access_create_request' %}"><i class="fas fa-plus mr-2"></i> New Request</a>
-                        {% if request.user.is_staff == 1 or request.user.is_superuser == 1 or request.user.username == "admin" %}
+                        {% if can_approve_requests %}
                         <a class="collapse-item {% if '/access-requests/approvals/' in request.path %}active{% endif %}" href="{% url 'access_approval_list' %}">
                             <i class="fas fa-check-circle mr-2"></i> Approvals
                             {% if pending_approval_count and pending_approval_count > 0 %}

@@ -14,6 +14,7 @@ class Members(AbstractUser):
     branch = models.ForeignKey(Branch, on_delete=models.SET_NULL, blank=True, null=True)
     sub_branch = models.ForeignKey(SubBranch, on_delete=models.SET_NULL, blank=True, null=True, default=None)
     department = models.ForeignKey(Department, on_delete=models.SET_NULL, blank=True, null=True)
+    position = models.ForeignKey('access_requests.Position', on_delete=models.SET_NULL, blank=True, null=True)
 
     is_staff = models.IntegerField(choices=[(0, 'False'), (1, 'True')], default=0)
     is_active = models.IntegerField(choices=[(0, 'False'), (1, 'True')], default=1)

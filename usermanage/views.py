@@ -8,6 +8,7 @@ from .forms import UserStaffStatusForm
 from branch.models import Branch
 from department.models import Department
 from sub_branch.models import SubBranch
+from access_requests.models import Position
 from django.http import JsonResponse
 
 
@@ -29,12 +30,14 @@ def addUser(request):
     branches = Branch.objects.all()
     sub_branches = SubBranch.objects.all()
     departments = Department.objects.all()
+    positions = Position.objects.all()
 
     return render(request,"backend/addUser.html",{
         "user":user,
         'create_username':create_username,
         'form':form,'branches':branches,
-        'departments':departments,'sub_branches':sub_branches})
+        'departments':departments,'sub_branches':sub_branches,
+        'positions': positions})
 
 @login_required(login_url="member")
 def register(request):
@@ -57,6 +60,7 @@ def register(request):
             sub_branches = sub_branches if sub_branches else None
         phone_number = request.POST["phone_number"]
         department = request.POST.get("department", "").strip() 
+        position = request.POST.get("position", "").strip()
         is_staff = request.POST.get("is_staff")  # รับค่าจากฟอร์ม
 
           # ตรวจสอบว่ากรอกข้อมูลครบ
@@ -77,6 +81,7 @@ def register(request):
                 "is_staff": is_staff,
                 "branches": branches,
                 "departments": departments,
+                "positions": Position.objects.all(),
                 "selected_department": department  # เพิ่มข้อมูลแผนกที่เลือกไว้
             })
         # elif not sub_branches:
@@ -125,7 +130,8 @@ def register(request):
                 "is_staff": is_staff,
                 "branches": branches,
                 "selected_branch": branch,
-                "department": department
+                "department": department,
+                "positions": Position.objects.all()
             })
 
         # ตรวจสอบรหัสผ่านว่าตรงกันหรือไม่
@@ -140,7 +146,8 @@ def register(request):
                 "is_staff": is_staff,
                 "branches": branches,
                 "selected_branch": branch,
-                "department": department
+                "department": department,
+                "positions": Position.objects.all()
             })
 
         else:
@@ -159,6 +166,8 @@ def register(request):
                         password = password,
                         department_id=department_id  # ใช้ค่า department_id
                     )
+                if position:
+                    user.position_id = position
                 user.is_staff = is_staff_value  # กำหนดค่า is_staff
                 user.save()
                 #messages.info(request, "สร้างบัญชีผู้ใช้สำเร็จ!")
@@ -183,12 +192,14 @@ def editUser(request,id):
     form = UserStaffStatusForm(instance=userEdit) 
     branches = Branch.objects.all()
     sub_branches = SubBranch.objects.filter(branch_id=userEdit.branch_id)
+    positions = Position.objects.all()
 
     return render(request,"backend/editUser.html",{
         "userEdit":userEdit,
         'create_username':create_username,
         'form':form,'branches':branches,
-        'sub_branches':sub_branches})
+        'sub_branches':sub_branches,
+        'positions':positions})
 
 @login_required(login_url="member")
 def updateUser(request,id):
@@ -204,6 +215,7 @@ def updateUser(request,id):
         branch = request.POST.get("branch") or None
         sub_branch_id = request.POST.get("sub_branch")
         phone_number = request.POST["phone_number"]
+        position = request.POST.get("position", "").strip()
         # permission = request.POST["permission"]
 
         if form.is_valid():
@@ -220,6 +232,7 @@ def updateUser(request,id):
             else:
                 user.sub_branch = None
             user.phone_number = phone_number
+            user.position_id = position if position else None
             # # กำหนดสิทธิ์ผู้ใช้ (is_staff) ตามค่า permission ที่ส่งมาจากฟอร์ม
             # if permission == "1":  # ถ้า checkbox ถูกติ๊ก (permission ส่งค่าเป็น '1')
             #     user.is_staff = True
