@@ -208,8 +208,8 @@ SESSION_EXPIRE_AT_BROWSER_CLOSE = True
 # คุกกี้ session จะหมดอายุหลังจากปิดเบราว์เซอร์
 SESSION_COOKIE_NAME = "sessionid"
 
-# # เปิดใช้งาน HTTPS-Related Security Settings
-# SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+# เปิดใช้งาน HTTPS-Related Security Settings
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
 # # บังคับให้เชื่อมต่อ HTTPS
 SECURE_SSL_REDIRECT = os.environ.get('SECURE_SSL_REDIRECT', 'False') == 'True'
