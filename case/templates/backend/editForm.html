@@ -15,8 +15,9 @@
         {% endfor %}
         <form action="{% url 'updateData' caseEdit.id %}" method="post" enctype="multipart/form-data" id="updateForm">
             {% csrf_token %}
+            <!-- Requester Info -->
             <div class="form-row">
-                <div class="form-group col-md-2">
+                <div class="form-group col-md-4">
                     <label class="font-weight-bold">
                         Company
                     </label>
@@ -29,7 +30,7 @@
                     <input type="hidden" name="branch" value="{{caseEdit.branch_id}}">
                 </div>
 
-                <div class="form-group col-md-2">
+                <div class="form-group col-md-4">
                     <label class="font-weight-bold">
                         Branch
                     </label>
@@ -43,7 +44,7 @@
                     <input type="hidden" name="branch" value="{{caseEdit.branch_id}}">
                 </div>
 
-                <div class="form-group col-md-2">
+                <div class="form-group col-md-4">
                     <label class="font-weight-bold">
                         Department
                     </label>
@@ -56,7 +57,11 @@
                     <input type="hidden" name="department" value="{{caseEdit.departmentid}}">
                 </div>
 
-                <div class="form-group col-md-2">
+            </div>
+
+            <!-- Case Type and Priority -->
+            <div class="form-row">
+                <div class="form-group col-md-6">
                     <label class="font-weight-bold">
                         Type
                     </label>
@@ -84,7 +89,7 @@
                     </select>
                     {%endif%}
                 </div>
-                <div class="form-group col-md-2">
+                <div class="form-group col-md-6">
                     <label class="font-weight-bold">
                         Priority
                     </label>
@@ -224,11 +229,10 @@
                 {%endif%}
             </div>
 
+            <hr>
+            <h6 class="font-weight-bold text-primary mb-3">Images and Files</h6>
             <div class="form-row">
-                <div class="form-group col-md-6">
-                    <label class="font-weight-bold">
-                        Images and Files
-                    </label>
+                <div class="form-group col-md-12">
                     <div class="d-flex flex-wrap">
                         {% if caseEdit.image %}
                         {% if is_case_edit_pdf %}
@@ -280,7 +284,11 @@
                     </div>
                     {% endif %}
                 </div>
+            </div>
 
+            <hr>
+            <h6 class="font-weight-bold text-primary mb-3">Process & Status</h6>
+            <div class="form-row">
                 <div class="form-group col-md-6">
                     <label class="font-weight-bold">
                         Ticket Status <span class="text-danger">*</span>
@@ -305,8 +313,10 @@
                         {% endif %}
                     </select>
                     
-                    <div class="mt-3"></div>
+                    <div class="mt-3 d-md-none"></div>
+                </div>
 
+                <div class="form-group col-md-6">
                     <!-- ✅ Category -->
                         <label class="font-weight-bold">
                             Category <span class="text-danger">*</span>
@@ -329,8 +339,12 @@
                             {% endfor %}
                         </select>
 
-                        <div class="mt-3"></div>
+                    <div class="mt-3 d-md-none"></div>
+                </div>
+            </div>
 
+            <div class="form-row">
+                <div class="form-group col-md-6">
                         <!-- ✅ Sub Category -->
                         <label class="font-weight-bold">
                             Sub Category <span class="text-danger">*</span>
@@ -393,8 +407,8 @@
                             });
                         });
                         </script>
-
-
+                </div>
+                <div class="form-group col-md-6">
                     <label class="font-weight-bold">
                         Assign name <span class="text-danger">*</span>
                     </label>
@@ -413,9 +427,11 @@
                                 <option value="{{ create_username.username }}">{{ create_username.first_name }} {{ create_username.last_name }}</option>
                         {% endif %}
                     </select> 
-                    
-                    <div class="mt-3"></div>
+                </div>
+            </div>
 
+            <div class="form-row">
+                <div class="form-group col-md-12">
                     <label class="font-weight-bold">
                         Edit details <span class="text-danger">*</span>
                     </label>
@@ -432,49 +448,56 @@
                     {% if not user.is_staff %}
                         <input type="hidden" name="update_note" value="{{caseEdit.update_note}}">
                     {% endif %} 
-                    
-                    <div class="mt-3"></div>
+                </div>
+            </div>
 
-                    {% if caseEdit.status_id == 3 or caseEdit.status_id == 4 or caseEdit.status_id == 5 %}
+            <div class="form-row">
+                {% if caseEdit.status_id == 3 or caseEdit.status_id == 4 or caseEdit.status_id == 5 %}
+                <div class="form-group col-md-6">
                     <label class="font-weight-bold">
                         Receive datetimes
                     </label>
                     <input type="text" id="name" name="receive_date" class="form-control"
                         value="{{caseEdit.receive_date|date:'d M Y, h:i a'}}" disabled>
-                    
-                    <div class="mt-3"></div>
-
+                </div>
+                
+                <div class="form-group col-md-6">
                     <label class="font-weight-bold">
                         Complete datetimes
                     </label>
                     <input type="text" id="name" name="complete_date" class="form-control"
                         value="{{caseEdit.complete_date|date:'d M Y, h:i a'}}" disabled>
-                    {%endif%}
+                </div>
+                {%endif%}
 
-                    {% if caseEdit.status_id == 2 %}
+                {% if caseEdit.status_id == 2 %}
+                <div class="form-group col-md-6">
                     <label class="font-weight-bold">
                         Receive datetimes
                     </label>
                     <input type="text" id="name" name="receive_date" class="form-control"
                         value="{{caseEdit.receive_date|date:'d M Y, h:i a'}}" disabled>
-                    {%endif%}
+                </div>
+                {%endif%}
 
-                    {% if caseEdit.status_id == 6 %}
+                {% if caseEdit.status_id == 6 %}
+                <div class="form-group col-md-6">
                     <label class="font-weight-bold">
                         Cancel datetimes
                     </label>
                     <input type="text" id="name" name="cancel_date" class="form-control"
                         value="{{caseEdit.cancel_date|date:'d M Y, h:i a'}}" disabled>
-                    {%endif%}
                 </div>
+                {%endif%}
             </div>
 
             <div class="form-row">
                 {% if caseEdit.status_id == 4 or caseEdit.status_id == 5 %}
-                <div class="form-group col-md-6">
-                    <label class="font-weight-bold mt-2" id="score">
+                <div class="form-group col-md-12">
+                    <label class="font-weight-bold mt-2 d-block" id="score">
                         Evaluate satisfaction <span class="text-danger">*</span>
                     </label>
+                    <div class="mb-2">
 
                     {% for i in score_range %}
                     <div class="form-check form-check-inline">
@@ -483,6 +506,7 @@
                         <label class="form-check-label">{{ i }}</label>
                     </div>
                     {% endfor %}
+                    </div>
                     
                     <label class="font-weight-bold mt-2">
                         Additional Feedback
@@ -490,10 +514,12 @@
                     <textarea name="feedback" rows="4" class="form-control">{{feedback|default_if_none:""|default:caseEdit.feedback|default_if_none:""}}</textarea>
                 </div>
                 {%endif%}
+            </div>
 
+            <div class="form-row">
             {% if caseEdit.status_id == 3 or caseEdit.status_id == 5 %}
-                <div class="form-group col-md-3">
-                    <label class="font-weight-bold mt-5">
+                <div class="form-group col-md-6">
+                    <label class="font-weight-bold mt-2">
                         Satisfaction datetimes
                     </label>
                     <input type="text" id="name" name="satisfied_date" class="form-control"
@@ -503,8 +529,8 @@
 
 
             {% if caseEdit.department_id == "PUR" and caseEdit.status_id == 7 and request.user.is_staff == 0 %}
-            <div class="form-group col-md-3">
-                    <label class="font-weight-bold mt-5">
+            <div class="form-group col-md-6">
+                    <label class="font-weight-bold mt-2">
                         Product receive datetimes<span class="text-danger">*</span>
                     </label>
                 {% if product_receive_date %}
@@ -517,8 +543,8 @@
             </div>
             
             {% elif caseEdit.department_id == "PUR" and caseEdit.status_id == 5 %}
-                <div class="form-group col-md-3">
-                    <label class="font-weight-bold mt-5">
+                <div class="form-group col-md-6">
+                    <label class="font-weight-bold mt-2">
                         Product receive datetimes
                             {% if caseEdit.status_id == 7 %}
                                 <span class="text-danger">*</span>
