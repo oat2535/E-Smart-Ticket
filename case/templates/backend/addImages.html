@@ -130,7 +130,7 @@
 
             <div class="form-group">
                 <button type="submit" class="btn btn-primary">Save</button>
-                <a href="{% url 'case' %}" class="btn btn-danger ml-1">
+                <a href="{% url 'editData' addImage.id %}{% if request.GET.iframe %}?iframe=1{% endif %}" class="btn btn-danger ml-1">
                     Back
                 </a>
             </div>
@@ -208,7 +208,11 @@
                     }).then((result) => {
                         if (result.isConfirmed) {
                             // ถ้า confirm → redirect ไปลิงก์ delete
-                            window.location.href = url;
+                            let redirectUrl = url;
+                            if (window.location.search.includes('iframe=1')) {
+                                redirectUrl += (redirectUrl.includes('?') ? '&' : '?') + 'iframe=1';
+                            }
+                            window.location.href = redirectUrl;
                         }
                     });
                 });

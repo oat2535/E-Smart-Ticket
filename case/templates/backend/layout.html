@@ -156,6 +156,15 @@
     {% block extra_css %}
     {% endblock %}
 
+    {% if request.GET.iframe %}
+    <style>
+        body { background-color: transparent !important; }
+        #wrapper #content-wrapper { background-color: transparent !important; }
+        .container-fluid { padding: 1rem !important; }
+        #wrapper { display: block !important; }
+    </style>
+    {% endif %}
+
 </head>
 
 <body id="page-top">
@@ -164,6 +173,7 @@
     <div id="wrapper">
 
         <!-- Sidebar -->
+        {% if not request.GET.iframe %}
         <ul class="navbar-nav bg-gradient-primary sidebar sidebar-dark accordion" id="accordionSidebar">
 
             <!-- Sidebar - Brand -->
@@ -300,6 +310,7 @@
 
         </ul>
         <!-- End of Sidebar -->
+        {% endif %}
 
         <!-- Content Wrapper -->
         <div id="content-wrapper" class="d-flex flex-column">
@@ -308,6 +319,7 @@
             <div id="content">
 
                 <!-- Topbar -->
+                {% if not request.GET.iframe %}
                 <nav class="navbar navbar-expand navbar-light bg-white topbar mb-4 static-top shadow">
 
                     <!-- Sidebar Toggle (Topbar) -->
@@ -358,6 +370,7 @@
 
                 </nav>
                 <!-- End of Topbar -->
+                {% endif %}
 
                 <!-- Begin Page Content -->
                 <div class="container-fluid">
@@ -588,6 +601,7 @@
             <!-- End of Main Content -->
 
             <!-- Footer -->
+            {% if not request.GET.iframe %}
             <footer class="sticky-footer bg-white">
                 <div class="container my-auto">
                     <div class="copyright text-center my-auto">
@@ -596,6 +610,7 @@
                 </div>
             </footer>
             <!-- End of Footer -->
+            {% endif %}
 
         </div>
         <!-- End of Content Wrapper -->

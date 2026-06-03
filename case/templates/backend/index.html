@@ -4,6 +4,69 @@
 {% load static %}
 {% load custom_filters %}
 <!-- ตารางบทความ -->
+<style>
+    .side-panel {
+        position: fixed;
+        top: 0;
+        right: -800px;
+        width: 800px;
+        max-width: 100vw;
+        height: 100vh;
+        background-color: #f8f9fc;
+        box-shadow: -5px 0 15px rgba(0,0,0,0.1);
+        transition: right 0.3s ease-in-out;
+        z-index: 1050;
+        display: flex;
+        flex-direction: column;
+    }
+    .side-panel.open {
+        right: 0;
+    }
+    .side-panel-header {
+        padding: 1rem;
+        background-color: #fff;
+        border-bottom: 1px solid #e3e6f0;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    .side-panel-body {
+        flex: 1;
+        overflow: hidden;
+    }
+    .side-panel-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        background-color: rgba(0,0,0,0.5);
+        z-index: 1040;
+        opacity: 0;
+        visibility: hidden;
+        transition: opacity 0.3s ease-in-out, visibility 0.3s ease-in-out;
+    }
+    .side-panel-overlay.show {
+        opacity: 1;
+        visibility: visible;
+    }
+    body.dark-mode .side-panel {
+        background-color: #1a1a1a;
+    }
+    body.dark-mode .side-panel-header {
+        background-color: #2d2d2d;
+        border-bottom-color: #444;
+    }
+    #ecom-products tbody tr {
+        cursor: pointer;
+    }
+    #ecom-products tbody tr:hover {
+        background-color: rgba(0,0,0,0.05);
+    }
+    body.dark-mode #ecom-products tbody tr:hover {
+        background-color: rgba(255,255,255,0.05);
+    }
+</style>
 <div class="card shadow mb-4">
     <!-- All Title -->
     <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
@@ -124,7 +187,6 @@
                         <th class="hidden-xs text-center">Assign<br> Name</th>
                         {%endif%} 
                         <th class="hidden-xs text-center">Status</th>
-                        <th class="hidden-xs text-center">Action</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -135,29 +197,60 @@
     </div>
 </div>
 
-<script>
-    document.addEventListener("DOMContentLoaded", function() {
-        // Event delegation for dynamic delete buttons in Server-Side DataTables
-        $('#ecom-products').on('click', '.btn-delete', function(e) {
-            e.preventDefault();
-            const url = $(this).data("url");
+<!-- Side Panel Overlay -->
+<div id="sidePanelOverlay" class="side-panel-overlay" onclick="closeSidePanel()"></div>
+<!-- Side Panel -->
+<div id="sidePanel" class="side-panel">
+    <div class="side-panel-header">
+        <h5 class="mb-0 font-weight-bold text-primary">Edit Case</h5>
+        <button type="button" class="close" onclick="closeSidePanel()" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+        </button>
+    </div>
+    <div class="side-panel-body">
+        <iframe id="editcaseIframe" src="" frameborder="0" width="100%" height="100%"></iframe>
+    </div>
+</div>
 
-            Swal.fire({
-                title: "คุณแน่ใจหรือไม่?",
-                text: "คุณต้องการลบรายการหรือไม่!",
-                icon: "warning",
-                showCancelButton: true,
-                customClass: {
-                        confirmButton: 'btn btn-danger mr-2',
-                        cancelButton: 'btn btn-secondary'
-                    },
-                confirmButtonText: "ลบ",
-                cancelButtonText: "ยกเลิก"
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    window.location.href = url;
-                }
-            });
+<script>
+    function openSidePanel(url) {
+        const iframeUrl = url + (url.indexOf('?') > -1 ? '&' : '?') + 'iframe=1';
+        $('#editcaseIframe').attr('src', iframeUrl);
+        $('#sidePanel').addClass('open');
+        $('#sidePanelOverlay').addClass('show');
+        $('body').css('overflow', 'hidden'); // Prevent background scrolling
+    }
+
+    function closeSidePanel() {
+        $('#sidePanel').removeClass('open');
+        $('#sidePanelOverlay').removeClass('show');
+        $('body').css('overflow', 'auto');
+        setTimeout(() => {
+            $('#editcaseIframe').attr('src', '');
+        }, 300);
+    }
+
+    function closeSidePanelAndReload() {
+        closeSidePanel();
+        if ($.fn.DataTable.isDataTable('#ecom-products')) {
+            $('#ecom-products').DataTable().ajax.reload(null, false); // Reload without resetting pagination
+        }
+    }
+
+    window.closeSidePanel = closeSidePanel;
+    window.closeSidePanelAndReload = closeSidePanelAndReload;
+
+    document.addEventListener("DOMContentLoaded", function() {
+        // Event delegation for dynamic click on rows
+        $('#ecom-products').on('click', 'tbody tr', function(e) {
+            // Prevent opening if clicking on a button or link (though we removed action buttons, just in case)
+            if ($(e.target).closest('a, button').length > 0) return;
+
+            var table = $('#ecom-products').DataTable();
+            var data = table.row(this).data();
+            if(data && data.edit_url) {
+                openSidePanel(data.edit_url);
+            }
         });
     });
 </script>
@@ -239,27 +332,6 @@
                 if(data == 4 || data == 7) return '<span class="badge badge-info" style="font-size: 100%;">'+status_name+'</span>';
                 if(data == 6) return '<span class="badge badge-danger" style="font-size: 100%;">'+status_name+'</span>';
                 return '<span class="badge badge-secondary" style="font-size: 100%;">'+status_name+'</span>';
-            }
-        });
-
-        dtColumns.push({ 
-            "data": null,
-            "className": "text-center hidden-xs",
-            "orderable": false,
-            "render": function(data, type, row) {
-                var buttons = '<div class="btn-group btn-group-sm">';
-                if (row.is_staff) {
-                    buttons += '<a href="'+row.edit_url+'" data-toggle="tooltip" title="Manage job" class="btn btn-secondary"><i class="fa fa-pencil-alt"></i></a>';
-                    if (row.is_admin) {
-                        buttons += '<a href="#" class="btn btn-danger btn-delete" data-url="'+row.delete_url+'" data-toggle="tooltip" title="Delete"><i class="fa fa-times"></i></a>';
-                    }
-                    buttons += '<a href="'+row.image_url+'" data-toggle="tooltip" title="Attach additional images or files" class="btn btn-secondary"><i class="far fa-image"></i></a>';
-                } else {
-                    buttons += '<a href="'+row.edit_url+'" data-toggle="tooltip" title="View repair details" class="btn btn-secondary"><i class="fa fa-pencil-alt"></i></a>';
-                    buttons += '<a href="'+row.image_url+'" data-toggle="tooltip" title="Attach additional images or files" class="btn btn-secondary"><i class="far fa-image" aria-hidden="true"></i></a>';
-                }
-                buttons += '</div>';
-                return buttons;
             }
         });
 

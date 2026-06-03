@@ -536,13 +536,15 @@
                     {% if caseEdit.status_id == 1 or caseEdit.status_id == 4 or caseEdit.status_id == 7 %}
                         <button type="submit" class="btn btn-primary">Save</button>
                     {% endif %}
-                    <a href="{% url 'case' %}" class="btn btn-danger ml-1">Back</a>
+                    <a href="{% url 'case' %}" class="btn btn-danger ml-1" onclick="if(window!==window.parent) { e.preventDefault(); window.parent.closeSidePanel(); }">Back</a>
+                    <a href="{% url 'addImages' caseEdit.id %}{% if request.GET.iframe %}?iframe=1{% endif %}" class="btn btn-secondary ml-1" data-toggle="tooltip" title="Attach additional images or files"><i class="far fa-image"></i> Additional Images</a>
                 {% endif %}
                 {% if user.is_staff == 1 %}
                     {% if not caseEdit.status_id != 6 or caseEdit.status_id != 5  %}
                         <button type="submit" class="btn btn-primary">Save</button>
                     {% endif %}
-                        <a href="{% url 'case' %}" class="btn btn-danger ml-1">Back</a>
+                        <a href="{% url 'case' %}" class="btn btn-danger ml-1" onclick="if(window!==window.parent) { event.preventDefault(); window.parent.closeSidePanel(); }">Back</a>
+                        <a href="{% url 'addImages' caseEdit.id %}{% if request.GET.iframe %}?iframe=1{% endif %}" class="btn btn-secondary ml-1" data-toggle="tooltip" title="Attach additional images or files"><i class="far fa-image"></i> Additional Images</a>
                 {% endif %}
             </div>
         </form>
@@ -619,7 +621,11 @@
                     confirmButton: 'btn btn-primary'
                 }
             }).then(() => {
-                window.location.href = data.redirect_url;
+                if (window !== window.parent) {
+                    window.parent.closeSidePanelAndReload();
+                } else {
+                    window.location.href = data.redirect_url;
+                }
             });
         } else if (data.status === "warning") {
             Swal.fire({ 

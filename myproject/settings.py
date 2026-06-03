@@ -135,7 +135,7 @@ CACHES = {
 }
 
 
-ALLOWED_HOSTS_ENV = os.environ.get('ALLOWED_HOSTS', 'e-smartticket-jv.thonglorpet.com,localhost,127.0.0.1')
+ALLOWED_HOSTS_ENV = os.environ.get('ALLOWED_HOSTS', 'e-smartticket-jv.thonglorpet.com,localhost,127.0.0.1, 172.18.100.251')
 ALLOWED_HOSTS = [host.strip() for host in ALLOWED_HOSTS_ENV.split(',')]
 
 # Password validation
@@ -248,3 +248,6 @@ EMAIL_USE_TLS = True
 EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER', 'evepednaruk@gmail.com')
 EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD', '')
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
+
+# Allow iframes from the same origin for the editcase side panel
+X_FRAME_OPTIONS = 'SAMEORIGIN'

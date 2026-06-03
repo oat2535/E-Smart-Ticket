@@ -552,10 +552,16 @@ def deleteImage(request, id):
         # ลบข้อมูลรูปภาพ
         case_image.delete()
 
-        return redirect("addImages", id=case_id)
+        redirect_url = reverse("addImages", args=[case_id])
+        if request.GET.get('iframe'):
+            redirect_url += '?iframe=1'
+        return redirect(redirect_url)
     except Exception as e:
         messages.error(request, f"เกิดข้อผิดพลาด: {e}")
-        return redirect("addImages", id=case_id)
+        redirect_url = reverse("addImages", args=[case_id])
+        if request.GET.get('iframe'):
+            redirect_url += '?iframe=1'
+        return redirect(redirect_url)
 
 # ✅ AJAX โหลด sub_branch ตาม company
 def load_subbranches(request):
