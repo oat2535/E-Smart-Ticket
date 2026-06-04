@@ -227,6 +227,14 @@
         $('body').css('overflow', 'auto');
         setTimeout(() => {
             $('#editcaseIframe').attr('src', '');
+            if (window.shouldReloadOnClose) {
+                if ($.fn.DataTable.isDataTable('#ecom-products')) {
+                    $('#ecom-products').DataTable().ajax.reload(null, false);
+                } else {
+                    location.reload();
+                }
+                window.shouldReloadOnClose = false;
+            }
         }, 300);
     }
 

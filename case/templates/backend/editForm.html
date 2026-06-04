@@ -639,6 +639,9 @@
     .then(response => response.json())
     .then(data => {
         if (data.status === "success") {
+            if (window !== window.parent) {
+                window.parent.shouldReloadOnClose = true;
+            }
             Swal.fire({ 
                 icon: "success", 
                 title: data.message,
