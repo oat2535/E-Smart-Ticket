@@ -443,8 +443,8 @@ def updateData(request,id):
                     case.assign_name = login_user
                 case.status_id = status
 
-            elif case.status_id in [1, 2] and status == 3:
-                # --- จากสถานะ 1 → 3 (Complete)
+            elif status == 3:
+                # --- เปลี่ยนเป็น Complete ---
                 if case.receive_date is None:
                     case.receive_date = timezone.now().replace(microsecond=0)
                 case.complete_date = timezone.now().replace(microsecond=0)
