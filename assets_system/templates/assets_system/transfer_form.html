@@ -14,17 +14,25 @@
                     
                     <div class="form-group">
                         <label>สาขาต้นทาง (From Branch)</label>
-                        {{ form.from_branch }}
-                        {% if form.from_branch.errors %}
-                            <small class="text-danger">{{ form.from_branch.errors }}</small>
+                        {% if has_sub_branch or not company_name %}
+                            {{ form.from_branch }}
+                            {% if form.from_branch.errors %}
+                                <small class="text-danger">{{ form.from_branch.errors }}</small>
+                            {% endif %}
+                        {% else %}
+                            <input type="text" class="form-control" value="{{ company_name }}" readonly>
                         {% endif %}
                     </div>
 
                     <div class="form-group">
                         <label>สาขาที่โอนย้ายถึง (To Branch)</label>
-                        {{ form.to_branch }}
-                        {% if form.to_branch.errors %}
-                            <small class="text-danger">{{ form.to_branch.errors }}</small>
+                        {% if has_sub_branch or not company_name %}
+                            {{ form.to_branch }}
+                            {% if form.to_branch.errors %}
+                                <small class="text-danger">{{ form.to_branch.errors }}</small>
+                            {% endif %}
+                        {% else %}
+                            <input type="text" class="form-control" value="{{ company_name }}" readonly>
                         {% endif %}
                     </div>
                     

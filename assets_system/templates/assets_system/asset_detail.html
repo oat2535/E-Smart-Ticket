@@ -66,7 +66,7 @@
                 {% if asset.status != 'written_off' %}
                 <hr>
                 <h5 class="mb-3">เครื่องมือจัดการ (Action)</h5>
-                <div class="d-flex flex-wrap" style="gap: 8px;">
+                <div class="d-flex flex-wrap align-items-start" style="gap: 8px;">
                     <button type="button" class="btn btn-success btn-sm" data-toggle="modal" data-target="#auditModal">
                         <i class="fas fa-clipboard-check"></i> ตรวจนับ
                     </button>
@@ -87,6 +87,9 @@
                         <i class="fas fa-trash-alt"></i> จำหน่าย
                     </a>
                 </div>
+                {% if latest_audit %}
+                    <div class="text-muted mt-2" style="font-size: 0.85rem;">ตรวจนับล่าสุด : วันที่ {{ latest_audit.scanned_at|date:"d/m/Y" }} เวลา {{ latest_audit.scanned_at|time:"H:i" }}</div>
+                {% endif %}
                 {% endif %}
             </div>
             
@@ -285,7 +288,7 @@
 <!-- Modal Audit (ตรวจนับทรัพย์สิน) -->
 <div class="modal fade" id="auditModal" tabindex="-1" role="dialog" aria-labelledby="auditModalLabel" aria-hidden="true">
     <div class="modal-dialog" role="document">
-        <form method="POST" action="{% url 'assets_system:scan_qr' asset.id %}">
+        <form method="POST" action="{% url 'assets_system:scan_qr' asset.id %}{% if request.GET.iframe %}?iframe=1{% endif %}">
             {% csrf_token %}
             <div class="modal-content">
                 <div class="modal-header bg-success text-white">

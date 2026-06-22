@@ -38,6 +38,7 @@ def asset_detail(request, asset_id):
     context = {
         'asset': asset,
         'qr_code': qr_code_img,
+        'latest_audit': asset.inventories.order_by('scanned_at').last(),
     }
     return render(request, 'assets_system/asset_detail.html', context)
 
@@ -66,25 +67,87 @@ def print_qr_codes(request):
 @login_required
 def request_transfer(request, asset_id):
     asset = get_object_or_404(MasterAsset, pk=asset_id)
+    
+    has_sub_branch = False
+    company_name = ''
+    company_id = None
+    
+    from sub_branch.models import SubBranch
+    from branch.models import Branch
+    
+    user_branch_id = getattr(request.user.branch, 'branch_id', None)
+    user_sub_branch_id = getattr(request.user.sub_branch, 'sub_branch_id', None)
+    tp_override = False
+    
+    if asset.branch == 'TP' and user_branch_id == 'TLPH' and user_sub_branch_id == 'TP':
+        has_sub_branch = False
+        tp_override = True
+        try:
+            tp_sub = SubBranch.objects.get(sub_branch_id='TP')
+            tp_branch = tp_sub.branch_id
+            company_name = f"{tp_branch.branch_name} - {tp_sub.sub_branch_name}"
+        except SubBranch.DoesNotExist:
+            company_name = 'โรงพยาบาลสัตว์ทองหล่อฉลองภูเก็ต'
+    else:
+        try:
+            SubBranch.objects.get(sub_branch_id=asset.branch)
+            has_sub_branch = True
+        except SubBranch.DoesNotExist:
+            try:
+                branch = Branch.objects.get(branch_id=asset.branch)
+                company_name = branch.branch_name
+                company_id = branch.branch_id
+            except Branch.DoesNotExist:
+                pass
+
     if request.method == 'POST':
         form = AssetTransferForm(request.POST, asset_branch_id=asset.branch)
         if form.is_valid():
             transfer = form.save(commit=False)
             transfer.asset = asset
             transfer.from_user = request.user
-            # Automatically assign to_company based on the selected to_branch
-            if transfer.to_branch and getattr(transfer.to_branch, 'branch_id', None):
-                transfer.to_company = transfer.to_branch.branch_id
             
-            # Automatically assign from_company based on the selected from_branch
-            if transfer.from_branch and getattr(transfer.from_branch, 'branch_id', None):
-                transfer.from_company = transfer.from_branch.branch_id
+            if tp_override:
+                transfer.from_company_id = 'TLPH'
+                transfer.from_branch_id = 'TP'
+                transfer.to_company_id = 'TLPH'
+                transfer.to_branch_id = 'TP'
+            elif has_sub_branch:
+                # Force from_branch to user's sub_branch if they have one (security/enforcement)
+                if hasattr(request.user, 'sub_branch') and request.user.sub_branch:
+                    transfer.from_branch = request.user.sub_branch
+                    
+                # Automatically assign to_company based on the selected to_branch
+                if transfer.to_branch and getattr(transfer.to_branch, 'branch_id', None):
+                    transfer.to_company = transfer.to_branch.branch_id
                 
+                # Automatically assign from_company based on the selected from_branch
+                if transfer.from_branch and getattr(transfer.from_branch, 'branch_id', None):
+                    transfer.from_company = transfer.from_branch.branch_id
+            else:
+                if company_id:
+                    transfer.to_company_id = company_id
+                    transfer.from_company_id = company_id
+                    
             transfer.save()
             return redirect('assets_system:transfer_list')
     else:
-        form = AssetTransferForm(asset_branch_id=asset.branch)
-    return render(request, 'assets_system/transfer_form.html', {'form': form, 'asset': asset})
+        initial_data = {}
+        if hasattr(request.user, 'sub_branch') and request.user.sub_branch:
+            initial_data['from_branch'] = request.user.sub_branch
+        form = AssetTransferForm(asset_branch_id=asset.branch, initial=initial_data)
+        
+        # Make the from_branch select visually read-only if it's auto-stamped
+        if hasattr(request.user, 'sub_branch') and request.user.sub_branch:
+            form.fields['from_branch'].widget.attrs['style'] = 'pointer-events: none; background-color: #e9ecef;'
+            form.fields['from_branch'].widget.attrs['tabindex'] = '-1'
+        
+    return render(request, 'assets_system/transfer_form.html', {
+        'form': form, 
+        'asset': asset,
+        'has_sub_branch': has_sub_branch,
+        'company_name': company_name
+    })
 
 @login_required
 def request_writeoff(request, asset_id):
@@ -202,7 +265,9 @@ def scan_qr(request, asset_id):
             inventory.scanned_by = request.user
             inventory.save()
             messages.success(request, 'บันทึกประวัติการตรวจนับเรียบร้อยแล้ว')
-            return redirect(f'/assets/{asset.id}/?iframe=1')
+            if request.GET.get('iframe'):
+                return redirect(f'/assets/{asset.id}/?iframe=1')
+            return redirect('assets_system:asset_detail', asset_id=asset.id)
     
     # If GET request (e.g. scanned from mobile), redirect to detail page
     # The user can then click the "Audit" button on the detail page
