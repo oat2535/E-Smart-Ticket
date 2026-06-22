@@ -11,6 +11,8 @@
     <meta name="robots" content="noindex, nofollow">
 
     <title>E-Smart Ticket JV - Login</title>
+    <!-- Prevent favicon 404 error -->
+    <link rel="icon" href="data:;base64,iVBORw0KGgo=">
 
     {% load static %}
 
@@ -60,8 +62,9 @@
                                         <h1 class="h4 text-gray-900 mb-4">Welcome Back!</h1>
                                         <h2 class="h5 text-gray-900 mb-4">E-Smart Ticket JV</h2>
                                     </div>
-                                    <form class="user" action="{% url 'login' %}" method="post">
+                                    <form class="user" action="{% url 'login' %}" method="post" id="loginForm" onsubmit="setTimeout(function(){ document.getElementById('loginBtn').disabled = true; }, 10);">
                                         {% csrf_token %}
+                                        <input type="hidden" name="next" value="{{ request.GET.next }}">
                                         <div class="form-group">
                                             <input type="text" class="form-control form-control-user"
                                                 id="username" name="username" aria-describedby="emailHelp"
@@ -78,10 +81,10 @@
                                                     Me</label>
                                             </div>
                                         </div> -->
-                                        {% for message in messages%}
-                                            <p class="text-danger text-center">{{message}}</p>
+                                        {% for message in messages %}
+                                            <!-- <p class="text-danger text-center">{{ message }}</p> -->
                                         {% endfor %}
-                                        <button type="submit" class="btn btn-primary btn-user btn-block">
+                                        <button type="submit" id="loginBtn" class="btn btn-primary btn-user btn-block">
                                             Login
                                         </button>
                                         <!-- <hr>
@@ -123,6 +126,30 @@
 
     <!-- Custom scripts for all pages-->
     <script src="{% static 'backend/js/sb-admin-2.min.js' %}"></script>
+
+    <!-- SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    
+    {% if messages %}
+    <ul id="django-messages" style="display: none;">
+        {% for message in messages %}
+        <li class="message-item">{{ message }}</li>
+        {% endfor %}
+    </ul>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const messageElements = document.querySelectorAll('#django-messages .message-item');
+            messageElements.forEach(function(el) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'เข้าสู่ระบบไม่สำเร็จ',
+                    text: el.textContent,
+                    confirmButtonText: 'ตกลง'
+                });
+            });
+        });
+    </script>
+    {% endif %}
 
 </body>
 

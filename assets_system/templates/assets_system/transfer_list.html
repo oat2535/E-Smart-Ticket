@@ -1,0 +1,167 @@
+{% extends 'backend/layout.html' %}
+
+{% block content %}
+<div class="d-sm-flex align-items-center justify-content-between mb-4">
+    <h1 class="h3 mb-0 text-gray-800">Transfer Requests</h1>
+</div>
+
+<div class="card shadow mb-4">
+    <div class="card-header py-3">
+        <h6 class="m-0 font-weight-bold text-primary">Transfer List</h6>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-bordered" width="100%" cellspacing="0">
+                <thead>
+                    <tr>
+                        <th>รหัสทรัพย์สิน</th>
+                        <th>ชื่อทรัพย์สิน</th>
+                        <th>วันที่ขอ</th>
+                        <th>ต้นทาง</th>
+                        <th>ปลายทาง</th>
+                        <th>รายละเอียด</th>
+                        <th>Status</th>
+                        <th width="15%">Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for transfer in transfers %}
+                    <tr>
+                        <td>
+                            <a href="{% url 'assets_system:asset_detail' transfer.asset.id %}" class="font-weight-bold text-primary">{{ transfer.asset.asset_code }}</a>
+                        </td>
+                        <td>{{ transfer.asset.name }}</td>
+                        <td>{{ transfer.created_at|date:"d/m/Y H:i" }}</td>
+                        <td>
+                            {% if transfer.from_company %}
+                                {{ transfer.from_company.branch_name }}
+                                {% if transfer.from_branch %} - {{ transfer.from_branch.sub_branch_name }}{% endif %}
+                            {% else %}
+                                {{ transfer.from_user.username|default:"-" }}
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if transfer.to_company %}
+                                {{ transfer.to_company.branch_name }}
+                                {% if transfer.to_branch %} - {{ transfer.to_branch.sub_branch_name }}{% endif %}
+                            {% else %}
+                                {{ transfer.to_user.first_name|default:"-" }}
+                            {% endif %}
+                        </td>
+                        <td>{{ transfer.reason }}</td>
+                        <td>
+                            {% if transfer.status == 'pending_source_head' %}
+                                <span class="badge badge-warning">Waiting Source Head</span>
+                            {% elif transfer.status == 'pending_destination_receive' %}
+                                <span class="badge badge-info">Waiting Destination Receive</span>
+                            {% elif transfer.status == 'pending_destination_head' %}
+                                <span class="badge badge-warning">Waiting Destination Head</span>
+                            {% elif transfer.status == 'pending_accounting' %}
+                                <span class="badge badge-primary">Waiting Accounting</span>
+                            {% elif transfer.status == 'approved' %}
+                                <span class="badge badge-success">Approved</span>
+                            {% elif transfer.status == 'rejected' %}
+                                <span class="badge badge-danger">Rejected</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if transfer.status == 'pending_source_head' and request.user.position.name == 'ผู้จัดการ' and request.user.branch == transfer.from_company or transfer.status == 'pending_source_head' and request.user.is_superuser %}
+                                <a href="{% url 'assets_system:approve_transfer' transfer.id 'approve' %}" class="btn btn-sm btn-success mb-1 btn-approve"><i class="fas fa-check"></i> Approve</a>
+                                <a href="{% url 'assets_system:approve_transfer' transfer.id 'reject' %}" class="btn btn-sm btn-danger mb-1 btn-reject"><i class="fas fa-times"></i> Reject</a>
+                            {% elif transfer.status == 'pending_destination_receive' and request.user.position.id == 5 and request.user.branch == transfer.to_company or transfer.status == 'pending_destination_receive' and request.user.is_superuser %}
+                                <a href="{% url 'assets_system:approve_transfer' transfer.id 'receive' %}" class="btn btn-sm btn-info mb-1 btn-approve"><i class="fas fa-box-open"></i> Receive</a>
+                            {% elif transfer.status == 'pending_destination_head' and request.user.position.name == 'ผู้จัดการ' and request.user.branch == transfer.to_company or transfer.status == 'pending_destination_head' and request.user.is_superuser %}
+                                <a href="{% url 'assets_system:approve_transfer' transfer.id 'approve' %}" class="btn btn-sm btn-success mb-1 btn-approve"><i class="fas fa-check"></i> Approve</a>
+                                <a href="{% url 'assets_system:approve_transfer' transfer.id 'reject' %}" class="btn btn-sm btn-danger mb-1 btn-reject"><i class="fas fa-times"></i> Reject</a>
+                            {% elif transfer.status == 'pending_accounting' and request.user.position.name == 'บัญชี' or transfer.status == 'pending_accounting' and request.user.is_superuser %}
+                                <a href="{% url 'assets_system:approve_transfer' transfer.id 'approve' %}" class="btn btn-sm btn-success mb-1 btn-approve"><i class="fas fa-check"></i> Approve</a>
+                                <a href="{% url 'assets_system:approve_transfer' transfer.id 'reject' %}" class="btn btn-sm btn-danger mb-1 btn-reject"><i class="fas fa-times"></i> Reject</a>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="8" class="text-center">No transfer requests found</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+    $(document).ready(function () {
+        $('.btn-approve').on('click', function (e) {
+            e.preventDefault();
+            var url = $(this).attr('href');
+            
+            Swal.fire({
+                title: 'ยืนยันการอนุมัติ',
+                text: "คุณต้องการอนุมัติรายการนี้ใช่หรือไม่?",
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#1cc88a',
+                cancelButtonColor: '#858796',
+                confirmButtonText: 'อนุมัติ',
+                cancelButtonText: 'ยกเลิก'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    var form = $('<form action="' + url + '" method="post">' +
+                        '<input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">' +
+                        '</form>');
+                    $('body').append(form);
+                    
+                    Swal.fire({
+                        title: 'กำลังบันทึก...',
+                        allowOutsideClick: false,
+                        didOpen: () => { Swal.showLoading() }
+                    });
+                    
+                    form.submit();
+                }
+            });
+        });
+
+        $('.btn-reject').on('click', function (e) {
+            e.preventDefault();
+            var url = $(this).attr('href');
+            
+            Swal.fire({
+                title: 'ปฏิเสธรายการ',
+                text: "กรุณาระบุเหตุผลที่ไม่อนุมัติ",
+                input: 'textarea',
+                inputPlaceholder: 'พิมพ์เหตุผลที่นี่...',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#e74a3b',
+                cancelButtonColor: '#858796',
+                confirmButtonText: 'ปฏิเสธ',
+                cancelButtonText: 'ยกเลิก',
+                inputValidator: (value) => {
+                    if (!value) {
+                        return 'กรุณาระบุเหตุผล!';
+                    }
+                }
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    var form = $('<form action="' + url + '" method="post">' +
+                        '<input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">' +
+                        '<input type="hidden" name="reject_reason" value="' + result.value + '">' +
+                        '</form>');
+                    $('body').append(form);
+                    
+                    Swal.fire({
+                        title: 'กำลังบันทึก...',
+                        allowOutsideClick: false,
+                        didOpen: () => { Swal.showLoading() }
+                    });
+                    
+                    form.submit();
+                }
+            });
+        });
+    });
+</script>
+{% endblock %}

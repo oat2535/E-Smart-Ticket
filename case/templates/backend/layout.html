@@ -11,6 +11,8 @@
     <meta name="robots" content="noindex, nofollow">
 
     <title>E-Smart Ticket JV</title>
+    <!-- Prevent favicon 404 error -->
+    <link rel="icon" href="data:;base64,iVBORw0KGgo=">
 
     {% load static %}
     {% load humanize %}
@@ -296,6 +298,24 @@
                             {% endif %}
                         </a>
                         {% endif %}
+                    </div>
+                </div>
+            </li>
+
+            <li class="nav-item {% if '/assets' in request.path %}active{% endif %}">
+                <a class="nav-link {% if '/assets' not in request.path %}collapsed{% endif %}" href="#" data-toggle="collapse" data-target="#collapseAssets"
+                    aria-expanded="{% if '/assets' in request.path %}true{% else %}false{% endif %}" aria-controls="collapseAssets">
+                    <i class="fas fa-fw fa-boxes"></i>
+                    <span>Assets System</span>
+                </a>
+                <div id="collapseAssets" class="collapse {% if '/assets' in request.path %}show{% endif %}" aria-labelledby="headingAssets" data-parent="#accordionSidebar">
+                    <div class="bg-white py-2 collapse-inner rounded">
+                        <h6 class="collapse-header">Assets:</h6>
+                        <a class="collapse-item {% if request.path == '/assets/' %}active{% endif %}" href="{% url 'assets_system:asset_list' %}"><i class="fas fa-list mr-2"></i> Asset List</a>
+                        <a class="collapse-item {% if '/assets/transfers/' in request.path %}active{% endif %}" href="{% url 'assets_system:transfer_list' %}"><i class="fas fa-exchange-alt mr-2"></i> Transfers</a>
+                        <a class="collapse-item {% if '/assets/maintenances/' in request.path %}active{% endif %}" href="{% url 'assets_system:maintenance_list' %}"><i class="fas fa-tools mr-2"></i> Maintenance</a>
+                        <a class="collapse-item {% if '/assets/writeoffs/' in request.path %}active{% endif %}" href="{% url 'assets_system:writeoff_list' %}"><i class="fas fa-trash-alt mr-2"></i> Write-off</a>
+                        <a class="collapse-item {% if '/assets/disposals/' in request.path %}active{% endif %}" href="{% url 'assets_system:disposal_list' %}"><i class="fas fa-truck mr-2"></i> Disposal</a>
                     </div>
                 </div>
             </li>
@@ -701,7 +721,7 @@
             }
 
             // Initialize Datatables
-            $('.table-bordered').each(function() {
+            $('.table-bordered:not(.no-datatable)').each(function() {
                 if (!$.fn.DataTable.isDataTable(this)) {
                     $(this).DataTable();
                 }

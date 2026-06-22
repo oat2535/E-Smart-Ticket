@@ -58,6 +58,7 @@ INSTALLED_APPS = [
     'second_sub_category',
     'equipment',
     'access_requests',
+    'assets_system',
 ]
 
 MIDDLEWARE = [
@@ -135,7 +136,7 @@ CACHES = {
 }
 
 
-ALLOWED_HOSTS_ENV = os.environ.get('ALLOWED_HOSTS', 'e-smartticket-jv.thonglorpet.com,localhost,127.0.0.1, 172.18.100.251')
+ALLOWED_HOSTS_ENV = os.environ.get('ALLOWED_HOSTS', 'e-smartticket-jv.thonglorpet.com,localhost,127.0.0.1, 172.18.100.251, 192.168.1.36, 172.18.101.25')
 ALLOWED_HOSTS = [host.strip() for host in ALLOWED_HOSTS_ENV.split(',')]
 
 # Password validation
@@ -227,6 +228,10 @@ CSRF_TRUSTED_ORIGINS = [
     'https://uat-ticket-jv.thonglorpet.com',
     'https://e-smartticket-jv.thonglorpet.com',  # Domain ที่คุณใช้งาน
     'http://localhost:82',  # เพิ่ม localhost ถ้าใช้งานในเครื่องพัฒนา
+    'http://192.168.1.36:8004',
+    'http://192.168.1.36:8552',
+    'http://172.18.100.245:8080',
+    'http://172.18.100.245:9000',
 ]
 
 # กำหนด engine สำหรับการเก็บ session

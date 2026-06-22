@@ -1,0 +1,100 @@
+{% extends "backend/layout.html" %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card shadow mb-4">
+            <div class="card-header py-3">
+                <h6 class="m-0 font-weight-bold text-info">แบบฟอร์มขอจำหน่ายทรัพย์สิน (Disposal Request)</h6>
+            </div>
+            <div class="card-body">
+                <h5 class="mb-4">ทรัพย์สิน: {{ asset.asset_code }} - {{ asset.name }}</h5>
+                <form method="post" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    
+                    <div class="form-group">
+                        <label>เหตุผลที่ขอจำหน่าย <span class="text-danger">*</span></label>
+                        {{ form.reason }}
+                        {% if form.reason.errors %}
+                            <small class="text-danger">{{ form.reason.errors }}</small>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="form-group mt-4">
+                        <label>แนบรูปภาพ (แนบได้หลายรูป ขนาดไม่เกิน 5MB/รูป)</label>
+                        {{ image_form.images }}
+                        {% if image_form.images.errors %}
+                            <small class="text-danger">{{ image_form.images.errors }}</small>
+                        {% endif %}
+                    </div>
+                    
+                    <hr>
+                    <button type="submit" class="btn btn-info">ส่งคำขอจำหน่าย</button>
+                    <a href="{% url 'assets_system:asset_detail' asset.id %}{% if request.GET.iframe %}?iframe=1{% endif %}" class="btn btn-secondary">ยกเลิก</a>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+    $(document).ready(function () {
+        $('form').on('submit', function (e) {
+            e.preventDefault();
+            var form = this;
+            
+            // File validation
+            var fileInput = document.querySelector('input[type="file"]');
+            if (fileInput && fileInput.files.length > 0) {
+                var maxFileSize = 5 * 1024 * 1024; // 5MB
+                for (var i = 0; i < fileInput.files.length; i++) {
+                    var file = fileInput.files[i];
+                    var fileType = file.type;
+                    
+                    // Fallback for files without type property (like .exe on some browsers)
+                    var fileName = file.name.toLowerCase();
+                    var isPdf = fileName.endsWith('.pdf') || fileType === 'application/pdf';
+                    var isImage = fileType.startsWith('image/') || fileName.match(/\.(jpeg|jpg|gif|png)$/);
+                    
+                    if (!isImage && !isPdf) {
+                        Swal.fire({
+                            title: 'ประเภทไฟล์ไม่ถูกต้อง',
+                            text: 'ระบบรองรับเฉพาะไฟล์รูปภาพ (เช่น .jpg, .png) และไฟล์ PDF เท่านั้น',
+                            icon: 'error',
+                            confirmButtonColor: '#d33'
+                        });
+                        return false;
+                    }
+                    
+                    if (file.size > maxFileSize) {
+                        Swal.fire({
+                            title: 'ข้อผิดพลาด',
+                            text: 'ไฟล์ ' + file.name + ' มีขนาดเกิน 5MB',
+                            icon: 'error',
+                            confirmButtonColor: '#d33'
+                        });
+                        return false;
+                    }
+                }
+            }
+            
+            Swal.fire({
+                title: 'ยืนยันการขอจำหน่าย',
+                text: "คุณต้องการยืนยันการขอจำหน่ายทรัพย์สินนี้ใช่หรือไม่?",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#36b9cc',
+                cancelButtonColor: '#858796',
+                confirmButtonText: 'ยืนยัน',
+                cancelButtonText: 'ยกเลิก'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    form.submit();
+                }
+            });
+        });
+    });
+</script>
+{% endblock %}

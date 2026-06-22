@@ -1,0 +1,57 @@
+{% extends "backend/layout.html" %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card shadow mb-4">
+            <div class="card-header py-3">
+                <h6 class="m-0 font-weight-bold text-danger">แบบฟอร์มแทงชำรุด (Write-off Request)</h6>
+            </div>
+            <div class="card-body">
+                <h5 class="mb-4">ทรัพย์สิน: {{ asset.asset_code }} - {{ asset.name }}</h5>
+                <form method="post">
+                    {% csrf_token %}
+                    
+                    <div class="form-group">
+                        <label>เหตุผล / อาการเสีย <span class="text-danger">*</span></label>
+                        {{ form.reason }}
+                        {% if form.reason.errors %}
+                            <small class="text-danger">{{ form.reason.errors }}</small>
+                        {% endif %}
+                    </div>
+                    
+                    <hr>
+                    <button type="submit" class="btn btn-danger">ส่งคำขอแทงชำรุด</button>
+                    <a href="{% url 'assets_system:asset_detail' asset.id %}{% if request.GET.iframe %}?iframe=1{% endif %}" class="btn btn-secondary">ยกเลิก</a>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+    $(document).ready(function () {
+        $('form').on('submit', function (e) {
+            e.preventDefault();
+            var form = this;
+            
+            Swal.fire({
+                title: 'ยืนยันการแทงชำรุด',
+                text: "คุณต้องการยืนยันการขอแทงชำรุดทรัพย์สินนี้ใช่หรือไม่?",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#e74a3b',
+                cancelButtonColor: '#858796',
+                confirmButtonText: 'ยืนยัน',
+                cancelButtonText: 'ยกเลิก'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    form.submit();
+                }
+            });
+        });
+    });
+</script>
+{% endblock %}

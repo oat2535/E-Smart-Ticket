@@ -1,0 +1,104 @@
+{% extends 'backend/layout.html' %}
+
+{% block content %}
+<div class="d-sm-flex align-items-center justify-content-between mb-4">
+    <h1 class="h3 mb-0 text-gray-800">บันทึกการตรวจนับทรัพย์สิน</h1>
+    <!-- <a href="{% url 'assets_system:asset_detail' asset.id %}" class="btn btn-sm btn-secondary shadow-sm">
+        <i class="fas fa-arrow-left fa-sm text-white-50"></i> กลับหน้ารายละเอียด
+    </a> -->
+</div>
+
+<style>
+    /* ซ่อนเมนูด้านซ้ายเมื่อแสกน QR Code เข้ามาหน้านี้ */
+    #accordionSidebar {
+        display: none !important;
+    }
+    
+    /* ซ่อนปุ่มเปิดปิดเมนูในโหมดมือถือบน Topbar ด้วย */
+    #sidebarToggleTop {
+        display: none !important;
+    }
+</style>
+
+<div class="row">
+    <div class="col-xl-8 col-lg-7">
+        <div class="card shadow mb-4">
+            <div class="card-header py-3">
+                <h6 class="m-0 font-weight-bold text-primary">ข้อมูลทรัพย์สิน: {{ asset.asset_code }} - {{ asset.name }}</h6>
+            </div>
+            <div class="card-body">
+                <form method="post">
+                    {% csrf_token %}
+                    
+                    <div class="form-group">
+                        <label for="{{ form.asset_status.id_for_label }}">สภาพทรัพย์สิน</label>
+                        {{ form.asset_status }}
+                        {% if form.asset_status.errors %}
+                            <small class="text-danger">{{ form.asset_status.errors.0 }}</small>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="{{ form.location_scanned.id_for_label }}">สถานที่ตรวจพบ</label>
+                        {{ form.location_scanned }}
+                        {% if form.location_scanned.errors %}
+                            <small class="text-danger">{{ form.location_scanned.errors.0 }}</small>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="{{ form.note.id_for_label }}">หมายเหตุ (ถ้ามี)</label>
+                        {{ form.note }}
+                        {% if form.note.errors %}
+                            <small class="text-danger">{{ form.note.errors.0 }}</small>
+                        {% endif %}
+                    </div>
+                    
+                    <button type="submit" class="btn btn-primary mt-3"><i class="fas fa-save"></i> บันทึกการตรวจนับ</button>
+                    <!-- <a href="{% url 'assets_system:asset_detail' asset.id %}" class="btn btn-secondary mt-3">ยกเลิก</a> -->
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-xl-4 col-lg-5">
+        <div class="card shadow mb-4">
+            <div class="card-header py-3">
+                <h6 class="m-0 font-weight-bold text-primary">รายละเอียดเดิม</h6>
+            </div>
+            <div class="card-body">
+                <p><strong>หมวดหมู่:</strong> {{ asset.category|default:"-" }}</p>
+                <p><strong>สถานที่ล่าสุด (สาขา/อาคาร):</strong> {{ asset.branch|default:"-" }} / {{ asset.building|default:"-" }}</p>
+                <p><strong>ผู้รับผิดชอบ:</strong> {{ asset.responsible_person|default:"-" }}</p>
+                <p><strong>สถานะปัจจุบัน:</strong> {{ asset.get_status_display }}</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+    $(document).ready(function () {
+        $('form').on('submit', function (e) {
+            e.preventDefault();
+            var form = this;
+            
+            Swal.fire({
+                title: 'ยืนยันการบันทึกข้อมูล',
+                text: "คุณต้องการบันทึกข้อมูลการตรวจนับทรัพย์สินนี้ใช่หรือไม่?",
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#4e73df',
+                cancelButtonColor: '#858796',
+                confirmButtonText: 'บันทึก',
+                cancelButtonText: 'ยกเลิก'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    form.submit();
+                }
+            });
+        });
+    });
+</script>
+{% endblock %}

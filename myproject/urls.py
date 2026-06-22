@@ -27,6 +27,7 @@ urlpatterns = [
     path('report/',include("report.urls")),
     path('equipment/', include("equipment.urls")),
     path('access-requests/', include("access_requests.urls")),
+    path('assets/', include("assets_system.urls")),
 ]
 
 from django.urls import re_path

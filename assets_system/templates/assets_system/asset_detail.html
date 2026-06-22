@@ -1,0 +1,609 @@
+{% extends "backend/layout.html" %}
+
+{% block content %}
+<div class="card shadow mb-4">
+    <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+        <h6 class="m-0 font-weight-bold text-primary">รายละเอียดทรัพย์สิน: {{ asset.name }}</h6>
+        {% if not request.GET.iframe %}
+        <div>
+            <button class="btn btn-warning btn-sm mr-2" id="btnSyncSingleAx" data-id="{{ asset.id }}">
+                <i class="fas fa-sync"></i> อัพเดทข้อมูลจาก AX
+            </button>
+            <a href="{% url 'assets_system:asset_list' %}" class="btn btn-secondary btn-sm">กลับหน้ารายการ</a>
+        </div>
+        {% endif %}
+    </div>
+    <div class="card-body">
+        <div class="row">
+            <div class="col-md-8">
+                <table class="table table-bordered no-datatable">
+                    <tr>
+                        <th width="30%">รหัสทรัพย์สิน</th>
+                        <td>{{ asset.asset_code }}</td>
+                    </tr>
+                    <tr>
+                        <th>หน่วยช่าง (Maintenance Unit)</th>
+                        <td>{{ asset.maintenance_unit|default:"-" }}</td>
+                    </tr>
+                    <tr>
+                        <th>ชื่อทรัพย์สิน</th>
+                        <td>{{ asset.name }}</td>
+                    </tr>
+                    <tr>
+                        <th>หมวดหมู่</th>
+                        <td>{{ asset.category|default:"-" }}</td>
+                    </tr>
+                    <tr>
+                        <th>สาขา/แผนก/อาคาร/ชั้น</th>
+                        <td>{{ asset.branch|default:"-" }} / {{ asset.department|default:"-" }} / {{ asset.building|default:"-" }} / {{ asset.floor|default:"-" }}</td>
+                    </tr>
+                    <tr>
+                        <th>ผู้รับผิดชอบ</th>
+                        <td>{{ asset.responsible_person|default:"-" }}</td>
+                    </tr>
+                    <tr>
+                        <th>ประกัน (Warranty)</th>
+                        <td>{{ asset.warranty|default:"-" }}</td>
+                    </tr>
+                    <tr>
+                        <th>วันที่ซื้อ (Purchase Date)</th>
+                        <td>{{ asset.purchase_date|date:"d/m/Y"|default:"-" }}</td>
+                    </tr>
+                    <tr>
+                        <th>ราคา (Price)</th>
+                        <td>{{ asset.price|default:"-" }}</td>
+                    </tr>
+                    <tr>
+                        <th>ซัพพลายเออร์ (Supplier)</th>
+                        <td>{{ asset.supplier|default:"-" }}</td>
+                    </tr>
+                    <tr>
+                        <th>สถานะ</th>
+                        <td>{{ asset.get_status_display }}</td>
+                    </tr>
+                </table>
+                
+                {% if asset.status != 'written_off' %}
+                <hr>
+                <h5 class="mb-3">เครื่องมือจัดการ (Action)</h5>
+                <div class="d-flex flex-wrap" style="gap: 8px;">
+                    <button type="button" class="btn btn-success btn-sm" data-toggle="modal" data-target="#auditModal">
+                        <i class="fas fa-clipboard-check"></i> ตรวจนับ
+                    </button>
+                    <a href="{% url 'assets_system:request_transfer' asset.id %}{% if request.GET.iframe %}?iframe=1{% endif %}" class="btn btn-primary btn-sm">
+                        <i class="fas fa-exchange-alt"></i> โอนย้าย
+                    </a>
+                    <a href="{% url 'assets_system:request_maintenance' asset.id %}{% if request.GET.iframe %}?iframe=1{% endif %}" class="btn btn-warning btn-sm">
+                        <i class="fas fa-tools"></i> แจ้งซ่อม
+                    </a>
+                    
+                    {% if request.user.department.department_id == 'IT' or request.user.department.department_id == 'MED' or request.user.department.department_id == 'FM' %}
+                    <a href="{% url 'assets_system:request_writeoff' asset.id %}{% if request.GET.iframe %}?iframe=1{% endif %}" class="btn btn-danger btn-sm">
+                        <i class="fas fa-ban"></i> แทงชำรุด
+                    </a>
+                    {% endif %}
+                    
+                    <a href="{% url 'assets_system:request_disposal' asset.id %}{% if request.GET.iframe %}?iframe=1{% endif %}" class="btn btn-info btn-sm">
+                        <i class="fas fa-trash-alt"></i> จำหน่าย
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+            
+            <div class="col-md-4 text-center">
+                <div class="card p-3 mb-3">
+                    <h6>รูปภาพทรัพย์สิน</h6>
+                    
+                    <!-- Main Image Display -->
+                    <div class="main-image-container text-center mb-2" style="height: 250px; background-color: #f8f9fa; display: flex; align-items: center; justify-content: center; overflow: hidden; border: 1px solid #ddd; border-radius: 5px;">
+                        {% if asset.image %}
+                            <a data-fancybox="gallery" href="{{ asset.image.url }}">
+                                <img src="{{ asset.image.url }}" id="mainAssetImage" alt="Asset Image" class="img-fluid" style="max-height: 250px; max-width: 100%; object-fit: contain; cursor: pointer;">
+                            </a>
+                        {% elif asset.additional_images.first %}
+                            <a data-fancybox="gallery" href="{{ asset.additional_images.first.image.url }}">
+                                <img src="{{ asset.additional_images.first.image.url }}" id="mainAssetImage" alt="Asset Image" class="img-fluid" style="max-height: 250px; max-width: 100%; object-fit: contain; cursor: pointer;">
+                            </a>
+                        {% else %}
+                            <div class="text-muted" id="mainAssetImagePlaceholder">ไม่มีรูปภาพ</div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Thumbnails Carousel (Horizontal Scroll) -->
+                    {% if asset.additional_images.all %}
+                    <div class="thumbnails-container d-flex" style="overflow-x: auto; gap: 10px; padding-bottom: 10px;">
+                        {% for img in asset.additional_images.all %}
+                        <div class="thumbnail-item position-relative" style="min-width: 60px; width: 60px; height: 60px; cursor: pointer; border: 1px solid #ddd; border-radius: 4px; overflow: hidden;">
+                            <a data-fancybox="gallery" href="{{ img.image.url }}">
+                                <img src="{{ img.image.url }}" style="width: 100%; height: 100%; object-fit: cover;">
+                            </a>
+                            <!-- Delete checkbox overlay -->
+                            <input type="checkbox" class="delete-image-cb position-absolute" value="{{ img.id }}" style="top: 2px; right: 2px; z-index: 10;">
+                        </div>
+                        {% endfor %}
+                    </div>
+                    
+                    <div class="d-flex justify-content-between align-items-center mt-1">
+                        <small class="text-muted">เลือกรูปเพื่อดูขนาดใหญ่</small>
+                        <button type="button" class="btn btn-danger btn-sm" id="btnDeleteImages" style="display: none;">
+                            <i class="fas fa-trash"></i> ลบรูป
+                        </button>
+                    </div>
+                    {% endif %}
+
+                    <button type="button" class="btn btn-info btn-sm btn-block mt-3" data-toggle="modal" data-target="#uploadImagesModal">
+                        <i class="fas fa-images"></i> จัดการรูปภาพ (เพิ่ม/แก้ไข)
+                    </button>
+                </div>
+
+                <div class="card p-3">
+                    <h6>QR Code สำหรับตรวจนับ</h6>
+                    <img src="data:image/png;base64,{{ qr_code }}" alt="QR Code" class="img-fluid" style="max-width: 200px; margin: 0 auto;">
+                    <p class="mt-2 text-muted small">สแกนเพื่ออัปเดตประวัติการตรวจนับ</p>
+                </div>
+            </div>
+        </div>
+        
+        <hr>
+        
+        <ul class="nav nav-tabs" id="myTab" role="tablist">
+            <li class="nav-item">
+                <a class="nav-link active" id="subasset-tab" data-toggle="tab" href="#subasset" role="tab" aria-controls="subasset" aria-selected="true">Sub FA (ทรัพย์สินย่อย)</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" id="transfer-tab" data-toggle="tab" href="#transfer" role="tab" aria-controls="transfer" aria-selected="false">ประวัติโอนย้าย</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" id="maintenance-tab" data-toggle="tab" href="#maintenance" role="tab" aria-controls="maintenance" aria-selected="false">ประวัติการซ่อม</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" id="audit-tab" data-toggle="tab" href="#audit" role="tab" aria-controls="audit" aria-selected="false">ประวัติตรวจนับสินค้า</a>
+            </li>
+        </ul>
+        
+        <div class="tab-content mt-3" id="myTabContent">
+            <div class="tab-pane fade show active" id="subasset" role="tabpanel" aria-labelledby="subasset-tab">
+                <table class="table table-sm table-striped">
+                    <thead>
+                        <tr>
+                            <th>ชื่อ</th>
+                            <th>Serial Number</th>
+                            <th>รายละเอียด</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for sub in asset.sub_assets.all %}
+                        <tr>
+                            <td>{{ sub.name }}</td>
+                            <td>{{ sub.serial_number }}</td>
+                            <td>{{ sub.description }}</td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="3" class="text-center">ไม่มีทรัพย์สินย่อย</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            <div class="tab-pane fade" id="transfer" role="tabpanel" aria-labelledby="transfer-tab">
+                <table class="table table-sm table-striped">
+                    <thead>
+                        <tr>
+                            <th>วันที่</th>
+                            <th>จาก</th>
+                            <th>ถึง</th>
+                            <th>เหตุผล</th>
+                            <th>สถานะ</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for t in asset.transfers.all %}
+                        <tr>
+                            <td>{{ t.created_at|date:"d/m/Y H:i" }}</td>
+                            <td>{{ t.from_user.first_name|default:"-" }}</td>
+                            <td>
+                                {% if t.to_company %}
+                                    {{ t.to_company.branch_name }}
+                                    {% if t.to_branch %} - {{ t.to_branch.sub_branch_name }}{% endif %}
+                                {% else %}
+                                    {{ t.to_user.first_name|default:"-" }}
+                                {% endif %}
+                            </td>
+                            <td>{{ t.reason }}</td>
+                            <td>{{ t.get_status_display }}</td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="5" class="text-center">ไม่มีประวัติการโอนย้าย</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            <div class="tab-pane fade" id="maintenance" role="tabpanel" aria-labelledby="maintenance-tab">
+                <table class="table table-sm table-striped">
+                    <thead>
+                        <tr>
+                            <th>วันที่แจ้ง</th>
+                            <th>ผู้แจ้ง</th>
+                            <th>ทรัพย์สินย่อย</th>
+                            <th>ปัญหา</th>
+                            <th>สถานะ</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for m in asset.maintenances.all %}
+                        <tr>
+                            <td>{{ m.created_at|date:"d/m/Y H:i" }}</td>
+                            <td>{{ m.reported_by.first_name|default:"-" }}</td>
+                            <td>{{ m.sub_asset.name|default:"-" }}</td>
+                            <td>{{ m.issue_description }}</td>
+                            <td>{{ m.get_status_display }}</td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="5" class="text-center">ไม่มีประวัติการซ่อม</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            <div class="tab-pane fade" id="audit" role="tabpanel" aria-labelledby="audit-tab">
+                <table class="table table-sm table-striped">
+                    <thead>
+                        <tr>
+                            <th>วันที่ตรวจนับ</th>
+                            <th>ผู้ตรวจนับ</th>
+                            <th>สถานะ</th>
+                            <th>สถานที่ตรวจพบ</th>
+                            <th>หมายเหตุ</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for a in asset.inventories.all|slice:"::-1" %}
+                        <tr>
+                            <td>{{ a.scanned_at|date:"d/m/Y H:i" }}</td>
+                            <td>{{ a.scanned_by.first_name|default:"-" }}</td>
+                            <td>{{ a.get_asset_status_display }}</td>
+                            <td>{{ a.location_scanned|default:"-" }}</td>
+                            <td>{{ a.note|default:"-" }}</td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="5" class="text-center">ไม่มีประวัติตรวจนับสินค้า</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<!-- Modal Audit (ตรวจนับทรัพย์สิน) -->
+<div class="modal fade" id="auditModal" tabindex="-1" role="dialog" aria-labelledby="auditModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <form method="POST" action="{% url 'assets_system:scan_qr' asset.id %}">
+            {% csrf_token %}
+            <div class="modal-content">
+                <div class="modal-header bg-success text-white">
+                    <h5 class="modal-title" id="auditModalLabel">แบบฟอร์มตรวจนับทรัพย์สิน</h5>
+                    <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label>สภาพทรัพย์สิน</label>
+                        <select name="asset_status" class="form-control" required>
+                            <option value="normal">ปกติ (Normal)</option>
+                            <option value="damaged">ชำรุด (Damaged)</option>
+                            <option value="missing">สูญหาย (Missing)</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>สถานที่ตรวจพบ (ระบุหากมีการเปลี่ยนจุด)</label>
+                        <input type="text" name="location_scanned" class="form-control" placeholder="เช่น ย้ายไปห้องประชุม B" value="{{ asset.location_scanned|default:'' }}">
+                    </div>
+                    <div class="form-group">
+                        <label>หมายเหตุ</label>
+                        <textarea name="note" class="form-control" rows="3" placeholder="ระบุรายละเอียดเพิ่มเติม..."></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">ยกเลิก</button>
+                    <button type="submit" class="btn btn-success"><i class="fas fa-save"></i> บันทึกผลตรวจนับ</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Modal Upload Images -->
+<div class="modal fade" id="uploadImagesModal" tabindex="-1" role="dialog" aria-labelledby="uploadImagesModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="uploadImagesModalLabel">เพิ่มรูปภาพทรัพสิน</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form id="uploadImagesForm" enctype="multipart/form-data">
+                    <div class="form-group">
+                        <label class="font-weight-bold">ส่วนที่ 1: อัพโหลดรูปหน้าปก</label>
+                        <p class="small text-muted mb-1">เลือก 1 รูป (จะแทนที่รูปหน้าปกเดิมหากมี) (จำกัดขนาดรูปละไม่เกิน 5MB)</p>
+                        <div class="custom-file">
+                            <input type="file" class="custom-file-input" id="coverImage" name="cover_image" accept="image/*">
+                            <label class="custom-file-label" for="coverImage">เลือกรูปหน้าปก</label>
+                        </div>
+                    </div>
+                    <hr>
+                    <div class="form-group">
+                        <label class="font-weight-bold">ส่วนที่ 2: อัพโหลดรูปเพิ่มเติม</label>
+                        <p class="small text-muted mb-1">เลือกได้หลายรูป (จำกัดขนาดรูปละไม่เกิน 5MB)</p>
+                        <div class="custom-file">
+                            <input type="file" class="custom-file-input" id="additionalImages" name="additional_images" accept="image/*" multiple>
+                            <label class="custom-file-label" for="additionalImages">เลือกรูปเพิ่มเติม</label>
+                        </div>
+                        <small id="fileSizeWarning" class="text-danger mt-1 d-none">มีไฟล์ขนาดเกิน 5MB กรุณาเลือกใหม่</small>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">กลับไปหน้าทรัพสิน</button>
+                <button type="button" class="btn btn-primary" id="btnSubmitUploads">อัปโหลด</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui@4.0/dist/fancybox.css" />
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui@4.0/dist/fancybox.umd.js"></script>
+<script>
+    $(document).ready(function() {
+        $('#btnSyncSingleAx').on('click', function() {
+            let assetId = $(this).data('id');
+            let syncUrl = "{% url 'assets_system:sync_single_ax_asset' 0 %}".replace('/0/', '/' + assetId + '/');
+            
+            Swal.fire({
+                title: 'กำลังตรวจสอบข้อมูลจาก AX...',
+                allowOutsideClick: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                }
+            });
+
+            // 1. Dry run to get changes
+            $.ajax({
+                url: syncUrl + '?dry_run=true',
+                type: "GET",
+                success: function(response) {
+                    if (response.status === 'success') {
+                        if (response.has_changes) {
+                            // Build HTML for changes
+                            let changesHtml = '<div style="text-align: left; max-height: 300px; overflow-y: auto;">';
+                            changesHtml += '<table class="table table-sm table-bordered"><thead><tr><th>ฟิลด์</th><th>ข้อมูลเดิม</th><th>ข้อมูลใหม่ (AX)</th></tr></thead><tbody>';
+                            
+                            const fieldNames = {
+                                'name': 'ชื่อทรัพย์สิน',
+                                'company': 'บริษัท',
+                                'department': 'แผนก',
+                                'building': 'อาคาร',
+                                'floor': 'ชั้น',
+                                'responsible_person': 'ผู้รับผิดชอบ',
+                                'serial_number': 'Serial Number',
+                                'price': 'ราคา',
+                                'supplier': 'ซัพพลายเออร์',
+                                'maintenance_unit': 'หน่วยซ่อมบำรุง',
+                                'ax_status': 'สถานะ AX',
+                                'ax_reason': 'เหตุผล AX',
+                                'purchase_date': 'วันที่ซื้อ',
+                                'warranty': 'วันหมดประกัน'
+                            };
+                            
+                            for (let key in response.changes) {
+                                let label = fieldNames[key] || key;
+                                let oldVal = response.changes[key].old || '-';
+                                let newVal = response.changes[key].new || '-';
+                                changesHtml += `<tr><td>${label}</td><td class="text-danger">${oldVal}</td><td class="text-success">${newVal}</td></tr>`;
+                            }
+                            changesHtml += '</tbody></table></div>';
+                            
+                            Swal.fire({
+                                title: 'พบข้อมูลที่เปลี่ยนแปลง',
+                                html: changesHtml,
+                                icon: 'info',
+                                showCancelButton: true,
+                                confirmButtonColor: '#1cc88a',
+                                cancelButtonColor: '#858796',
+                                confirmButtonText: 'ยืนยันการอัพเดท',
+                                cancelButtonText: 'ยกเลิก',
+                                customClass: {
+                                    container: 'swal-wide'
+                                }
+                            }).then((result) => {
+                                if (result.isConfirmed) {
+                                    // 2. Perform actual update
+                                    Swal.fire({
+                                        title: 'กำลังอัพเดทข้อมูล...',
+                                        allowOutsideClick: false,
+                                        didOpen: () => {
+                                            Swal.showLoading();
+                                        }
+                                    });
+                                    
+                                    $.ajax({
+                                        url: syncUrl,
+                                        type: "POST",
+                                        headers: {
+                                            'X-CSRFToken': '{{ csrf_token }}'
+                                        },
+                                        success: function(updateResp) {
+                                            if (updateResp.status === 'success') {
+                                                Swal.fire('สำเร็จ', updateResp.message, 'success').then(() => {
+                                                    window.location.reload();
+                                                });
+                                            } else {
+                                                Swal.fire('ข้อผิดพลาด', updateResp.message, 'error');
+                                            }
+                                        },
+                                        error: function() {
+                                            Swal.fire('ข้อผิดพลาด', 'อัพเดทไม่สำเร็จ', 'error');
+                                        }
+                                    });
+                                }
+                            });
+                        } else {
+                            Swal.fire('แจ้งเตือน', response.message || 'ไม่พบข้อมูลที่มีการเปลี่ยนแปลงจาก AX', 'info');
+                        }
+                    } else {
+                        Swal.fire('ข้อผิดพลาด', response.message, 'error');
+                    }
+                },
+                error: function() {
+                    Swal.fire('ข้อผิดพลาด', 'ไม่สามารถเชื่อมต่อระบบ AX ได้', 'error');
+                }
+            });
+        });
+
+        // Update file input labels
+        $('.custom-file-input').on('change', function() {
+            let fileList = this.files;
+            if (fileList.length > 1) {
+                $(this).next('.custom-file-label').html(fileList.length + ' ไฟล์ถูกเลือก');
+            } else if (fileList.length === 1) {
+                $(this).next('.custom-file-label').html(fileList[0].name);
+            } else {
+                let defaultText = $(this).attr('id') === 'coverImage' ? 'เลือกรูปหน้าปก' : 'เลือกรูปเพิ่มเติม';
+                $(this).next('.custom-file-label').html(defaultText);
+            }
+            
+            // Check sizes for additional images
+            if ($(this).attr('id') === 'additionalImages') {
+                let hasLargeFile = false;
+                for (let i = 0; i < fileList.length; i++) {
+                    if (fileList[i].size > 5 * 1024 * 1024) {
+                        hasLargeFile = true;
+                        break;
+                    }
+                }
+                if (hasLargeFile) {
+                    $('#fileSizeWarning').removeClass('d-none');
+                    $('#btnSubmitUploads').prop('disabled', true);
+                } else {
+                    $('#fileSizeWarning').addClass('d-none');
+                    $('#btnSubmitUploads').prop('disabled', false);
+                }
+            }
+            
+            // Check size for cover image
+            if ($(this).attr('id') === 'coverImage') {
+                if (fileList.length === 1 && fileList[0].size > 5 * 1024 * 1024) {
+                    Swal.fire('คำเตือน', 'รูปหน้าปกขนาดเกิน 5MB', 'warning');
+                    $(this).val('');
+                    $(this).next('.custom-file-label').html('เลือกรูปหน้าปก');
+                }
+            }
+        });
+
+        $('#btnSubmitUploads').on('click', function() {
+            let form = $('#uploadImagesForm')[0];
+            let formData = new FormData(form);
+            
+            if (!$('#coverImage').val() && !$('#additionalImages').val()) {
+                Swal.fire('แจ้งเตือน', 'กรุณาเลือกรูปภาพอย่างน้อย 1 ไฟล์', 'warning');
+                return;
+            }
+
+            $(this).prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> กำลังอัปโหลด...');
+
+            $.ajax({
+                url: "{% url 'assets_system:ajax_upload_asset_images' asset.id %}",
+                type: 'POST',
+                data: formData,
+                processData: false,
+                contentType: false,
+                headers: {
+                    'X-CSRFToken': '{{ csrf_token }}'
+                },
+                success: function(response) {
+                    if (response.status === 'success') {
+                        Swal.fire({
+                            title: 'สำเร็จ',
+                            text: response.message,
+                            icon: 'success'
+                        }).then(() => {
+                            window.location.reload();
+                        });
+                    } else {
+                        $('#btnSubmitUploads').prop('disabled', false).html('อัปโหลด');
+                        Swal.fire('ข้อผิดพลาด', response.message, 'error');
+                    }
+                },
+                error: function(xhr) {
+                    $('#btnSubmitUploads').prop('disabled', false).html('อัปโหลด');
+                    Swal.fire('ข้อผิดพลาด', 'อัปโหลดไม่สำเร็จ', 'error');
+                }
+            });
+        });
+
+        // Checkbox logic for delete button
+        $('.delete-image-cb').on('change', function() {
+            let checkedCount = $('.delete-image-cb:checked').length;
+            if (checkedCount > 0) {
+                $('#btnDeleteImages').show();
+            } else {
+                $('#btnDeleteImages').hide();
+            }
+        });
+
+        $('#btnDeleteImages').on('click', function() {
+            let selectedIds = [];
+            $('.delete-image-cb:checked').each(function() {
+                selectedIds.push($(this).val());
+            });
+
+            Swal.fire({
+                title: 'ยืนยันการลบ',
+                text: "คุณต้องการลบรูปที่เลือกใช่หรือไม่?",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#e74a3b',
+                cancelButtonColor: '#858796',
+                confirmButtonText: 'ลบ',
+                cancelButtonText: 'ยกเลิก'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    $.ajax({
+                        url: "{% url 'assets_system:ajax_delete_additional_images' %}",
+                        type: "POST",
+                        data: JSON.stringify({ image_ids: selectedIds }),
+                        contentType: "application/json",
+                        headers: {
+                            'X-CSRFToken': '{{ csrf_token }}'
+                        },
+                        success: function(response) {
+                            if (response.status === 'success') {
+                                Swal.fire('ลบสำเร็จ', response.message, 'success').then(() => {
+                                    window.location.reload();
+                                });
+                            } else {
+                                Swal.fire('ข้อผิดพลาด', response.message, 'error');
+                            }
+                        },
+                        error: function() {
+                            Swal.fire('ข้อผิดพลาด', 'ลบไม่สำเร็จ', 'error');
+                        }
+                    });
+                }
+            });
+        });
+    });
+</script>
+{% endblock %}

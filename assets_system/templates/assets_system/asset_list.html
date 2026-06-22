@@ -1,0 +1,606 @@
+{% extends "backend/layout.html" %}
+
+{% block content %}
+<div class="card shadow mb-4">
+    <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+        <h6 class="m-0 font-weight-bold text-primary">Asset Management (ระบบจัดการทรัพย์สิน)</h6>
+        <div>
+            <button class="btn btn-warning btn-sm mr-2" id="btnUpdateAx">
+                <i class="fas fa-sync"></i> อัพเดทข้อมูล Asset จาก AX
+            </button>
+            <button class="btn btn-success btn-sm mr-2" id="btnFetchAx">
+                <i class="fas fa-download"></i> ดึงข้อมูล Asset ใหม่จาก AX
+            </button>
+            <button class="btn btn-info btn-sm" id="btnPrintQr" disabled>
+                <i class="fas fa-print"></i> ปริ้น QR/Barcode
+            </button>
+        </div>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-bordered table-striped" id="assetTable" width="100%" cellspacing="0">
+                <thead>
+                    <tr>
+                        <th width="5%" class="text-center"><input type="checkbox" id="selectAllAssets"></th>
+                        <th>รหัสทรัพย์สิน (Asset Code)</th>
+                        <th>ชื่อทรัพย์สิน</th>
+                        <th>สถานะ</th>
+                        <th>ผู้ถือครอง (Owner)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for asset in assets %}
+                    <tr>
+                        <td class="text-center"><input type="checkbox" class="asset-cb" value="{{ asset.id }}"></td>
+                        <td><a href="{% url 'assets_system:asset_detail' asset.id %}" class="font-weight-bold text-primary">{{ asset.asset_code }}</a></td>
+                        <td>{{ asset.name }}</td>
+                        <td>
+                            {% if asset.status == 'available' %}
+                                <span class="badge badge-success p-2" style="font-size: 13px;">{{ asset.get_status_display }}</span>
+                            {% elif asset.status == 'in_use' %}
+                                <span class="badge badge-primary p-2" style="font-size: 13px;">{{ asset.get_status_display }}</span>
+                            {% elif asset.status == 'maintenance' %}
+                                <span class="badge badge-warning p-2 text-dark" style="font-size: 13px;">{{ asset.get_status_display }}</span>
+                            {% elif asset.status == 'written_off' %}
+                                <span class="badge badge-danger p-2" style="font-size: 13px;">{{ asset.get_status_display }}</span>
+                            {% elif asset.status == 'disposed' %}
+                                <span class="badge badge-info p-2" style="font-size: 13px;">{{ asset.get_status_display }}</span>
+                            {% else %}
+                                <span class="badge badge-secondary p-2" style="font-size: 13px;">{{ asset.get_status_display }}</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ asset.responsible_person|default:"-" }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="5" class="text-center">ไม่พบข้อมูลทรัพย์สิน</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Modal for AX Sync -->
+<div class="modal fade" id="axSyncModal" tabindex="-1" role="dialog" aria-labelledby="axSyncModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="axSyncModalLabel">ดึงข้อมูล Asset จาก AX</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="d-flex justify-content-between mb-3">
+                    <p class="mb-0">คลิกที่ปุ่ม <strong>"ดึงข้อมูล"</strong> เพื่อดึงรายการ Asset ใหม่จากระบบ AX</p>
+                    <button class="btn btn-primary" id="btnLoadAxData">
+                        <i class="fas fa-sync-alt"></i> ดึงข้อมูล
+                    </button>
+                </div>
+                
+                <div id="loadingSpinner" class="text-center my-5" style="display: none;">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="sr-only">Loading...</span>
+                    </div>
+                    <p class="mt-2">กำลังดึงข้อมูลจาก AX...</p>
+                </div>
+
+                <div class="table-responsive" id="axDataTableContainer" style="display: none;">
+                    <table class="table table-bordered table-striped" id="axDataTable" width="100%" cellspacing="0">
+                        <thead>
+                            <tr>
+                                <th>รหัสทรัพย์สิน</th>
+                                <th>ชื่อทรัพย์สิน</th>
+                                <th>หมวด</th>
+                                <th>ราคา</th>
+                                <th>บริษัท</th>
+                                <th>วันที่ซื้อ</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Data will be populated here -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">ยกเลิก</button>
+                <button type="button" class="btn btn-success" id="btnSaveAxData" disabled>บันทึกข้อมูล</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal for AX Update -->
+<div class="modal fade" id="axUpdateModal" tabindex="-1" role="dialog" aria-labelledby="axUpdateModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="axUpdateModalLabel">อัพเดทข้อมูล Asset จาก AX</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="row mb-3">
+                    <div class="col-md-4">
+                        <label>วันที่เริ่มต้น (Start Date)</label>
+                        <div class="input-group">
+                            <input type="text" class="form-control" id="updateStartDate" placeholder="Select Date">
+                            <div class="input-group-append">
+                                <span class="input-group-text"><i class="fas fa-calendar-alt"></i></span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <label>วันที่สิ้นสุด (End Date)</label>
+                        <div class="input-group">
+                            <input type="text" class="form-control" id="updateEndDate" placeholder="Select Date">
+                            <div class="input-group-append">
+                                <span class="input-group-text"><i class="fas fa-calendar-alt"></i></span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <label>Site</label>
+                        <select class="form-control" id="updateSite">
+                            <option value="">-- ทุกไซต์ (All Sites) --</option>
+                            <option value="eatl">eatl (EA)</option>
+                            <option value="tltp">tltp (TP)</option>
+                            <option value="pptl">pptl (PP)</option>
+                            <option value="moya">moya (MY)</option>
+                            <option value="kstl">kstl (KS)</option>
+                            <option value="sitl">sitl (SI)</option>
+                            <option value="astl">astl (AS)</option>
+                            <option value="tutl">tutl (TT)</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="d-flex justify-content-end mb-3">
+                    <button class="btn btn-warning" id="btnLoadAxUpdates">
+                        <i class="fas fa-search"></i> ค้นหาข้อมูลอัพเดท
+                    </button>
+                </div>
+                
+                <div id="updateLoadingSpinner" class="text-center my-5" style="display: none;">
+                    <div class="spinner-border text-warning" role="status">
+                        <span class="sr-only">Loading...</span>
+                    </div>
+                    <p class="mt-2">กำลังตรวจสอบการอัพเดทข้อมูลจาก AX...</p>
+                </div>
+
+                <div class="table-responsive" id="axUpdateTableContainer" style="display: none;">
+                    <table class="table table-bordered" id="axUpdateTable" width="100%" cellspacing="0">
+                        <thead>
+                            <tr>
+                                <th>รหัสทรัพย์สิน</th>
+                                <th>ชื่อทรัพย์สิน</th>
+                                <th>การเปลี่ยนแปลง (Changes)</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Data will be populated here -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">ยกเลิก</button>
+                <button type="button" class="btn btn-warning" id="btnApplyAxUpdates" disabled>อัพเดทข้อมูล</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<link rel="stylesheet" href="https://cdn.datatables.net/1.11.5/css/dataTables.bootstrap4.min.css">
+<script src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/1.11.5/js/dataTables.bootstrap4.min.js"></script>
+
+<script>
+    let fetchedAssets = [];
+    let fetchedUpdates = [];
+    let axDataTable;
+    let axUpdateTable;
+
+    $(document).ready(function() {
+        // Initialize flatpickr for date inputs
+        flatpickr("#updateStartDate", {
+            dateFormat: "Y-m-d",
+            allowInput: true,
+            altInput: true,
+            altFormat: "d M Y",
+        });
+        flatpickr("#updateEndDate", {
+            dateFormat: "Y-m-d",
+            allowInput: true,
+            altInput: true,
+            altFormat: "d M Y",
+        });
+
+        $('#assetTable').DataTable({
+            "order": [],
+            "columnDefs": [
+                { "orderable": false, "targets": 0 }
+            ],
+            "destroy": true
+        });
+        
+        $('#btnFetchAx').on('click', function() {
+            $('#axSyncModal').modal('show');
+            $('#axDataTableContainer').hide();
+            $('#btnSaveAxData').prop('disabled', true);
+            if ($.fn.DataTable.isDataTable('#axDataTable')) {
+                $('#axDataTable').DataTable().clear().destroy();
+                $('#axDataTable tbody').empty();
+            }
+        });
+
+        $('#btnLoadAxData').on('click', function() {
+            $('#btnLoadAxData').prop('disabled', true);
+            $('#loadingSpinner').show();
+            $('#axDataTableContainer').hide();
+            
+            $.ajax({
+                url: "{% url 'assets_system:fetch_ax_assets' %}",
+                type: "GET",
+                success: function(response) {
+                    $('#loadingSpinner').hide();
+                    $('#btnLoadAxData').prop('disabled', false);
+                    
+                    if (response.status === 'success') {
+                        fetchedAssets = response.data;
+                        
+                        if (fetchedAssets.length === 0) {
+                            Swal.fire('แจ้งเตือน', 'ไม่มีรายการ Asset ใหม่จาก AX', 'info');
+                            return;
+                        }
+                        
+                        $('#axDataTableContainer').show();
+                        $('#btnSaveAxData').prop('disabled', false);
+                        
+                        if ($.fn.DataTable.isDataTable('#axDataTable')) {
+                            $('#axDataTable').DataTable().destroy();
+                        }
+                        
+                        let tbody = '';
+                        fetchedAssets.forEach(function(asset) {
+                            tbody += `<tr>
+                                <td>${asset.asset_code}</td>
+                                <td>${asset.name}</td>
+                                <td>${asset.category || '-'}</td>
+                                <td>${asset.price || '-'}</td>
+                                <td>${asset.company || '-'}</td>
+                                <td>${asset.purchase_date || '-'}</td>
+                            </tr>`;
+                        });
+                        
+                        $('#axDataTable tbody').html(tbody);
+                        $('#axDataTable').DataTable({
+                            pageLength: 10,
+                            lengthMenu: [[10, 25, 50, -1], [10, 25, 50, "All"]],
+                            destroy: true
+                        });
+                    } else {
+                        Swal.fire('ข้อผิดพลาด', response.message, 'error');
+                    }
+                },
+                error: function(xhr, status, error) {
+                    $('#loadingSpinner').hide();
+                    $('#btnLoadAxData').prop('disabled', false);
+                    Swal.fire('ข้อผิดพลาด', 'ไม่สามารถเชื่อมต่อข้อมูล AX ได้', 'error');
+                }
+            });
+        });
+
+        $('#btnSaveAxData').on('click', function() {
+            if (fetchedAssets.length === 0) return;
+            
+            Swal.fire({
+                title: 'ยืนยันการบันทึก',
+                text: `คุณต้องการบันทึกข้อมูล Asset จำนวน ${fetchedAssets.length} รายการใช่หรือไม่?`,
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#1cc88a',
+                cancelButtonColor: '#858796',
+                confirmButtonText: 'บันทึก',
+                cancelButtonText: 'ยกเลิก'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    $('#btnSaveAxData').prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> กำลังบันทึก...');
+                    
+                    $.ajax({
+                        url: "{% url 'assets_system:sync_ax_assets' %}",
+                        type: "POST",
+                        data: JSON.stringify({ assets: fetchedAssets }),
+                        contentType: "application/json",
+                        headers: {
+                            'X-CSRFToken': '{{ csrf_token }}'
+                        },
+                        success: function(response) {
+                            if (response.status === 'success') {
+                                Swal.fire('สำเร็จ', `นำเข้าข้อมูล Asset จำนวน ${response.count} รายการเรียบร้อยแล้ว`, 'success').then(() => {
+                                    window.location.reload();
+                                });
+                            } else {
+                                Swal.fire('ข้อผิดพลาด', response.message, 'error');
+                                $('#btnSaveAxData').prop('disabled', false).html('บันทึกข้อมูล');
+                            }
+                        },
+                        error: function() {
+                            Swal.fire('ข้อผิดพลาด', 'ไม่สามารถบันทึกข้อมูลได้', 'error');
+                            $('#btnSaveAxData').prop('disabled', false).html('บันทึกข้อมูล');
+                        }
+                    });
+                }
+            });
+        });
+        $('#btnUpdateAx').on('click', function() {
+            $('#axUpdateModal').modal('show');
+            $('#axUpdateTableContainer').hide();
+            $('#btnApplyAxUpdates').prop('disabled', true);
+            if ($.fn.DataTable.isDataTable('#axUpdateTable')) {
+                $('#axUpdateTable').DataTable().clear().destroy();
+                $('#axUpdateTable tbody').empty();
+            }
+        });
+
+        $('#btnLoadAxUpdates').on('click', function() {
+            let startDate = $('#updateStartDate').val();
+            let endDate = $('#updateEndDate').val();
+            let site = $('#updateSite').val();
+            
+            if (!startDate || !endDate) {
+                Swal.fire('แจ้งเตือน', 'กรุณาระบุข้อมูล วันที่เริ่มต้น และ วันที่สิ้นสุด ให้ครบถ้วน', 'warning');
+                return;
+            }
+
+            let start = new Date(startDate);
+            let end = new Date(endDate);
+            let diffTime = end - start;
+            let diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)); 
+            
+            if (diffTime < 0) {
+                Swal.fire('แจ้งเตือน', 'วันที่สิ้นสุดต้องไม่น้อยกว่าวันที่เริ่มต้น', 'warning');
+                return;
+            }
+            if (diffDays > 31) {
+                Swal.fire('แจ้งเตือน', 'กรุณาเลือกช่วงเวลาอัพเดทไม่เกิน 1 เดือน (31 วัน)', 'warning');
+                return;
+            }
+
+            $('#btnLoadAxUpdates').prop('disabled', true);
+            $('#updateLoadingSpinner').show();
+            $('#axUpdateTableContainer').hide();
+            
+            $.ajax({
+                url: "{% url 'assets_system:fetch_ax_updates' %}",
+                type: "GET",
+                data: {
+                    start_date: startDate,
+                    end_date: endDate,
+                    site: site
+                },
+                success: function(response) {
+                    $('#updateLoadingSpinner').hide();
+                    $('#btnLoadAxUpdates').prop('disabled', false);
+                    
+                    if (response.status === 'success') {
+                        fetchedUpdates = response.data;
+                        
+                        if (fetchedUpdates.length === 0) {
+                            Swal.fire('แจ้งเตือน', 'ไม่มีรายการ Asset ที่มีการอัปเดตข้อมูลในช่วงเวลาดังกล่าว', 'info');
+                            return;
+                        }
+                        
+                        $('#axUpdateTableContainer').show();
+                        $('#btnApplyAxUpdates').prop('disabled', false);
+                        
+                        if ($.fn.DataTable.isDataTable('#axUpdateTable')) {
+                            $('#axUpdateTable').DataTable().destroy();
+                        }
+                        
+                        let tbody = '';
+                        fetchedUpdates.forEach(function(item) {
+                            let changesHtml = '<table class="table table-sm table-bordered mt-2" style="background-color: #fff;">';
+                            changesHtml += '<thead><tr><th class="text-secondary">ฟิลด์</th><th class="text-secondary">ข้อมูลเดิม</th><th class="text-secondary">ข้อมูลใหม่ (AX)</th></tr></thead><tbody>';
+                            
+                            const fieldLabels = {
+                                'name': 'ชื่อทรัพย์สิน',
+                                'company': 'บริษัท',
+                                'department': 'แผนก',
+                                'building': 'ตึก',
+                                'floor': 'ชั้น',
+                                'responsible_person': 'ผู้รับผิดชอบ',
+                                'serial_number': 'Serial Number',
+                                'price': 'ราคา',
+                                'supplier': 'ผู้จัดจำหน่าย',
+                                'maintenance_unit': 'หน่วยซ่อมบำรุง',
+                                'ax_status': 'สถานะ AX',
+                                'ax_reason': 'เหตุผล AX',
+                                'purchase_date': 'วันที่ซื้อ',
+                                'warranty': 'วันหมดประกัน'
+                            };
+
+                            for (let field in item.changes) {
+                                let label = fieldLabels[field] || field;
+                                let changeData = item.changes[field];
+                                
+                                let old_val = '-';
+                                let new_val = changeData;
+                                if (typeof changeData === 'object' && changeData !== null) {
+                                    old_val = changeData.old || '-';
+                                    new_val = changeData.new || '-';
+                                }
+                                
+                                changesHtml += `<tr>
+                                    <td><span class="text-secondary">${label}</span></td>
+                                    <td class="text-danger">${old_val}</td>
+                                    <td class="text-success">${new_val}</td>
+                                </tr>`;
+                            }
+                            changesHtml += '</tbody></table>';
+                            
+                            tbody += `<tr>
+                                <td><span class="badge badge-info">${item.asset_code}</span></td>
+                                <td>${item.name}</td>
+                                <td>${changesHtml}</td>
+                            </tr>`;
+                        });
+                        
+                        $('#axUpdateTable tbody').html(tbody);
+                        $('#axUpdateTable').DataTable({
+                            pageLength: 10,
+                            lengthMenu: [[10, 25, 50, -1], [10, 25, 50, "All"]],
+                            destroy: true
+                        });
+                    } else {
+                        Swal.fire('ข้อผิดพลาด', response.message, 'error');
+                    }
+                },
+                error: function(xhr, status, error) {
+                    $('#updateLoadingSpinner').hide();
+                    $('#btnLoadAxUpdates').prop('disabled', false);
+                    Swal.fire('ข้อผิดพลาด', 'ไม่สามารถเชื่อมต่อข้อมูล AX ได้', 'error');
+                }
+            });
+        });
+
+        $('#btnApplyAxUpdates').on('click', function() {
+            if (fetchedUpdates.length === 0) return;
+            
+            Swal.fire({
+                title: 'ยืนยันการอัพเดท',
+                text: `คุณต้องการอัพเดทข้อมูล Asset จำนวน ${fetchedUpdates.length} รายการใช่หรือไม่?`,
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#f6c23e',
+                cancelButtonColor: '#858796',
+                confirmButtonText: 'อัพเดท',
+                cancelButtonText: 'ยกเลิก'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    $('#btnApplyAxUpdates').prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> กำลังอัพเดท...');
+                    
+                    $.ajax({
+                        url: "{% url 'assets_system:apply_ax_updates' %}",
+                        type: "POST",
+                        data: JSON.stringify({ assets: fetchedUpdates }),
+                        contentType: "application/json",
+                        headers: {
+                            'X-CSRFToken': '{{ csrf_token }}'
+                        },
+                        success: function(response) {
+                            if (response.status === 'success') {
+                                Swal.fire('สำเร็จ', `อัปเดตข้อมูล Asset จำนวน ${response.count} รายการเรียบร้อยแล้ว`, 'success').then(() => {
+                                    window.location.reload();
+                                });
+                            } else {
+                                Swal.fire('ข้อผิดพลาด', response.message, 'error');
+                                $('#btnApplyAxUpdates').prop('disabled', false).html('อัพเดทข้อมูล');
+                            }
+                        },
+                        error: function() {
+                            Swal.fire('ข้อผิดพลาด', 'ไม่สามารถอัพเดทข้อมูลได้', 'error');
+                            $('#btnApplyAxUpdates').prop('disabled', false).html('อัพเดทข้อมูล');
+                        }
+                    });
+                }
+            });
+        });
+
+        // Checkbox logic for DataTables persistence across pages
+        var selectedAssets = new Set();
+
+        // Prevent click on checkbox from triggering DataTables sorting (just in case)
+        $('#selectAllAssets').on('click', function(e) {
+            e.stopPropagation();
+        });
+
+        $('#selectAllAssets').on('change', function() {
+            var isChecked = $(this).prop('checked');
+            
+            // Only select checkboxes on the current page
+            $('.asset-cb').each(function() {
+                $(this).prop('checked', isChecked);
+                var val = $(this).val();
+                if (isChecked) {
+                    selectedAssets.add(val);
+                } else {
+                    selectedAssets.delete(val);
+                }
+            });
+            
+            updatePrintButton();
+        });
+
+        // Use event delegation on the table to catch all checkbox changes (even on other pages)
+        $('#assetTable tbody').on('change', '.asset-cb', function() {
+            var val = $(this).val();
+            if ($(this).prop('checked')) {
+                selectedAssets.add(val);
+            } else {
+                selectedAssets.delete(val);
+                $('#selectAllAssets').prop('checked', false);
+            }
+            updatePrintButton();
+        });
+
+        // Restore checkbox states when DataTables draws a new page
+        $('#assetTable').on('draw.dt', function() {
+            var allChecked = true;
+            var hasCheckboxes = false;
+            
+            $('.asset-cb').each(function() {
+                hasCheckboxes = true;
+                var val = $(this).val();
+                if (selectedAssets.has(val)) {
+                    $(this).prop('checked', true);
+                } else {
+                    allChecked = false;
+                }
+            });
+            
+            if (hasCheckboxes && allChecked) {
+                $('#selectAllAssets').prop('checked', true);
+            } else {
+                $('#selectAllAssets').prop('checked', false);
+            }
+        });
+
+        function updatePrintButton() {
+            if (selectedAssets.size > 0) {
+                $('#btnPrintQr').prop('disabled', false);
+                $('#btnPrintQr').html('<i class="fas fa-print"></i> ปริ้น QR/Barcode (' + selectedAssets.size + ')');
+            } else {
+                $('#btnPrintQr').prop('disabled', true);
+                $('#btnPrintQr').html('<i class="fas fa-print"></i> ปริ้น QR/Barcode');
+            }
+        }
+
+        $('#btnPrintQr').on('click', function() {
+            if (selectedAssets.size > 0) {
+                var selectedIds = Array.from(selectedAssets);
+                var url = "{% url 'assets_system:print_qr_codes' %}?ids=" + selectedIds.join(',');
+                // Open using Fancybox for nice animation
+                $.fancybox.open({
+                    src: url,
+                    type: 'iframe',
+                    opts: {
+                        iframe: {
+                            css: {
+                                width: '800px',
+                                height: '600px'
+                            }
+                        }
+                    }
+                });
+            }
+        });
+    });
+</script>
+{% endblock %}

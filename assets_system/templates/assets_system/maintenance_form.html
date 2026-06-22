@@ -1,0 +1,161 @@
+{% extends "backend/layout.html" %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card shadow mb-4">
+            <div class="card-header py-3">
+                <h6 class="m-0 font-weight-bold text-warning">แบบฟอร์มแจ้งซ่อม (Maintenance Request)</h6>
+            </div>
+            <div class="card-body">
+                <h5 class="mb-4">ทรัพย์สิน: {{ asset.asset_code }} - {{ asset.name }}</h5>
+                <form method="post">
+                    {% csrf_token %}
+                    
+                    <div class="form-group">
+                        <label class="d-flex justify-content-between align-items-center mb-2">
+                            <span>ทรัพย์สินย่อย (Sub FA) - <span class="text-muted">เว้นว่างหากซ่อมตัวหลัก</span></span>
+                            <button type="button" class="btn btn-success btn-sm" id="btnAddSubAssetBtn">
+                                <i class="fas fa-plus"></i> เพิ่มทรัพสินย่อย
+                            </button>
+                        </label>
+                        {{ form.sub_asset }}
+                        {% if form.sub_asset.errors %}
+                            <small class="text-danger">{{ form.sub_asset.errors }}</small>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>รายละเอียดปัญหา / อาการ <span class="text-danger">*</span></label>
+                        {{ form.issue_description }}
+                        {% if form.issue_description.errors %}
+                            <small class="text-danger">{{ form.issue_description.errors }}</small>
+                        {% endif %}
+                    </div>
+                    
+                    <hr>
+                    <button type="submit" class="btn btn-warning">ส่งคำขอแจ้งซ่อม</button>
+                    <a href="{% url 'assets_system:asset_detail' asset.id %}{% if request.GET.iframe %}?iframe=1{% endif %}" class="btn btn-secondary">ยกเลิก</a>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal for Adding Sub-Asset -->
+<div class="modal fade" id="addSubAssetModal" tabindex="-1" role="dialog" aria-labelledby="addSubAssetModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="addSubAssetModalLabel">เพิ่มทรัพย์สินย่อย</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form id="addSubAssetForm">
+                    <div class="form-group">
+                        <label>ชื่อทรัพย์สินย่อย <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" id="newSubAssetName" required placeholder="เช่น RAM 16GB, เมาส์, คีย์บอร์ด">
+                    </div>
+                    <div class="form-group">
+                        <label>หมายเลขซีเรียล (Serial Number)</label>
+                        <input type="text" class="form-control" id="newSubAssetSerial">
+                    </div>
+                    <div class="form-group">
+                        <label>รายละเอียดเพิ่มเติม</label>
+                        <textarea class="form-control" id="newSubAssetDesc" rows="3"></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">ยกเลิก</button>
+                <button type="button" class="btn btn-success" id="btnSaveSubAsset">บันทึกข้อมูล</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+    $(document).ready(function () {
+        $('form').on('submit', function (e) {
+            e.preventDefault();
+            var form = this;
+            
+            Swal.fire({
+                title: 'ยืนยันการแจ้งซ่อม',
+                text: "คุณต้องการยืนยันคำขอแจ้งซ่อมทรัพย์สินนี้ใช่หรือไม่?",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#f6c23e',
+                cancelButtonColor: '#858796',
+                confirmButtonText: 'ยืนยัน',
+                cancelButtonText: 'ยกเลิก'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    form.submit();
+                }
+            });
+        });
+
+        // Show Modal
+        $('#btnAddSubAssetBtn').on('click', function() {
+            $('#addSubAssetForm')[0].reset();
+            $('#addSubAssetModal').modal('show');
+        });
+
+        // Save Sub-Asset via AJAX
+        $('#btnSaveSubAsset').on('click', function() {
+            let name = $('#newSubAssetName').val().trim();
+            let serial = $('#newSubAssetSerial').val().trim();
+            let desc = $('#newSubAssetDesc').val().trim();
+
+            if (!name) {
+                Swal.fire('แจ้งเตือน', 'กรุณาระบุชื่อทรัพย์สินย่อย', 'warning');
+                return;
+            }
+
+            $('#btnSaveSubAsset').prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> กำลังบันทึก...');
+
+            $.ajax({
+                url: "{% url 'assets_system:ajax_add_sub_asset' asset.id %}",
+                type: "POST",
+                data: JSON.stringify({
+                    name: name,
+                    serial_number: serial,
+                    description: desc
+                }),
+                contentType: "application/json",
+                headers: {
+                    'X-CSRFToken': '{{ csrf_token }}'
+                },
+                success: function(response) {
+                    $('#btnSaveSubAsset').prop('disabled', false).html('บันทึกข้อมูล');
+                    if (response.status === 'success') {
+                        $('#addSubAssetModal').modal('hide');
+                        Swal.fire({
+                            toast: true,
+                            position: 'top-end',
+                            icon: 'success',
+                            title: 'เพิ่มทรัพย์สินย่อยสำเร็จ',
+                            showConfirmButton: false,
+                            timer: 3000
+                        });
+                        // Add to dropdown and select it
+                        let newOption = new Option(response.sub_asset_name, response.sub_asset_id, true, true);
+                        $('select[name="sub_asset"]').append(newOption).trigger('change');
+                    } else {
+                        Swal.fire('ข้อผิดพลาด', response.message, 'error');
+                    }
+                },
+                error: function(xhr, status, error) {
+                    $('#btnSaveSubAsset').prop('disabled', false).html('บันทึกข้อมูล');
+                    Swal.fire('ข้อผิดพลาด', 'ไม่สามารถบันทึกข้อมูลได้', 'error');
+                }
+            });
+        });
+    });
+</script>
+{% endblock %}

@@ -193,12 +193,14 @@ def editUser(request,id):
     branches = Branch.objects.all()
     sub_branches = SubBranch.objects.filter(branch_id=userEdit.branch_id)
     positions = Position.objects.all()
+    departments = Department.objects.all()
 
     return render(request,"backend/editUser.html",{
         "userEdit":userEdit,
         'create_username':create_username,
         'form':form,'branches':branches,
         'sub_branches':sub_branches,
+        'departments':departments,
         'positions':positions})
 
 @login_required(login_url="member")
@@ -214,6 +216,7 @@ def updateUser(request,id):
         last_name = request.POST["last_name"]
         branch = request.POST.get("branch") or None
         sub_branch_id = request.POST.get("sub_branch")
+        department = request.POST.get("department") or None
         phone_number = request.POST["phone_number"]
         position = request.POST.get("position", "").strip()
         # permission = request.POST["permission"]
@@ -231,13 +234,11 @@ def updateUser(request,id):
                     user.sub_branch = None
             else:
                 user.sub_branch = None
+            user.department_id = department if department else None
             user.phone_number = phone_number
             user.position_id = position if position else None
-            # # กำหนดสิทธิ์ผู้ใช้ (is_staff) ตามค่า permission ที่ส่งมาจากฟอร์ม
-            # if permission == "1":  # ถ้า checkbox ถูกติ๊ก (permission ส่งค่าเป็น '1')
-            #     user.is_staff = True
-            # else:  # ถ้า checkbox ไม่ถูกติ๊ก
-            #     user.is_staff = False
+            user.is_staff = 1 if request.POST.get("is_staff") else 0
+            user.is_active = 1 if request.POST.get("is_active") else 0
             user.save()
             messages.info(request,"แก้ไขผู้ใช้เรียบร้อย")
             return redirect("editUser",id=id) #redirect กลับไปหน้า login

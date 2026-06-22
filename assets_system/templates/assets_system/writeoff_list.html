@@ -1,0 +1,146 @@
+{% extends 'backend/layout.html' %}
+
+{% block content %}
+<div class="d-sm-flex align-items-center justify-content-between mb-4">
+    <h1 class="h3 mb-0 text-gray-800">Write-off Requests</h1>
+</div>
+
+<div class="card shadow mb-4">
+    <div class="card-header py-3">
+        <h6 class="m-0 font-weight-bold text-primary">Write-off List</h6>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-bordered" width="100%" cellspacing="0">
+                <thead>
+                    <tr>
+                        <th>รหัสทรัพย์สิน</th>
+                        <th>ชื่อทรัพย์สิน</th>
+                        <th>วันที่แจ้ง</th>
+                        <th>ผู้แจ้ง (IT ประเมิน)</th>
+                        <th>เหตุผลที่ชำรุด</th>
+                        <th>Status</th>
+                        <th width="15%">Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in writeoffs %}
+                    <tr>
+                        <td>
+                            <a href="{% url 'assets_system:asset_detail' item.asset.id %}" class="font-weight-bold text-primary">{{ item.asset.asset_code }}</a>
+                        </td>
+                        <td>{{ item.asset.name }}</td>
+                        <td>{{ item.created_at|date:"d/m/Y H:i" }}</td>
+                        <td>{{ item.assessed_by.first_name|default:item.assessed_by.username|default:"-" }}</td>
+                        <td>{{ item.reason }}</td>
+                        <td>
+                            {% if item.status == 'pending_staff' %}
+                                <span class="badge badge-warning">Waiting Staff</span>
+                            {% elif item.status == 'pending_head' %}
+                                <span class="badge badge-warning">Waiting Head Approval</span>
+                            {% elif item.status == 'pending_accounting' %}
+                                <span class="badge badge-info">Waiting Accounting Approval</span>
+                            {% elif item.status == 'completed' %}
+                                <span class="badge badge-success">Completed</span>
+                            {% elif item.status == 'rejected' %}
+                                <span class="badge badge-danger">Rejected</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if item.status == 'pending_head' and request.user.position.name == 'ผู้จัดการ' or item.status == 'pending_head' and request.user.is_superuser %}
+                                <a href="{% url 'assets_system:approve_writeoff' item.id 'approve' %}" class="btn btn-sm btn-success mb-1 btn-approve"><i class="fas fa-check"></i> Approve</a>
+                                <a href="{% url 'assets_system:approve_writeoff' item.id 'reject' %}" class="btn btn-sm btn-danger mb-1 btn-reject"><i class="fas fa-times"></i> Reject</a>
+                            {% elif item.status == 'pending_accounting' and request.user.position.name == 'บัญชี' or item.status == 'pending_accounting' and request.user.is_superuser %}
+                                <a href="{% url 'assets_system:approve_writeoff' item.id 'approve' %}" class="btn btn-sm btn-success mb-1 btn-approve"><i class="fas fa-check"></i> Approve</a>
+                                <a href="{% url 'assets_system:approve_writeoff' item.id 'reject' %}" class="btn btn-sm btn-danger mb-1 btn-reject"><i class="fas fa-times"></i> Reject</a>
+                            {% else %}
+                                -
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="7" class="text-center">No write-off requests found</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+    $(document).ready(function () {
+        $('.btn-approve').on('click', function (e) {
+            e.preventDefault();
+            var url = $(this).attr('href');
+            
+            Swal.fire({
+                title: 'ยืนยันการอนุมัติ',
+                text: "คุณต้องการอนุมัติรายการนี้ใช่หรือไม่?",
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#1cc88a',
+                cancelButtonColor: '#858796',
+                confirmButtonText: 'อนุมัติ',
+                cancelButtonText: 'ยกเลิก'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    var form = $('<form action="' + url + '" method="post">' +
+                        '<input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">' +
+                        '</form>');
+                    $('body').append(form);
+                    
+                    Swal.fire({
+                        title: 'กำลังบันทึก...',
+                        allowOutsideClick: false,
+                        didOpen: () => { Swal.showLoading() }
+                    });
+                    
+                    form.submit();
+                }
+            });
+        });
+
+        $('.btn-reject').on('click', function (e) {
+            e.preventDefault();
+            var url = $(this).attr('href');
+            
+            Swal.fire({
+                title: 'ปฏิเสธรายการ',
+                text: "กรุณาระบุเหตุผลที่ไม่อนุมัติ",
+                input: 'textarea',
+                inputPlaceholder: 'พิมพ์เหตุผลที่นี่...',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#e74a3b',
+                cancelButtonColor: '#858796',
+                confirmButtonText: 'ปฏิเสธ',
+                cancelButtonText: 'ยกเลิก',
+                inputValidator: (value) => {
+                    if (!value) {
+                        return 'กรุณาระบุเหตุผล!';
+                    }
+                }
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    var form = $('<form action="' + url + '" method="post">' +
+                        '<input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">' +
+                        '<input type="hidden" name="reject_reason" value="' + result.value + '">' +
+                        '</form>');
+                    $('body').append(form);
+                    
+                    Swal.fire({
+                        title: 'กำลังบันทึก...',
+                        allowOutsideClick: false,
+                        didOpen: () => { Swal.showLoading() }
+                    });
+                    
+                    form.submit();
+                }
+            });
+        });
+    });
+</script>
+{% endblock %}
