@@ -1175,8 +1175,13 @@ def ajax_upload_asset_images(request, asset_id):
         asset = get_object_or_404(MasterAsset, pk=asset_id)
         
         # 1. Handle Cover Image
-        if 'cover_image' in request.FILES:
+        cover_img = None
+        if 'cover_image_camera' in request.FILES:
+            cover_img = request.FILES['cover_image_camera']
+        elif 'cover_image' in request.FILES:
             cover_img = request.FILES['cover_image']
+            
+        if cover_img:
             if cover_img.size > 5 * 1024 * 1024:
                 return JsonResponse({'status': 'error', 'message': 'รูปหน้าปกขนาดเกิน 5MB'}, status=400)
                 
@@ -1189,6 +1194,8 @@ def ajax_upload_asset_images(request, asset_id):
             
         # 2. Handle Additional Images
         additional_images = request.FILES.getlist('additional_images')
+        additional_images.extend(request.FILES.getlist('additional_images_camera'))
+        
         for img in additional_images:
             if img.size > 5 * 1024 * 1024:
                 return JsonResponse({'status': 'error', 'message': f'รูปภาพ {img.name} ขนาดเกิน 5MB'}, status=400)

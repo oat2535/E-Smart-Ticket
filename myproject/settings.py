@@ -31,6 +31,8 @@ SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-ukr!$@r8+widv(k9g(ud-
 # e.g., DEBUG=False in .env
 DEBUG = os.environ.get('DEBUG', 'True') == 'True'
 
+ALLOWED_HOSTS = ['*']
+
 # Application definition
 
 INSTALLED_APPS = [
@@ -136,7 +138,7 @@ CACHES = {
 }
 
 
-ALLOWED_HOSTS_ENV = os.environ.get('ALLOWED_HOSTS', 'e-smartticket-jv.thonglorpet.com,localhost,127.0.0.1, 172.18.100.251, 192.168.1.36, 172.18.101.25')
+ALLOWED_HOSTS_ENV = os.environ.get('ALLOWED_HOSTS', 'e-smartticket-jv.thonglorpet.com,localhost,127.0.0.1, 172.18.100.251, 192.168.1.36, 172.18.101.25, 172.18.101.185, *')
 ALLOWED_HOSTS = [host.strip() for host in ALLOWED_HOSTS_ENV.split(',')]
 
 # Password validation
@@ -231,7 +233,7 @@ CSRF_TRUSTED_ORIGINS = [
     'http://192.168.1.36:8004',
     'http://192.168.1.36:8552',
     'http://172.18.100.245:8080',
-    'http://172.18.100.245:9000',
+    'http://172.18.101.185:8006',
 ]
 
 # กำหนด engine สำหรับการเก็บ session
