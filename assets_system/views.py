@@ -734,10 +734,15 @@ def sync_ax_assets(request):
     if request.method == 'POST':
         try:
             data = json.loads(request.body)
+            raw_assets = data.get('assets', [])
+            
+            # เรียงลำดับจากวันที่ซื้อเก่าสุดไปใหม่สุด เพื่อให้รัน ID เริ่มจากตัวแรกเก่าสุด
+            raw_assets.sort(key=lambda x: str(x.get('purchase_date') or ''))
+            
             assets_to_create = []
             seen_in_sync = set()
             
-            for item in data.get('assets', []):
+            for item in raw_assets:
                 asset_code = item.get('asset_code')
                 if not asset_code:
                     continue
