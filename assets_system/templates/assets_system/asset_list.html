@@ -5,6 +5,7 @@
     <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
         <h6 class="m-0 font-weight-bold text-primary">Asset Management (ระบบจัดการทรัพย์สิน)</h6>
         <div>
+            {% if has_full_access %}
             <button class="btn btn-warning btn-sm mr-2" id="btnUpdateAx">
                 <i class="fas fa-sync"></i> อัพเดทข้อมูล Asset จาก AX
             </button>
@@ -14,9 +15,43 @@
             <button class="btn btn-info btn-sm" id="btnPrintQr" disabled>
                 <i class="fas fa-print"></i> ปริ้น QR/Barcode
             </button>
+            {% endif %}
         </div>
     </div>
     <div class="card-body">
+        {% if has_full_access %}
+        <form method="GET" class="mb-4">
+            <div class="row">
+                <div class="col-md-3">
+                    <label>หมวดหมู่</label>
+                    <select name="category" class="form-control" onchange="this.form.submit()">
+                        <option value="">-- ทุกหมวดหมู่ --</option>
+                        {% for unit in maintenance_units %}
+                            <option value="{{ unit }}" {% if selected_category == unit %}selected{% endif %}>{{ unit }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label>Site</label>
+                    <select name="site" id="filterSite" class="form-control">
+                        <option value="">-- ทุกไซต์ (All Sites) --</option>
+                        {% for s in sites %}
+                            <option value="{{ s.branch_id }}" {% if selected_site == s.branch_id %}selected{% endif %}>{{ s.branch_name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label>Branch</label>
+                    <select name="branch" id="filterBranch" class="form-control" onchange="this.form.submit()">
+                        <option value="">-- ทุกสาขา (All Branches) --</option>
+                    </select>
+                </div>
+                <div class="col-md-3 d-flex align-items-end">
+                    <a href="{% url 'assets_system:asset_list' %}" class="btn btn-secondary w-100"><i class="fas fa-sync"></i> ล้างตัวกรอง</a>
+                </div>
+            </div>
+        </form>
+        {% endif %}
         <div class="table-responsive">
             <table class="table table-bordered table-striped" id="assetTable" width="100%" cellspacing="0">
                 <thead>
@@ -24,6 +59,8 @@
                         <th width="5%" class="text-center"><input type="checkbox" id="selectAllAssets"></th>
                         <th>รหัสทรัพย์สิน (Asset Code)</th>
                         <th>ชื่อทรัพย์สิน</th>
+                        <th>บริษัท (Site)</th>
+                        <th>สาขา (Branch)</th>
                         <th>สถานะ</th>
                         <th>ผู้ถือครอง (Owner)</th>
                     </tr>
@@ -34,6 +71,8 @@
                         <td class="text-center"><input type="checkbox" class="asset-cb" value="{{ asset.id }}"></td>
                         <td><a href="{% url 'assets_system:asset_detail' asset.id %}" class="font-weight-bold text-primary">{{ asset.asset_code }}</a></td>
                         <td>{{ asset.name }}</td>
+                        <td>{{ asset.site_name|default:"-" }}</td>
+                        <td>{{ asset.sub_branch_name|default:"-" }}</td>
                         <td>
                             {% if asset.status == 'available' %}
                                 <span class="badge badge-success p-2" style="font-size: 13px;">{{ asset.get_status_display }}</span>
@@ -50,10 +89,6 @@
                             {% endif %}
                         </td>
                         <td>{{ asset.responsible_person|default:"-" }}</td>
-                    </tr>
-                    {% empty %}
-                    <tr>
-                        <td colspan="5" class="text-center">ไม่พบข้อมูลทรัพย์สิน</td>
                     </tr>
                     {% endfor %}
                 </tbody>
@@ -73,11 +108,30 @@
                 </button>
             </div>
             <div class="modal-body">
-                <div class="d-flex justify-content-between mb-3">
-                    <p class="mb-0">คลิกที่ปุ่ม <strong>"ดึงข้อมูล"</strong> เพื่อดึงรายการ Asset ใหม่จากระบบ AX</p>
-                    <button class="btn btn-primary" id="btnLoadAxData">
-                        <i class="fas fa-sync-alt"></i> ดึงข้อมูล
-                    </button>
+                <div class="row mb-3">
+                    <div class="col-md-4">
+                        <label>Site</label>
+                        <select class="form-control" id="syncSite">
+                            <option value="">-- ทุกไซต์ (All Sites) --</option>
+                            <option value="eatl">eatl (EA)</option>
+                            <option value="tltp">tltp (TP)</option>
+                            <option value="pptl">pptl (PP)</option>
+                            <option value="moya">moya (MY)</option>
+                            <option value="kstl">kstl (KS)</option>
+                            <option value="sitl">sitl (SI)</option>
+                            <option value="astl">astl (AS)</option>
+                            <option value="tutl">tutl (TT)</option>
+                        </select>
+                    </div>
+                    <div class="col-md-8 d-flex align-items-end justify-content-end">
+                        <button class="btn btn-primary" id="btnLoadAxData">
+                            <i class="fas fa-sync-alt"></i> ดึงข้อมูล
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="mb-3">
+                    <p class="mb-0 text-muted">เลือก Site ที่ต้องการดึงข้อมูล แล้วคลิกที่ปุ่ม "ดึงข้อมูล" เพื่อดึงรายการ Asset ใหม่จากระบบ AX</p>
                 </div>
                 
                 <div id="loadingSpinner" class="text-center my-5" style="display: none;">
@@ -241,6 +295,7 @@
         });
 
         $('#btnLoadAxData').on('click', function() {
+            let site = $('#syncSite').val();
             $('#btnLoadAxData').prop('disabled', true);
             $('#loadingSpinner').show();
             $('#axDataTableContainer').hide();
@@ -248,6 +303,9 @@
             $.ajax({
                 url: "{% url 'assets_system:fetch_ax_assets' %}",
                 type: "GET",
+                data: {
+                    site: site
+                },
                 success: function(response) {
                     $('#loadingSpinner').hide();
                     $('#btnLoadAxData').prop('disabled', false);
@@ -283,7 +341,8 @@
                         $('#axDataTable').DataTable({
                             pageLength: 10,
                             lengthMenu: [[10, 25, 50, -1], [10, 25, 50, "All"]],
-                            destroy: true
+                            destroy: true,
+                            order: []
                         });
                     } else {
                         Swal.fire('ข้อผิดพลาด', response.message, 'error');
@@ -600,6 +659,36 @@
                     }
                 });
             }
+        });
+
+        // Dependent dropdown logic for Site -> Branch
+        var siteBranchMap = JSON.parse('{{ site_branch_map|safe|escapejs }}');
+        var selectedSite = '{{ selected_site|default:"" }}';
+        var selectedBranch = '{{ selected_branch|default:"" }}';
+        var filterBranchSelect = $('#filterBranch');
+
+        function populateBranches(siteId) {
+            filterBranchSelect.empty();
+            filterBranchSelect.append('<option value="">-- ทุกสาขา (All Branches) --</option>');
+            
+            if (siteId && siteBranchMap[siteId]) {
+                siteBranchMap[siteId].forEach(function(branch) {
+                    var option = $('<option></option>').val(branch.id).text(branch.name);
+                    if (branch.id === selectedBranch) {
+                        option.prop('selected', true);
+                    }
+                    filterBranchSelect.append(option);
+                });
+            }
+        }
+
+        if (selectedSite) {
+            populateBranches(selectedSite);
+        }
+
+        $('#filterSite').on('change', function() {
+            $('#filterBranch').val('');
+            $(this).closest('form').submit();
         });
     });
 </script>

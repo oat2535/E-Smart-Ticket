@@ -3,8 +3,9 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.http import JsonResponse
 from django.views.decorators.http import require_POST
+from django.db.models import Q
 from sub_branch.models import SubBranch
-from .models import MasterAsset, SubAsset, AssetTransfer, MaintenanceRecord, AssetWriteOff, AssetDisposal, DisposalImage, AssetInventory, AssetImage
+from .models import MasterAsset, SubAsset, AssetTransfer, MaintenanceRecord, MaintenanceImage, AssetWriteOff, AssetDisposal, DisposalImage, AssetInventory, AssetImage
 from .forms import AssetTransferForm, MaintenanceRecordForm, AssetWriteOffForm, AssetDisposalForm, DisposalImageForm, AssetInventoryForm
 import qrcode
 import os
@@ -15,8 +16,100 @@ import json
 
 @login_required
 def asset_list(request):
+    # Check user department for access control
+    user_dept = getattr(request.user.department, 'department_name', '')
+    allowed_depts = [
+        'แผนกไอที', 
+        'แผนกบัญชี', 
+        'แผนกจัดซื้อ', 
+        'แผนกจัดซ์้อ', 
+        'แผนกบริหารจัดการอาคาร', 
+        'แผนกเครื่องมือแพทย์'
+    ]
+    has_full_access = request.user.is_superuser or user_dept in allowed_depts
+
+    # Fetch parameters
+    category = request.GET.get('category')
+    site = request.GET.get('site')
+    branch = request.GET.get('branch')
+    
     assets = MasterAsset.objects.all().order_by('-id')
-    return render(request, 'assets_system/asset_list.html', {'assets': assets})
+    
+    # Filter by user's branch for non-authorized departments
+    if not has_full_access:
+        user_sub_branch_id = getattr(request.user.sub_branch, 'sub_branch_id', None)
+        user_branch_id = getattr(request.user.branch, 'branch_id', None)
+        
+        allowed_branches = []
+        if user_sub_branch_id:
+            allowed_branches.append(user_sub_branch_id)
+        elif user_branch_id:
+            subs = list(SubBranch.objects.filter(branch_id=user_branch_id).values_list('sub_branch_id', flat=True))
+            allowed_branches.extend(subs)
+            allowed_branches.append(user_branch_id)
+            
+        if allowed_branches:
+            assets = assets.filter(branch__in=allowed_branches)
+        else:
+            assets = assets.none()
+    
+    if category:
+        assets = assets.filter(maintenance_unit=category)
+        
+    if branch:
+        assets = assets.filter(branch=branch)
+    elif site:
+        sub_branches = list(SubBranch.objects.filter(branch_id=site).values_list('sub_branch_id', flat=True))
+        sub_branches.append(site)
+        assets = assets.filter(branch__in=sub_branches)
+        
+    maintenance_units = MasterAsset.objects.exclude(maintenance_unit__isnull=True).exclude(maintenance_unit='').values_list('maintenance_unit', flat=True).distinct().order_by('maintenance_unit')
+    
+    from branch.models import Branch
+    sites = Branch.objects.all().order_by('branch_name')
+    all_sub_branches = SubBranch.objects.all()
+    
+    site_branch_map = {}
+    sub_branch_dict = {}
+    sub_branch_to_site_dict = {}
+    branch_dict = {b.branch_id: b.branch_name for b in sites}
+    
+    for sb in all_sub_branches:
+        sub_branch_dict[sb.sub_branch_id] = sb.sub_branch_name
+        if sb.branch_id_id:
+            sub_branch_to_site_dict[sb.sub_branch_id] = branch_dict.get(sb.branch_id_id, '')
+            
+            if sb.branch_id_id not in site_branch_map:
+                site_branch_map[sb.branch_id_id] = []
+            site_branch_map[sb.branch_id_id].append({
+                'id': sb.sub_branch_id,
+                'name': sb.sub_branch_name
+            })
+
+    # Attach dynamic names to assets
+    for asset in assets:
+        if asset.branch in sub_branch_to_site_dict:
+            asset.site_name = sub_branch_to_site_dict[asset.branch]
+        elif asset.branch in branch_dict:
+            asset.site_name = branch_dict[asset.branch]
+        else:
+            asset.site_name = asset.company
+            
+        asset.sub_branch_name = sub_branch_dict.get(asset.branch, '')
+
+
+
+    context = {
+        'assets': assets,
+        'maintenance_units': maintenance_units,
+        'sites': sites,
+        'site_branch_map': json.dumps(site_branch_map),
+        'selected_category': category,
+        'selected_site': site,
+        'selected_branch': branch,
+        'has_full_access': has_full_access,
+    }
+    return render(request, 'assets_system/asset_list.html', context)
 
 @login_required
 def asset_detail(request, asset_id):
@@ -35,8 +128,21 @@ def asset_detail(request, asset_id):
     img.save(buffer, format="PNG")
     qr_code_img = base64.b64encode(buffer.getvalue()).decode()
 
+    # Check user department for access control
+    user_dept = getattr(request.user.department, 'department_name', '')
+    allowed_depts = [
+        'แผนกไอที', 
+        'แผนกบัญชี', 
+        'แผนกจัดซื้อ', 
+        'แผนกจัดซ์้อ', 
+        'แผนกบริหารจัดการอาคาร', 
+        'แผนกเครื่องมือแพทย์'
+    ]
+    has_full_access = request.user.is_superuser or user_dept in allowed_depts
+
     context = {
         'asset': asset,
+        'has_full_access': has_full_access,
         'qr_code': qr_code_img,
         'latest_audit': asset.inventories.order_by('scanned_at').last(),
     }
@@ -241,18 +347,37 @@ def request_disposal(request, asset_id):
 @login_required
 def request_maintenance(request, asset_id):
     asset = get_object_or_404(MasterAsset, pk=asset_id)
+    
+    from case.models import Case
+    past_cases = Case.objects.filter(fa_number=asset.asset_code).order_by('-date_created')
+    
     if request.method == 'POST':
         form = MaintenanceRecordForm(request.POST)
         if form.is_valid():
             maintenance = form.save(commit=False)
             maintenance.asset = asset
             maintenance.reported_by = request.user
+            
+            service_job = request.POST.get('service_job')
+            if service_job:
+                maintenance.service_job = service_job
+            
+            # Handle cost
+            cost = request.POST.get('cost')
+            if cost:
+                maintenance.cost = cost
+                
             maintenance.save()
+            
+            # Handle files
+            for f in request.FILES.getlist('images'):
+                MaintenanceImage.objects.create(maintenance=maintenance, image=f)
+                
             return redirect('assets_system:maintenance_list')
     else:
         form = MaintenanceRecordForm()
         form.fields['sub_asset'].queryset = SubAsset.objects.filter(master_asset=asset)
-    return render(request, 'assets_system/maintenance_form.html', {'form': form, 'asset': asset})
+    return render(request, 'assets_system/maintenance_form.html', {'form': form, 'asset': asset, 'past_cases': past_cases})
 
 @login_required
 def scan_qr(request, asset_id):
@@ -449,6 +574,8 @@ def approve_disposal(request, disposal_id, action):
 @login_required
 def fetch_ax_assets(request):
     try:
+        site = request.GET.get('site')
+        
         conn = pymssql.connect(
             server='173.16.200.32',
             user='FA_report',
@@ -526,12 +653,23 @@ def fetch_ax_assets(request):
         LEFT JOIN ASSETGROUP ON ASSETGROUP.GROUPID = ASSETTABLE.ASSETGROUP AND ASSETGROUP.DATAAREAID = ASSETTABLE.DATAAREAID
         LEFT JOIN ASSETLOCATION ON ASSETLOCATION.LOCATION = ASSETTABLE.LOCATION AND ASSETLOCATION.DATAAREAID = ASSETTABLE.DATAAREAID
         LEFT JOIN ASSETBOOK ON ASSETTABLE.ASSETID = ASSETBOOK.ASSETID AND ASSETBOOK.DATAAREAID = ASSETTABLE.DATAAREAID
-        WHERE ASSETTABLE.CREATEDDATETIME >= '2026-05-01'
-        AND ASSETTABLE.DATAAREAID NOT LIKE 'tlp%'
-        ORDER BY ASSETTABLE.CREATEDDATETIME, ASSETTABLE.ASSETID
+        -- WHERE ASSETTABLE.CREATEDDATETIME >= '2026-05-01'
+        WHERE ASSETTABLE.DATAAREAID NOT LIKE 'tlp%'
+        AND ASSETTABLE.NAME NOT LIKE '%ยกเลิก%'
         """
         
-        cursor.execute(query)
+        params = []
+        if site:
+            query += " AND ASSETTABLE.DATAAREAID = %s "
+            params.append(site)
+            
+        query += " ORDER BY ASSETTABLE.CREATEDDATETIME DESC, ASSETTABLE.ASSETID "
+        
+        if params:
+            cursor.execute(query, tuple(params))
+        else:
+            cursor.execute(query)
+            
         rows = cursor.fetchall()
         conn.close()
 
@@ -577,6 +715,19 @@ def fetch_ax_assets(request):
 
     except Exception as e:
         return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
+
+@login_required
+def search_assets_ajax(request):
+    q = request.GET.get('q', '')
+    if q:
+        # Search by asset_code or name
+        assets = MasterAsset.objects.filter(
+            Q(asset_code__icontains=q) | Q(name__icontains=q)
+        )[:50]  # Limit to 50 results
+        results = [{'id': asset.asset_code, 'text': f"{asset.asset_code} - {asset.name}"} for asset in assets]
+    else:
+        results = []
+    return JsonResponse(results, safe=False)
 
 @login_required
 def sync_ax_assets(request):

@@ -433,8 +433,53 @@
             <div class="form-row">
                 <div class="form-group col-md-12">
                     <label class="font-weight-bold">
+                        FA Number (รหัสทรัพย์สิน)
+                    </label>
+                    <select id="fa_number" name="fa_number" class="form-control" {% if user.is_staff == 0 or caseEdit.status_id == 5 %}disabled{% endif %}>
+                        {% if caseEdit.fa_number %}
+                            <option value="{{ caseEdit.fa_number }}" selected>{{ caseEdit.fa_number }}</option>
+                        {% endif %}
+                    </select>
+                    {% if caseEdit.status_id == 5 or user.is_staff == 0 %}
+                        {% if caseEdit.fa_number %}
+                        <input type="hidden" name="fa_number" value="{{caseEdit.fa_number}}">
+                        {% endif %}
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group col-md-12">
+                    <label class="font-weight-bold">
                         Edit details <span class="text-danger">*</span>
                     </label>
+                    
+                    <!-- Select2 script for FA Number -->
+                    <script>
+                    $(document).ready(function() {
+                        $('#fa_number').select2({
+                            theme: 'bootstrap4',
+                            placeholder: 'ค้นหารหัส FA',
+                            allowClear: true,
+                            ajax: {
+                                url: "{% url 'assets_system:search_assets_ajax' %}",
+                                dataType: 'json',
+                                delay: 250,
+                                data: function (params) {
+                                    return {
+                                        q: params.term
+                                    };
+                                },
+                                processResults: function (data) {
+                                    return {
+                                        results: data
+                                    };
+                                },
+                                cache: true
+                            }
+                        });
+                    });
+                    </script>
                     {% if user.is_staff == 0 or caseEdit.status_id == 5 %}
                     <textarea type="text" name="update_note" rows="5" class="form-control"
                         disabled>{{caseEdit.update_note}}</textarea>

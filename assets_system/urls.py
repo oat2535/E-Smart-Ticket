@@ -37,4 +37,5 @@ urlpatterns = [
     path('ajax/add-sub-asset/<int:asset_id>/', views.ajax_add_sub_asset, name='ajax_add_sub_asset'),
     path('ajax/upload-asset-images/<int:asset_id>/', views.ajax_upload_asset_images, name='ajax_upload_asset_images'),
     path('ajax/delete-asset-images/', views.ajax_delete_additional_images, name='ajax_delete_additional_images'),
+    path('ajax/search-assets/', views.search_assets_ajax, name='search_assets_ajax'),
 ]

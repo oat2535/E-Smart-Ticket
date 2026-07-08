@@ -111,9 +111,15 @@ class MaintenanceRecord(models.Model):
     ]
     status = models.CharField(max_length=50, choices=STATUS_CHOICES, default='pending_it_approval')
     cost = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    service_job = models.CharField(max_length=50, null=True, blank=True, verbose_name="Service Job (Ticket)")
     
     created_at = models.DateTimeField(auto_now_add=True)
     completed_at = models.DateTimeField(null=True, blank=True)
+
+class MaintenanceImage(models.Model):
+    maintenance = models.ForeignKey(MaintenanceRecord, on_delete=models.CASCADE, related_name='images')
+    image = models.FileField(upload_to='maintenance_images/')
+    created_at = models.DateTimeField(auto_now_add=True)
 
 class AssetWriteOff(models.Model):
     asset = models.ForeignKey(MasterAsset, on_delete=models.CASCADE, related_name='write_offs')
@@ -170,7 +176,8 @@ class AssetInventory(models.Model):
     scanned_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True)
     STATUS_CHOICES = [
         ('normal', 'ปกติ (Normal)'),
-        ('damaged', 'ชำรุด (Damaged)'),
+        ('damaged_repairable', 'ชำรุด-ซ่อมได้ (Damaged - Repairable)'),
+        ('damaged_unrepairable', 'ชำรุด-ซ่อมไม่ได้ (Damaged - Unrepairable)'),
         ('missing', 'สูญหาย (Missing)'),
     ]
     asset_status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='normal', verbose_name='สภาพทรัพย์สิน')

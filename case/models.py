@@ -55,6 +55,7 @@ class Case(models.Model):
     cancel_date = models.DateTimeField(null=True, blank=True, default=None)
     cancel_name = models.CharField(max_length=255,blank=True)
     product_receive_date = models.DateTimeField(null=True, blank=True, default=None)
+    fa_number = models.CharField(max_length=50, null=True, blank=True, verbose_name='เลข FA')
 
     class Meta:
         db_table = "case_list"  # กำหนดชื่อ table ในฐานข้อมูล

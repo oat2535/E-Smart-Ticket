@@ -368,6 +368,7 @@ def updateData(request,id):
             score = request.POST.get("score",0)
             feedback = request.POST.get("feedback")
             product_receive_date = request.POST.get('product_receive_date')
+            fa_number = request.POST.get("fa_number", "")
             assign_name_input = request.POST.get("assign_name", "")  # จาก dropdown
             login_user = Members.objects.get(username=modify_username)  # user login
 
@@ -423,6 +424,7 @@ def updateData(request,id):
             case.subject_detail = subject_detail
             case.email = email
             case.case_detail = case_detail
+            case.fa_number = fa_number
             case.modify_username = modify_username
             case.modify_date = timezone.now().replace(microsecond=0)
 

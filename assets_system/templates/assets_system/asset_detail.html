@@ -6,9 +6,11 @@
         <h6 class="m-0 font-weight-bold text-primary">รายละเอียดทรัพย์สิน: {{ asset.name }}</h6>
         {% if not request.GET.iframe %}
         <div>
+            {% if has_full_access %}
             <button class="btn btn-warning btn-sm mr-2" id="btnSyncSingleAx" data-id="{{ asset.id }}">
                 <i class="fas fa-sync"></i> อัพเดทข้อมูลจาก AX
             </button>
+            {% endif %}
             <a href="{% url 'assets_system:asset_list' %}" class="btn btn-secondary btn-sm">กลับหน้ารายการ</a>
         </div>
         {% endif %}
@@ -74,7 +76,7 @@
                         <i class="fas fa-exchange-alt"></i> โอนย้าย
                     </a>
                     <a href="{% url 'assets_system:request_maintenance' asset.id %}{% if request.GET.iframe %}?iframe=1{% endif %}" class="btn btn-warning btn-sm">
-                        <i class="fas fa-tools"></i> แจ้งซ่อม
+                        <i class="fas fa-tools"></i> Log PM
                     </a>
                     
                     {% if request.user.department.department_id == 'IT' or request.user.department.department_id == 'MED' or request.user.department.department_id == 'FM' %}
@@ -232,6 +234,8 @@
                             <th>ผู้แจ้ง</th>
                             <th>ทรัพย์สินย่อย</th>
                             <th>ปัญหา</th>
+                            <th>ค่าซ่อม</th>
+                            <th>รูปภาพ</th>
                             <th>สถานะ</th>
                         </tr>
                     </thead>
@@ -242,11 +246,38 @@
                             <td>{{ m.reported_by.first_name|default:"-" }}</td>
                             <td>{{ m.sub_asset.name|default:"-" }}</td>
                             <td>{{ m.issue_description }}</td>
+                            <td>{{ m.cost|default:"-" }}</td>
+                            <td>
+                                {% if m.images.exists %}
+                                    {% with first_img=m.images.first %}
+                                        <a data-fancybox="maintenance-{{ m.id }}" 
+                                           href="{{ first_img.image.url }}" 
+                                           class="btn btn-sm btn-info text-white"
+                                           {% if first_img.image.url|lower|slice:"-4:" == '.pdf' %}data-type="pdf"{% endif %}
+                                        >
+                                            ดูรูป
+                                        </a>
+                                        
+                                        <div style="display: none;">
+                                            {% for img in m.images.all %}
+                                                {% if not forloop.first %}
+                                                    <a data-fancybox="maintenance-{{ m.id }}" 
+                                                       href="{{ img.image.url }}"
+                                                       {% if img.image.url|lower|slice:"-4:" == '.pdf' %}data-type="pdf"{% endif %}
+                                                    ></a>
+                                                {% endif %}
+                                            {% endfor %}
+                                        </div>
+                                    {% endwith %}
+                                {% else %}
+                                    -
+                                {% endif %}
+                            </td>
                             <td>{{ m.get_status_display }}</td>
                         </tr>
                         {% empty %}
                         <tr>
-                            <td colspan="5" class="text-center">ไม่มีประวัติการซ่อม</td>
+                            <td colspan="7" class="text-center">ไม่มีประวัติการซ่อม</td>
                         </tr>
                         {% endfor %}
                     </tbody>
@@ -302,7 +333,8 @@
                         <label>สภาพทรัพย์สิน</label>
                         <select name="asset_status" class="form-control" required>
                             <option value="normal">ปกติ (Normal)</option>
-                            <option value="damaged">ชำรุด (Damaged)</option>
+                            <option value="damaged_repairable">ชำรุด-ซ่อมได้ (Damaged - Repairable)</option>
+                            <option value="damaged_unrepairable">ชำรุด-ซ่อมไม่ได้ (Damaged - Unrepairable)</option>
                             <option value="missing">สูญหาย (Missing)</option>
                         </select>
                     </div>
