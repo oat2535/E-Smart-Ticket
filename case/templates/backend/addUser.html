@@ -128,6 +128,150 @@
                 </div>   
             </div>
 
+            <h6 class="font-weight-bold text-primary mt-3 mb-3 border-bottom pb-2">5. Module Permissions</h6>
+            <div class="row mb-4">
+                <!-- Request Group -->
+                <div class="col-md-3 mb-3">
+                    <div class="card h-100">
+                        <div class="card-header bg-light font-weight-bold d-flex justify-content-between align-items-center">
+                            Request Group
+                            <input type="checkbox" class="select-all-module" title="Select All">
+                        </div>
+                        <div class="card-body">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="module_permissions" value="request_group:it" id="perm_request_group_it">
+                                <label class="form-check-label" for="perm_request_group_it">IT</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="module_permissions" value="request_group:purchasing" id="perm_request_group_pur">
+                                <label class="form-check-label" for="perm_request_group_pur">Purchasing</label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Users Management -->
+                <div class="col-md-3 mb-3">
+                    <div class="card h-100">
+                        <div class="card-header bg-light font-weight-bold d-flex justify-content-between align-items-center">
+                            Users
+                            <input type="checkbox" class="select-all-module" title="Select All">
+                        </div>
+                        <div class="card-body">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="module_permissions" value="users:management" id="perm_users_management">
+                                <label class="form-check-label" for="perm_users_management">Users Management</label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Report -->
+                <div class="col-md-3 mb-3">
+                    <div class="card h-100">
+                        <div class="card-header bg-light font-weight-bold d-flex justify-content-between align-items-center">
+                            Report
+                            <input type="checkbox" class="select-all-module" title="Select All">
+                        </div>
+                        <div class="card-body">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="module_permissions" value="report:service_request" id="perm_report_sr">
+                                <label class="form-check-label" for="perm_report_sr">Report Service Request</label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Equipment System -->
+                <div class="col-md-3 mb-3">
+                    <div class="card h-100">
+                        <div class="card-header bg-light font-weight-bold d-flex justify-content-between align-items-center">
+                            Equipment System
+                            <input type="checkbox" class="select-all-module" title="Select All">
+                        </div>
+                        <div class="card-body">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="module_permissions" value="equipment:dashboard" id="perm_eq_dash">
+                                <label class="form-check-label" for="perm_eq_dash">Dashboard</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="module_permissions" value="equipment:list" id="perm_eq_list">
+                                <label class="form-check-label" for="perm_eq_list">Equipment List</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="module_permissions" value="equipment:my_requests" id="perm_eq_myreq">
+                                <label class="form-check-label" for="perm_eq_myreq">My Requests</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="module_permissions" value="equipment:manage_requests" id="perm_eq_mngreq">
+                                <label class="form-check-label" for="perm_eq_mngreq">Manage Requests</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="module_permissions" value="equipment:report" id="perm_eq_rep">
+                                <label class="form-check-label" for="perm_eq_rep">Equipment Report</label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- User Access System -->
+                <div class="col-md-3 mb-3">
+                    <div class="card h-100">
+                        <div class="card-header bg-light font-weight-bold d-flex justify-content-between align-items-center">
+                            User Access System
+                            <input type="checkbox" class="select-all-module" title="Select All">
+                        </div>
+                        <div class="card-body">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="module_permissions" value="access_requests:dashboard" id="perm_acc_dash">
+                                <label class="form-check-label" for="perm_acc_dash">Dashboard</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="module_permissions" value="access_requests:new_request" id="perm_acc_new">
+                                <label class="form-check-label" for="perm_acc_new">New Request</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="module_permissions" value="access_requests:approvals" id="perm_acc_app">
+                                <label class="form-check-label" for="perm_acc_app">Approvals</label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Assets System -->
+                <div class="col-md-3 mb-3">
+                    <div class="card h-100">
+                        <div class="card-header bg-light font-weight-bold d-flex justify-content-between align-items-center">
+                            Assets System
+                            <input type="checkbox" class="select-all-module" title="Select All">
+                        </div>
+                        <div class="card-body">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="module_permissions" value="assets_system:asset_list" id="perm_ast_list">
+                                <label class="form-check-label" for="perm_ast_list">Asset List</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="module_permissions" value="assets_system:transfers" id="perm_ast_trans">
+                                <label class="form-check-label" for="perm_ast_trans">Transfers</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="module_permissions" value="assets_system:maintenance" id="perm_ast_maint">
+                                <label class="form-check-label" for="perm_ast_maint">Maintenance</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="module_permissions" value="assets_system:writeoff" id="perm_ast_wo">
+                                <label class="form-check-label" for="perm_ast_wo">Write-off</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="module_permissions" value="assets_system:disposal" id="perm_ast_disp">
+                                <label class="form-check-label" for="perm_ast_disp">Disposal</label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
             <!-- เปลี่ยน Branch ตาม Company ที่เลือก -->
             <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
             <script>
@@ -161,6 +305,33 @@
                             }
 
                         });
+                    });
+
+                    // Select All Module Permissions Logic
+                    $('.select-all-module').on('change', function() {
+                        var isChecked = $(this).is(':checked');
+                        $(this).closest('.card').find('.card-body input[type="checkbox"]').prop('checked', isChecked);
+                    });
+
+                    $('.card-body input[type="checkbox"]').on('change', function() {
+                        var card = $(this).closest('.card');
+                        var totalCheckboxes = card.find('.card-body input[type="checkbox"]').length;
+                        var checkedCheckboxes = card.find('.card-body input[type="checkbox"]:checked').length;
+                        
+                        if (totalCheckboxes === checkedCheckboxes && totalCheckboxes > 0) {
+                            card.find('.select-all-module').prop('checked', true);
+                        } else {
+                            card.find('.select-all-module').prop('checked', false);
+                        }
+                    });
+
+                    // Initialize
+                    $('.card').each(function() {
+                        var totalCheckboxes = $(this).find('.card-body input[type="checkbox"]').length;
+                        if (totalCheckboxes > 0) {
+                            var checkedCheckboxes = $(this).find('.card-body input[type="checkbox"]:checked').length;
+                            $(this).find('.select-all-module').prop('checked', (totalCheckboxes === checkedCheckboxes));
+                        }
                     });
                 });
             </script>

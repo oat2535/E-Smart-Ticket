@@ -208,6 +208,7 @@
             </div>
 
             <!-- Nav Item - Request Group -->
+            {% if request.user.module_permissions.request_group.it or request.user.module_permissions.request_group.purchasing or request.user.username == 'admin' %}
             <li class="nav-item {% if '/displayForm' in request.path %}active{% endif %}">
                 <a class="nav-link {% if '/displayForm' not in request.path %}collapsed{% endif %}" href="#" data-toggle="collapse" data-target="#collapseRequest"
                     aria-expanded="{% if '/displayForm' in request.path %}true{% else %}false{% endif %}" aria-controls="collapseRequest">
@@ -217,14 +218,19 @@
                 <div id="collapseRequest" class="collapse {% if '/displayForm' in request.path %}show{% endif %}" aria-labelledby="headingTwo" data-parent="#accordionSidebar">
                     <div class="bg-white py-2 collapse-inner rounded">
                         <h6 class="collapse-header">Departments:</h6>
+                        {% if request.user.module_permissions.request_group.it or request.user.username == 'admin' %}
                         <a class="collapse-item {% if 'department_id=IT' in request.get_full_path %}active{% endif %}" href="{% url 'displayForm' %}?department_id=IT"><i class="fas fa-laptop mr-2"></i> IT</a>
+                        {% endif %}
+                        {% if request.user.module_permissions.request_group.purchasing or request.user.username == 'admin' %}
                         <a class="collapse-item {% if 'department_id=PUR' in request.get_full_path %}active{% endif %}" href="{% url 'displayForm' %}?department_id=PUR"><i class="fab fa-product-hunt mr-2"></i> Purchasing</a>
+                        {% endif %}
                         <!-- <a class="collapse-item" href="{% url 'displayForm' %}?department_id=FIN"> Accounting </a> -->
                     </div>
                 </div>
             </li>
+            {% endif %}
 
-            {% if request.user.is_staff == 1 and request.user.department_id == "IT" or request.user.username == "admin" %}
+            {% if request.user.module_permissions.users.management or request.user.username == "admin" %}
             <!-- Nav Item - Users -->
             <li class="nav-item {% if '/user' in request.path %}active{% endif %}">
                 <a class="nav-link {% if '/user' not in request.path %}collapsed{% endif %}" href="#" data-toggle="collapse" data-target="#collapseUsers"
@@ -236,13 +242,16 @@
                     data-parent="#accordionSidebar">
                     <div class="bg-white py-2 collapse-inner rounded">
                         <h6 class="collapse-header">Management:</h6>
+                        {% if request.user.module_permissions.users.management or request.user.username == 'admin' %}
                         <a class="collapse-item {% if '/displayUser' in request.path %}active{% endif %}" href="{% url 'displayUser' %}"><i class="fas fa-users mr-2"></i> Users Management</a>
+                        {% endif %}
                     </div>
                 </div>
             </li>
             {% endif %}
 
             <!-- Nav Item - Report -->
+            {% if request.user.module_permissions.report.service_request or request.user.username == 'admin' %}
             <li class="nav-item {% if '/report' in request.path and '/equipment' not in request.path %}active{% endif %}">
                 <a class="nav-link {% if '/report' not in request.path or '/equipment' in request.path %}collapsed{% endif %}" href="#" data-toggle="collapse" data-target="#collapseReport"
                     aria-expanded="{% if '/report' in request.path and '/equipment' not in request.path %}true{% else %}false{% endif %}" aria-controls="collapseReport">
@@ -252,12 +261,16 @@
                 <div id="collapseReport" class="collapse {% if '/report' in request.path and '/equipment' not in request.path %}show{% endif %}" aria-labelledby="headingPages" data-parent="#accordionSidebar">
                     <div class="bg-white py-2 collapse-inner rounded">
                         <h6 class="collapse-header">Reports:</h6>
+                        {% if request.user.module_permissions.report.service_request or request.user.username == 'admin' %}
                         <a class="collapse-item {% if '/report' in request.path %}active{% endif %}" href="{% url 'reportCase' %}">Report service request</a>
+                        {% endif %}
                     </div>
                 </div>
             </li>
+            {% endif %}
 
             <!-- Nav Item - Equipment -->
+            {% if request.user.module_permissions.equipment.dashboard or request.user.module_permissions.equipment.list or request.user.module_permissions.equipment.my_requests or request.user.module_permissions.equipment.manage_requests or request.user.module_permissions.equipment.report or request.user.username == 'admin' %}
             <li class="nav-item {% if '/equipment' in request.path %}active{% endif %}">
                 <a class="nav-link {% if '/equipment' not in request.path %}collapsed{% endif %}" href="#" data-toggle="collapse" data-target="#collapseEquipment"
                     aria-expanded="{% if '/equipment' in request.path %}true{% else %}false{% endif %}" aria-controls="collapseEquipment">
@@ -267,18 +280,28 @@
                 <div id="collapseEquipment" class="collapse {% if '/equipment' in request.path %}show{% endif %}" aria-labelledby="headingEquipment" data-parent="#accordionSidebar">
                     <div class="bg-white py-2 collapse-inner rounded">
                         <h6 class="collapse-header">Equipment:</h6>
+                        {% if request.user.module_permissions.equipment.dashboard or request.user.username == 'admin' %}
                         <a class="collapse-item {% if request.path == '/equipment/' %}active{% endif %}" href="{% url 'dashboard' %}"><i class="fas fa-tachometer-alt mr-2"></i> Dashboard</a>
+                        {% endif %}
+                        {% if request.user.module_permissions.equipment.list or request.user.username == 'admin' %}
                         <a class="collapse-item {% if '/equipment/equipment' in request.path %}active{% endif %}" href="{% url 'equipment_list' %}"><i class="fas fa-boxes mr-2"></i> Equipment List</a>
+                        {% endif %}
+                        {% if request.user.module_permissions.equipment.my_requests or request.user.username == 'admin' %}
                         <a class="collapse-item {% if '/equipment/my-requests' in request.path %}active{% endif %}" href="{% url 'my_requests' %}"><i class="fas fa-clipboard-list mr-2"></i> My Requests</a>
-                        {% if request.user.is_staff == 1 or request.user.is_superuser == 1 or request.user.username == "admin" %}
+                        {% endif %}
+                        {% if request.user.module_permissions.equipment.manage_requests or request.user.username == "admin" %}
                         <a class="collapse-item {% if '/equipment/manage-requests' in request.path %}active{% endif %}" href="{% url 'manage_requests' %}"><i class="fas fa-tasks mr-2"></i> Manage Requests</a>
+                        {% endif %}
+                        {% if request.user.module_permissions.equipment.report or request.user.username == "admin" %}
                         <a class="collapse-item {% if '/equipment/report' in request.path %}active{% endif %}" href="{% url 'request_report' %}"><i class="fas fa-chart-bar mr-2"></i> Equipment Report</a>
                         {% endif %}
                     </div>
                 </div>
             </li>
+            {% endif %}
 
             <!-- Nav Item - Access Requests -->
+            {% if request.user.module_permissions.access_requests.dashboard or request.user.module_permissions.access_requests.new_request or request.user.module_permissions.access_requests.approvals or request.user.username == 'admin' %}
             <li class="nav-item {% if '/access-requests' in request.path %}active{% endif %}">
                 <a class="nav-link {% if '/access-requests' not in request.path %}collapsed{% endif %}" href="#" data-toggle="collapse" data-target="#collapseAccessRequests"
                     aria-expanded="{% if '/access-requests' in request.path %}true{% else %}false{% endif %}" aria-controls="collapseAccessRequests">
@@ -288,9 +311,13 @@
                 <div id="collapseAccessRequests" class="collapse {% if '/access-requests' in request.path %}show{% endif %}" aria-labelledby="headingAccessRequests" data-parent="#accordionSidebar">
                     <div class="bg-white py-2 collapse-inner rounded">
                         <h6 class="collapse-header">Access:</h6>
+                        {% if request.user.module_permissions.access_requests.dashboard or request.user.username == 'admin' %}
                         <a class="collapse-item {% if request.path == '/access-requests/' %}active{% endif %}" href="{% url 'access_dashboard' %}"><i class="fas fa-tachometer-alt mr-2"></i> Dashboard</a>
+                        {% endif %}
+                        {% if request.user.module_permissions.access_requests.new_request or request.user.username == 'admin' %}
                         <a class="collapse-item {% if '/access-requests/requests/new/' in request.path %}active{% endif %}" href="{% url 'access_create_request' %}"><i class="fas fa-plus mr-2"></i> New Request</a>
-                        {% if can_approve_requests %}
+                        {% endif %}
+                        {% if request.user.module_permissions.access_requests.approvals or request.user.username == 'admin' %}
                         <a class="collapse-item {% if '/access-requests/approvals/' in request.path %}active{% endif %}" href="{% url 'access_approval_list' %}">
                             <i class="fas fa-check-circle mr-2"></i> Approvals
                             {% if pending_approval_count and pending_approval_count > 0 %}
@@ -301,7 +328,9 @@
                     </div>
                 </div>
             </li>
+            {% endif %}
 
+            {% if request.user.module_permissions.assets_system.asset_list or request.user.module_permissions.assets_system.transfers or request.user.module_permissions.assets_system.maintenance or request.user.module_permissions.assets_system.writeoff or request.user.module_permissions.assets_system.disposal or request.user.username == 'admin' %}
             <li class="nav-item {% if '/assets' in request.path %}active{% endif %}">
                 <a class="nav-link {% if '/assets' not in request.path %}collapsed{% endif %}" href="#" data-toggle="collapse" data-target="#collapseAssets"
                     aria-expanded="{% if '/assets' in request.path %}true{% else %}false{% endif %}" aria-controls="collapseAssets">
@@ -311,14 +340,25 @@
                 <div id="collapseAssets" class="collapse {% if '/assets' in request.path %}show{% endif %}" aria-labelledby="headingAssets" data-parent="#accordionSidebar">
                     <div class="bg-white py-2 collapse-inner rounded">
                         <h6 class="collapse-header">Assets:</h6>
+                        {% if request.user.module_permissions.assets_system.asset_list or request.user.username == 'admin' %}
                         <a class="collapse-item {% if request.path == '/assets/' %}active{% endif %}" href="{% url 'assets_system:asset_list' %}"><i class="fas fa-list mr-2"></i> Asset List</a>
+                        {% endif %}
+                        {% if request.user.module_permissions.assets_system.transfers or request.user.username == 'admin' %}
                         <a class="collapse-item {% if '/assets/transfers/' in request.path %}active{% endif %}" href="{% url 'assets_system:transfer_list' %}"><i class="fas fa-exchange-alt mr-2"></i> Transfers</a>
+                        {% endif %}
+                        {% if request.user.module_permissions.assets_system.maintenance or request.user.username == 'admin' %}
                         <a class="collapse-item {% if '/assets/maintenances/' in request.path %}active{% endif %}" href="{% url 'assets_system:maintenance_list' %}"><i class="fas fa-tools mr-2"></i> Maintenance</a>
+                        {% endif %}
+                        {% if request.user.module_permissions.assets_system.writeoff or request.user.username == 'admin' %}
                         <a class="collapse-item {% if '/assets/writeoffs/' in request.path %}active{% endif %}" href="{% url 'assets_system:writeoff_list' %}"><i class="fas fa-trash-alt mr-2"></i> Write-off</a>
+                        {% endif %}
+                        {% if request.user.module_permissions.assets_system.disposal or request.user.username == 'admin' %}
                         <a class="collapse-item {% if '/assets/disposals/' in request.path %}active{% endif %}" href="{% url 'assets_system:disposal_list' %}"><i class="fas fa-truck mr-2"></i> Disposal</a>
+                        {% endif %}
                     </div>
                 </div>
             </li>
+            {% endif %}
 
             <!-- Divider -->
             <hr class="sidebar-divider d-none d-md-block">

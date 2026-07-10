@@ -430,6 +430,16 @@
                 </div>
             </div>
 
+            <style>
+                .select2-container--default .select2-selection--single .select2-selection__rendered,
+                .select2-container--bootstrap4 .select2-selection--single .select2-selection__rendered {
+                    user-select: text !important;
+                    -webkit-user-select: text !important;
+                    -moz-user-select: text !important;
+                    -ms-user-select: text !important;
+                    cursor: text !important;
+                }
+            </style>
             <div class="form-row">
                 <div class="form-group col-md-12">
                     <label class="font-weight-bold">
@@ -477,6 +487,19 @@
                                 },
                                 cache: true
                             }
+                        });
+
+                        // Prevent Select2 from opening when trying to highlight/copy text
+                        $(document).on('mousedown', '.select2-selection__rendered', function(e) {
+                            e.stopPropagation();
+                        });
+
+                        // Close Select2 on scroll to prevent the dropdown from getting detached/stuck
+                        $(window).on('scroll', function() {
+                            $('#fa_number').select2('close');
+                        });
+                        $('.main-panel, .content-wrapper, form').on('scroll', function() {
+                            $('#fa_number').select2('close');
                         });
                     });
                     </script>

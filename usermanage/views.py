@@ -169,6 +169,20 @@ def register(request):
                 if position:
                     user.position_id = position
                 user.is_staff = is_staff_value  # กำหนดค่า is_staff
+                
+                # รับค่า module_permissions จาก POST
+                permissions = request.POST.getlist('module_permissions')
+                module_permissions = {}
+                for perm in permissions:
+                    if ':' in perm:
+                        module, sub = perm.split(':', 1)
+                        if module not in module_permissions:
+                            module_permissions[module] = {}
+                        module_permissions[module][sub] = True
+                    else:
+                        module_permissions[perm] = True
+                user.module_permissions = module_permissions
+
                 user.save()
                 #messages.info(request, "สร้างบัญชีผู้ใช้สำเร็จ!")
                 return redirect("displayUser")
@@ -239,6 +253,20 @@ def updateUser(request,id):
             user.position_id = position if position else None
             user.is_staff = 1 if request.POST.get("is_staff") else 0
             user.is_active = 1 if request.POST.get("is_active") else 0
+
+            # รับค่า module_permissions จาก POST
+            permissions = request.POST.getlist('module_permissions')
+            module_permissions = {}
+            for perm in permissions:
+                if ':' in perm:
+                    module, sub = perm.split(':', 1)
+                    if module not in module_permissions:
+                        module_permissions[module] = {}
+                    module_permissions[module][sub] = True
+                else:
+                    module_permissions[perm] = True
+            user.module_permissions = module_permissions
+
             user.save()
             messages.info(request,"แก้ไขผู้ใช้เรียบร้อย")
             return redirect("editUser",id=id) #redirect กลับไปหน้า login
